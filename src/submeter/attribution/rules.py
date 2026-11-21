@@ -3,7 +3,8 @@
 Each process maps to exactly one workload, tried in this order: membership of
 a tagged kernel group, then the rules in rules.toml, then inheritance from a
 valid parent, then the Unattributed or Restricted bucket. Nothing is dropped,
-which is what lets the parts be checked against the whole.
+which is what lets the parts be checked against the whole. Outside a kernel group,
+a process keeps its workload for life, unless it execs into a program a rule matches.
 
 A parent link counts only if the parent started no later than the child,
 because operating systems reuse process ids.
@@ -131,13 +132,19 @@ class Attributor:
         self._rules = rules.ordered()
         self._inherit = inherit_from_parent
         self._self_pids = frozenset(self_pids)
+        self._known: dict[ProcessKey, tuple[str, tuple[str, ...] | None, Attribution]] = {}
+        self.changes: list[tuple[ProcessKey, str, str]] = []  # (process, from, to), last assign
 
     def assign(
         self,
         processes: Sequence[ProcessSample],
         tagged: Mapping[ProcessKey, str] | None = None,
+        exited: Collection[ProcessKey] = (),
     ) -> dict[ProcessKey, Attribution]:
         """Give every process exactly one workload, with the reason it got it."""
+        for key in exited:
+            self._known.pop(key, None)
+        self.changes = []
         groups = tagged or {}
         by_pid = {process.key.pid: process for process in processes}
         resolved: dict[ProcessKey, Attribution] = {}
@@ -151,7 +158,7 @@ class Attributor:
                 parent.key.pid == process.key.pid or parent.key.started > process.key.started
             ):
                 parent = None  # a reused pid, not the process that started this one
-            result = self._direct(process, groups, parent)
+            result = self._remembered(process, self._direct(process, groups, parent))
             if result is None and parent is not None and parent.key.pid not in trail:
                 above = resolve(parent, trail | {process.key.pid})
                 if above.inheritable:
@@ -160,12 +167,25 @@ class Attributor:
             if result is None:
                 bucket = RESTRICTED if process.restricted else UNATTRIBUTED
                 result = Attribution(workload=bucket, reason="no rule matched")
+            self._known[process.key] = (process.exe, process.cmdline, result)
             resolved[process.key] = result
             return result
 
         for process in processes:
             resolve(process, frozenset())
         return resolved
+
+    def _remembered(self, process: ProcessSample, direct: Attribution | None) -> Attribution | None:
+        """Last batch's workload, unless a kernel group or, after an exec, a rule now decides."""
+        before = self._known.get(process.key)
+        if before is None or (direct is not None and direct.reason == "kernel group"):
+            return direct
+        exe, cmdline, kept = before
+        if direct is None or (exe, cmdline) == (process.exe, process.cmdline):
+            return kept
+        if direct.workload != kept.workload:
+            self.changes.append((process.key, kept.workload, direct.workload))
+        return direct
 
     def _direct(
         self,

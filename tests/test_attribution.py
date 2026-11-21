@@ -50,3 +50,24 @@ def test_every_submeter_pid_and_its_children_are_submeter() -> None:
     processes = [sample(10, "python"), sample(20, "python"), sample(21, "sh", 20)]
     assignment = Attributor(RuleSet(), self_pids={10, 20}).assign([*processes, sample(30, "x")])
     assert names(assignment) == {10: SELF, 20: SELF, 21: SELF, 30: UNATTRIBUTED}
+
+
+def test_an_inherited_workload_lasts_for_the_life_of_the_process() -> None:
+    rules = RuleSet(
+        rule=(
+            Rule(workload="agent", exe=("bash",)),
+            Rule(workload="services", parent=("systemd",)),
+            Rule(workload="db", exe=("postgres",)),
+        )
+    )
+    attributor = Attributor(rules)
+    kids = [sample(21, "node", 20), sample(22, "vite", 20), sample(23, "sh", 20)]
+    first = names(attributor.assign([sample(1, "systemd"), sample(20, "bash"), *kids]))
+    # The shell exits: 21 keeps a stale parent pid, 22 is re-parented to systemd, 23 execs.
+    later = [sample(1, "systemd"), kids[0], sample(22, "vite", 1), sample(23, "postgres", 20)]
+    second = names(attributor.assign(later))
+    assert [first[pid] for pid in (21, 22, 23)] == ["agent"] * 3
+    assert [second[pid] for pid in (21, 22, 23)] == ["agent", "agent", "db"]
+    assert attributor.changes == [(ProcessKey(pid=23, started=123.0), "agent", "db")]
+    gone = names(attributor.assign(later[:3], exited=[kids[1].key]))  # forgotten once exited
+    assert (gone[21], gone[22]) == ("agent", "services")
