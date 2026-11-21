@@ -7,6 +7,7 @@ from pathlib import Path
 from submeter.core.models import Tier
 from submeter.store.files import FileMap
 from submeter.store.query import choose_tier
+from submeter.store.raw import RawFile
 
 DAY0 = 1_795_132_800.0  # 2026-11-20 00:00:00 UTC
 HOUR = 3600.0
@@ -51,3 +52,15 @@ def test_expired_raw_waits_for_the_rolled_up_mark(tmp_path: Path) -> None:
     # retention alone (24 h) would expire the 17th and the 18th
     expired = files.expired_raw(now, 24 * HOUR, rolled_up_until=end_of_17th)
     assert [path.name for path in expired] == ["2026-11-17.db"]
+
+
+def test_write_ahead_logs_are_bounded_and_counted(tmp_path: Path) -> None:
+    """R129: 4 MiB of log left after a checkpoint, and the history file's log is in disk_use."""
+    raw = RawFile(tmp_path / "day.db")
+    assert raw._db.execute("PRAGMA journal_size_limit").fetchone() == (4 * 1024**2,)
+    raw.close()
+    files = FileMap.discover({"SUBMETER_HOME": str(tmp_path)})
+    files.ensure()
+    files.history_file.write_bytes(b"x" * 10)
+    files.history_file.with_name("history.db-wal").write_bytes(b"x" * 5)
+    assert files.disk_use()["history"] == 15

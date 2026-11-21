@@ -68,7 +68,7 @@ class RawFile:
         self._db = sqlite3.connect(path)
         self._db.execute("PRAGMA journal_mode=WAL")
         self._db.execute("PRAGMA synchronous=NORMAL")
-        self._db.execute("PRAGMA journal_size_limit=67108864")
+        self._db.execute("PRAGMA journal_size_limit=4194304")
         self._db.executescript(_SCHEMA)
         with self._db:
             self._db.execute(

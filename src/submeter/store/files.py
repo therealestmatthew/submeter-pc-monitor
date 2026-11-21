@@ -156,11 +156,10 @@ class FileMap:
         def size(folder: Path, pattern: str) -> int:
             return sum(path.stat().st_size for path in folder.glob(pattern) if path.is_file())
 
-        history = self.history_file.stat().st_size if self.history_file.exists() else 0
         return {
             "raw": size(self.raw_dir, "*.db*"),
             "minute": size(self.minute_dir, "*.db*"),
-            "history": history,
+            "history": size(self.data_dir, "history.db*"),
             "backups": size(self.backups_dir, "*.db"),
             "logs": size(self.logs_dir, "*.log*"),
         }
