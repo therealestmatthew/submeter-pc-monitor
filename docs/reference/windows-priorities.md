@@ -85,7 +85,6 @@ These come from `docs/09-telemetry.md` and `docs/10-known-limits.md`. No baselin
 - **GPU.** Whether the per-process counters are readable, and how far their sum drifts from the adapter total.
 - **Thermal.** The brief says temperature is unavailable without administrator rights and that throttling can still be seen. Confirm both.
 - **Network.** The brief says connections are visible for the user's own processes only.
-- **WSL2 and Docker.** Whether their virtual machine uses more than 10% of CPU time here, which the brief uses to decide when a guest collector is built.
 - **Security software.** Whether anything above is blocked, slowed or flagged on a managed computer. If a probe is flagged, stop and tell me.
 
 ## 8. Running a swarm of agents on Windows

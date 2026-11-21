@@ -78,7 +78,7 @@ Rules for both paths:
 - Detect suspend and resume. Record a gap. Never emit one giant sample across it.
 - Identify a process by pid plus start time. Treat a parent link as valid only if the parent started before the child.
 - A process the collector cannot read is counted in a Restricted bucket with whatever is visible. It is never dropped.
-- WSL2 and Docker Desktop appear on Windows as a single VM process. Show it as its own workload labelled opaque. Design the ingest path so a second collector running inside the guest can report to the host later (phase 7).
+- WSL2 and Docker Desktop appear on Windows as a single VM process. Show it as its own workload labelled opaque, and report its share of busy CPU time, and of capacity, in `doctor`. A collector inside the guest is not in version 1.
 
 Memory: collect units that can be added across processes. Workload totals use USS (or PSS on Linux) so shared pages are not counted twice. USS is expensive, so read it on a slow cadence and only for the largest processes, and show the age of the reading. For growth and leak detection use private bytes on Windows and RSS plus swap on Linux, because Windows trims working sets under pressure and USS then falls for a process that is still leaking.
 
@@ -222,7 +222,7 @@ Version 1 cannot measure some things. Say so in the dashboard and in `doctor`, b
 - Work done for a workload by another process, such as the Docker daemon, a shared language server or a browser that was already open, is charged to that other process.
 - Polled workloads on Windows undercount short-lived children.
 - On Linux, tagged runs are unavailable in version 1: `submeter run` runs the command polled. PSI and the other Linux system counters are not read either, so `why` on Linux reads Inconclusive or unavailable.
-- The WSL2 and Docker Desktop VM is opaque until the guest collector exists.
+- The WSL2 and Docker Desktop VM is opaque: version 1 has no guest collector.
 - Workload memory totals can lag by up to the USS interval.
 - CPU time is not normalised for core type or frequency.
 - Which files a process reads or writes is not recorded, only bytes and handle counts.
@@ -264,17 +264,16 @@ A baseline already exists in the repository: pyproject.toml and fifteen tested m
 
 In the starter package the brief is already in docs/, one file per topic, the standing rules are in AGENTS.md, which CLAUDE.md imports, and work starts from prompts/01-execution-prompt.md, whose plan replaces the working instructions in this section. Without the package, save this brief verbatim as docs/BRIEF.md before anything else, and create a CLAUDE.md that carries the priorities, the conventions and the not-configurable rules, so later sessions start from them. Either way, when a decision changes the design, change the document that states it in the same commit.
 
-These are decided, so do not ask about them again: both programs run as the signed-in user and never request administrator rights, nothing is sent off the machine, and the name is Submeter. One thing is decided by measurement. In phase 0, report what share of CPU time a WSL2 or Docker Desktop VM holds over a working day. If it is above 10%, tell me, and the guest collector moves to directly after phase 2.
+These are decided, so do not ask about them again: both programs run as the signed-in user and never request administrator rights, nothing is sent off the machine, and the name is Submeter.
 
 Work in phases. Set up CI on Windows and Linux runners in phase 0, because you can only run one OS yourself. At the end of each phase run ruff, mypy strict and pytest, confirm the gate, and write a short status to docs/STATUS.md: what works, what was verified and how, and what you could not verify. Then stop and wait for me.
 
-- Phase 0, baseline check, capability probe and CI: get the baseline passing ruff, mypy strict and pytest on both runners (it has only been run on Linux, so tell me what needed fixing on Windows), then build `submeter doctor` out into the full capability matrix, and report the measured cost of one full sample, the per-process VRAM check, the WSL2 or Docker VM measurement, and a written matrix of what each OS delivers with and without elevation.
+- Phase 0, baseline check, capability probe and CI: get the baseline passing ruff, mypy strict and pytest on both runners (it has only been run on Linux, so tell me what needed fixing on Windows), then build `submeter doctor` out into the full capability matrix, and report the measured cost of one full sample, the per-process VRAM check, and a written matrix of what each OS delivers with and without elevation.
 - Phase 1, collector, store and CLI: the Windows bulk snapshot provider behind the existing protocol, the collector loop with adaptive cadence and the overhead guard around the existing sampler, the minute and history files built on the existing rollup functions, retention and backups, and the full `top` and `store status`. Gate: a 30-minute CI soak stays inside the budget, per-process figures agree with Windows performance counters within 5%, and totals reconcile within 2%. Killing the collector mid-write loses at most 5 seconds and corrupts nothing. CPU-hours from the hourly tier match the raw sum within 0.1%. Deleting a day of raw data frees its space at once. Do not use Task Manager as a reference; its CPU figure has changed basis between Windows builds. I will run a 24-hour soak myself.
 - Phase 2, kernel accounting on Windows, attribution and sessions. Gate: on Windows, a tagged tree that spawns 500 sub-second children is charged within 2% of the kernel's total, its final totals survive its exit, a restarted collector re-attaches to live groups, and `submeter run` returns with the command's exit code while background processes it left behind are still accounted for. On Linux, `submeter run` reports that tagged runs are unavailable and runs the command polled. A session's cost must read the same before and after its raw data is deleted.
 - Phase 3, analysis. Gate: every detector passes its trigger and quiet fixtures, including a leak too slow for the hourly check, and `why` answers in under two seconds.
 - Phase 4, API and dashboard. Gate: requests without a token or with a foreign Origin are refused, and a 30-day range loads in under one second and names the tier it came from.
 - Phase 5, extended providers. Hardware you do not have is tested from recorded fixtures. Say plainly which providers were never run on real hardware.
 - Phase 6, HTML reports and MCP server. Gate: no MCP response contains a command line.
-- Phase 7, guest collector for WSL2.
 
 Start with phase 0. Before writing code, tell me in a few sentences how you plan to extend the existing layout and any part of this brief or the baseline you think is wrong or underspecified. If something here conflicts with what an OS can really do, say so and propose the closest honest alternative instead of working around it quietly.

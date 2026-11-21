@@ -90,4 +90,5 @@ Three programs that share only files on disk: a collector, a server and the laun
 - Deep tracing through ETW and eBPF, which per-file tracking would need
 - One dashboard across several machines
 - Normalising CPU time by core type or frequency
+- A collector inside WSL2 or Docker Desktop: no transport from the guest to the host is designed. The VM shows as one opaque workload, and `doctor` reports its share of busy CPU time
 - The Linux platform layer: cgroup tagged runs, the direct /proc reader, PSI and the other Linux system counters, and the systemd user unit. Version 1 builds the platform layer for Windows only, where the builds run, because a second design doubles every platform phase and its gates could be checked only on a CI runner. Linux runs polled through psutil and is tested in CI

@@ -82,6 +82,8 @@ On Windows, everything inside WSL2 or Docker Desktop appears as a single VM proc
 
 **Fix:** The VM is shown as its own workload, labelled opaque. The ingest API accepts a second collector, so the Linux build can run inside WSL and report to the host. That collector is phase 7.
 
+Amended by R140 (21 November 2026): the ingest part is not in version 1. No guest collector or transport is built, the VM stays one opaque workload, and `doctor` reports its share of busy CPU time. A guest collector is designed after version 1 if that share is large.
+
 ## First pass, high: misleading under real conditions
 
 ### R06: Leak detection would go blind under memory pressure
