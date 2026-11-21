@@ -29,7 +29,7 @@ from submeter.attribution.rules import (
     aggregate,
 )
 from submeter.cli import app
-from submeter.collector.sampler import Sampler, hot_keys
+from submeter.collector.sampler import Sampler
 from submeter.core import histogram
 from submeter.core.config import ConfigError, load_settings
 from submeter.core.models import (
@@ -123,16 +123,16 @@ def test_config_layers_and_sources(tmp_path: Path) -> None:
     )
     loaded = load_settings(
         file,
-        env={"SUBMETER_SAMPLING__COLD_INTERVAL": "30s", "SUBMETER_HOME": "/x"},
+        env={"SUBMETER_SAMPLING__IDLE_AFTER": "30s", "SUBMETER_HOME": "/x"},
     )
     sampling = loaded.settings.sampling
-    assert (sampling.active_interval, sampling.cold_interval) == (
+    assert (sampling.active_interval, sampling.idle_after) == (
         2.0,
         30.0,
     )
     assert loaded.settings.alerts.rules[0].duration == 300
     assert loaded.sources["sampling.active_interval"] == "file"
-    assert loaded.sources["sampling.cold_interval"] == "env"
+    assert loaded.sources["sampling.idle_after"] == "env"
     assert dict((key, source) for key, _, source in loaded.effective())["api.port"] == "default"
 
 
@@ -217,7 +217,6 @@ def test_sampler_deltas_new_processes_and_pid_reuse() -> None:
     assert by_pid[4].cpu_s == 0.0  # older than the last snapshot: no baseline yet
     assert batch.exited == (ProcessKey(pid=2, started=100.0),)
     assert batch.cpu_busy_s == pytest.approx(1.5)
-    assert ProcessKey(pid=1, started=100.0) in hot_keys(batch, cpu_threshold=0.005)
 
 
 def test_sampler_records_a_gap_instead_of_a_spike() -> None:

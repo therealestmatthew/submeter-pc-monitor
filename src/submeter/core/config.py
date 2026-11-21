@@ -48,9 +48,6 @@ ActiveInterval = Annotated[
 IdleInterval = Annotated[
     float, BeforeValidator(parse_duration), AfterValidator(duration_range("1s", "60s"))
 ]
-ColdInterval = Annotated[
-    float, BeforeValidator(parse_duration), AfterValidator(duration_range("5s", "60s"))
-]
 IdleAfter = Annotated[
     float, BeforeValidator(parse_duration), AfterValidator(duration_range("10s", "10m"))
 ]
@@ -66,9 +63,6 @@ UssInterval = Annotated[
 KeyframeInterval = Annotated[
     float, BeforeValidator(parse_duration), AfterValidator(duration_range("1m", "1h"))
 ]
-HotThreshold = Annotated[
-    float, BeforeValidator(parse_percent), AfterValidator(fraction_range("0.1%", "5%"))
-]
 OverheadShare = Annotated[
     float, BeforeValidator(parse_percent), AfterValidator(fraction_range("0.5%", "10%"))
 ]
@@ -81,11 +75,9 @@ class OverheadLimit(Record):
 
 class Sampling(Record):
     mode: Literal["adaptive", "fixed"] = "adaptive"
-    active_interval: ActiveInterval = 1.0
+    active_interval: ActiveInterval = 2.0
     idle_interval: IdleInterval = 5.0
-    cold_interval: ColdInterval = 10.0
     idle_after: IdleAfter = 60.0
-    hot_cpu_threshold: HotThreshold = 0.005
     uss_interval: UssInterval = 30.0
     uss_top_n: int = Field(default=25, ge=0, le=200)
     gpu_interval: GpuInterval = 2.0

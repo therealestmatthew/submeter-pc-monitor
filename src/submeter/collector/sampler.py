@@ -103,14 +103,3 @@ class Sampler:
             first_seen=before is None,
             restricted=now.restricted,
         )
-
-
-def hot_keys(batch: SampleBatch, *, cpu_threshold: float) -> frozenset[ProcessKey]:
-    """Processes worth sampling at the active interval: new ones, and any above the threshold."""
-    if batch.interval_s <= 0:
-        return frozenset()
-    return frozenset(
-        sample.key
-        for sample in batch.processes
-        if sample.first_seen or sample.cpu_s / batch.interval_s >= cpu_threshold
-    )
