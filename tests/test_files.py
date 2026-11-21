@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from submeter.core.models import Tier
+from submeter.store.files import FileMap
 from submeter.store.query import choose_tier
 
 DAY0 = 1_795_132_800.0  # 2026-11-20 00:00:00 UTC
@@ -20,3 +23,18 @@ def test_tier_choice_takes_raw_coverage_from_disk() -> None:
         minute_retention_s=30 * 24 * HOUR,
     )
     assert (choice.tier, choice.step_s) == (Tier.MINUTE, 60.0)
+
+
+def test_expired_raw_takes_the_side_files_with_the_day(tmp_path: Path) -> None:
+    """R130: deleting only the .db would leave its -wal and -shm behind, counted forever."""
+    files = FileMap.discover({"SUBMETER_HOME": str(tmp_path)})
+    files.ensure()
+    for name in ("2026-11-17.db", "2026-11-17.db-wal", "2026-11-17.db-shm", "2026-11-20.db"):
+        (files.raw_dir / name).write_bytes(b"x")
+    expired = files.expired_raw(DAY0 + 9 * HOUR, 48 * HOUR)
+    # the side files come first, so a pass cut short leaves the .db to be found next time
+    assert [path.name for path in expired] == [
+        "2026-11-17.db-wal",
+        "2026-11-17.db-shm",
+        "2026-11-17.db",
+    ]

@@ -119,15 +119,19 @@ class FileMap:
             folder.mkdir(parents=True, exist_ok=True)
 
     def expired_raw(self, now: float, retention_s: float) -> list[Path]:
-        """Raw files whose whole day ended more than retention_s ago, oldest first."""
-        expired = []
+        """Raw files whose whole day ended more than retention_s ago, oldest first.
+
+        Each day's -wal and -shm come before its .db, so a pass cut short leaves the .db to find.
+        """
+        expired: list[Path] = []
         for path in sorted(self.raw_dir.glob("*.db")):
             try:
                 day = date.fromisoformat(path.stem)
             except ValueError:
                 continue
             if now - _end_of(day, 1) > retention_s:
-                expired.append(path)
+                sides = (path.with_name(path.name + end) for end in ("-wal", "-shm"))
+                expired += [*(side for side in sides if side.exists()), path]
         return expired
 
     def expired_minute(self, now: float, retention_s: float) -> list[Path]:
