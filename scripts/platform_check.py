@@ -48,11 +48,13 @@ def check_lock(folder: Path) -> None:
     second = subprocess.run(
         [sys.executable, "-c", HOLD, str(path), "0"], capture_output=True, text=True, check=False
     ).stdout.split()
-    same_process = InstanceLock(path).acquire()
-    empty = path.read_bytes() == b""
+    same_process = InstanceLock(path).acquire(wait_s=0)
+    empty = path.stat().st_size == 0
     holder.kill()
     holder.wait()
-    time.sleep(0.5)
+    freed = InstanceLock(path)  # poll for up to 5 s: Windows may free a dead holder's lock late
+    if freed.acquire(wait_s=5.0):
+        freed.release()
     third = subprocess.run(
         [sys.executable, "-c", HOLD, str(path), "0"], capture_output=True, text=True, check=False
     ).stdout.split()

@@ -326,8 +326,8 @@ def test_file_map_names_expiry_and_lock(tmp_path: Path) -> None:
     assert files.disk_use()["raw"] == 3
     lock = InstanceLock(files.lock_file("collector"))
     with lock:
-        assert not InstanceLock(files.lock_file("collector")).acquire()
-        assert lock.holder() == os.getpid() and files.lock_file("collector").read_bytes() == b""
+        assert not InstanceLock(files.lock_file("collector")).acquire(wait_s=0)
+        assert lock.holder() == os.getpid() and files.lock_file("collector").stat().st_size == 0
     assert lock.holder() is None  # the pid file goes when the lock is released
     again = InstanceLock(files.lock_file("collector"))
     assert again.acquire()
@@ -357,7 +357,7 @@ def test_the_windows_lock_makes_the_calls_windows_expects(
     monkeypatch.setattr(sys, "platform", "win32")
     path = tmp_path / "collector.lock"
     first, second = InstanceLock(path), InstanceLock(path)
-    assert first.acquire() and not second.acquire()
+    assert first.acquire() and not second.acquire(wait_s=0)
     assert first.holder() == os.getpid() and path.read_bytes() == b""
     first.release()
     assert second.acquire()

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import threading
 from pathlib import Path
 
 import psutil
@@ -81,3 +82,13 @@ def test_holder_names_only_the_live_holder_of_a_held_lock(tmp_path: Path) -> Non
         started = psutil.Process().create_time()
         lock.pid_file.write_text(f"{os.getpid()} {started + 1}", encoding="ascii")
         assert lock.holder() is None  # that pid now names a process that started at another time
+
+
+def test_acquire_waits_for_a_lock_freed_late(tmp_path: Path) -> None:
+    """R71: Windows may free a dead holder's lock some time after it dies, so acquire() retries."""
+    path = tmp_path / "collector.lock"
+    first, second = InstanceLock(path), InstanceLock(path)
+    assert first.acquire()
+    threading.Timer(0.3, first.release).start()
+    assert second.acquire(wait_s=1.0)
+    second.release()

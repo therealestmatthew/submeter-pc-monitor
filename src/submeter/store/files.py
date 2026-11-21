@@ -15,6 +15,7 @@ from __future__ import annotations
 import contextlib
 import os
 import sys
+import time
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
@@ -224,20 +225,30 @@ class InstanceLock:
     def pid_file(self) -> Path:
         return self._path.with_suffix(".pid")
 
-    def acquire(self) -> bool:
+    def acquire(self, wait_s: float = 5.0) -> bool:
+        """Take the lock, retrying every 100 ms for up to wait_s while another holder has it."""
         self._path.parent.mkdir(parents=True, exist_ok=True)
-        try:
-            fd = os.open(self._path, os.O_RDWR | os.O_CREAT, 0o600)
-        except OSError:
-            return False  # on Windows another holder can make even opening fail
-        if not _try_lock(fd):
-            os.close(fd)
-            return False
+        deadline = time.monotonic() + wait_s
+        while (fd := self._take()) is None:
+            if time.monotonic() >= deadline:
+                return False
+            time.sleep(0.1)  # Windows may free a dead holder's lock some time after it dies
         self._fd = fd
         with contextlib.suppress(OSError):  # the pid is a convenience; the lock is what matters
             started = psutil.Process().create_time()
             self.pid_file.write_text(f"{os.getpid()} {started!r}", encoding="ascii")
         return True
+
+    def _take(self) -> int | None:
+        """One try: the open, locked handle, or None while another holder has the lock."""
+        try:
+            fd = os.open(self._path, os.O_RDWR | os.O_CREAT, 0o600)
+        except OSError:
+            return None  # on Windows another holder can make even opening fail
+        if _try_lock(fd):
+            return fd
+        os.close(fd)
+        return None
 
     def holder(self) -> int | None:
         """The holder's pid; None unless the lock is held and that pid started when recorded."""
