@@ -193,7 +193,8 @@ class RawFile:
     def _register(self, sample: ProcessSample, workload: str, seen_at: float) -> None:
         command_id: int | None = None
         if sample.cmdline:
-            text = _storable(" ".join(redact_cmdline(sample.cmdline, mode=self._redaction)))
+            cleaned = redact_cmdline(sample.cmdline, mode=self._redaction, exe=sample.exe)
+            text = _storable(" ".join(cleaned))
             self._db.execute("INSERT OR IGNORE INTO command (text) VALUES (?)", (text,))
             row = self._db.execute("SELECT id FROM command WHERE text = ?", (text,)).fetchone()
             command_id = int(row[0])

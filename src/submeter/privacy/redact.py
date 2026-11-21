@@ -56,17 +56,19 @@ def redact_cmdline(
     args: Sequence[str],
     *,
     mode: Mode = "scrub",
+    exe: str = "",
     extra_patterns: Sequence[str] = (),
 ) -> tuple[str, ...]:
-    """Return the command line with secrets hidden. In exe_only mode, only the executable."""
+    """Return the command line with secrets hidden. In exe_only mode, only exe, never argv[0]."""
     if not args:
         return ()
     if mode == "exe_only":
-        return (args[0],)
+        return (exe,) if exe else ()
     extra = [re.compile(pattern) for pattern in extra_patterns]
-    cleaned = [args[0]]
+    first, *title = args[0].split(" ")  # a process may have rewritten argv[0] into a title
+    cleaned = [first]
     hide_next = False
-    for arg in args[1:]:
+    for arg in (*title, *args[1:]):
         if hide_next:
             cleaned.append(REDACTED)
             hide_next = False

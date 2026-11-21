@@ -190,7 +190,7 @@ def test_redaction_hides_secrets_and_keeps_the_rest() -> None:
         f"postgres://u:{REDACTED}@host/db",
         "notes.md",
     )
-    assert redact_cmdline(args, mode="exe_only") == ("claude",)
+    assert redact_cmdline(args, mode="exe_only", exe="claude") == ("claude",)
     assert redact_cmdline(["x", "A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6"]) == ("x", REDACTED)
 
 
