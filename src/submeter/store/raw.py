@@ -42,14 +42,15 @@ CREATE TABLE IF NOT EXISTS workload_raw (
     ts REAL NOT NULL, workload TEXT NOT NULL, source TEXT NOT NULL, interval_s REAL NOT NULL,
     cpu_s REAL NOT NULL, memory_bytes INTEGER NOT NULL, io_read_bytes INTEGER NOT NULL,
     io_write_bytes INTEGER NOT NULL, processes INTEGER NOT NULL, started INTEGER NOT NULL,
-    PRIMARY KEY (ts, workload)) WITHOUT ROWID;
+    gap INTEGER NOT NULL, PRIMARY KEY (ts, workload)) WITHOUT ROWID;
 CREATE TABLE IF NOT EXISTS process_raw (
     ts REAL NOT NULL, pid INTEGER NOT NULL, started REAL NOT NULL, cpu_s REAL NOT NULL,
     memory_bytes INTEGER NOT NULL, threads INTEGER, keyframe INTEGER NOT NULL,
     PRIMARY KEY (ts, pid, started)) WITHOUT ROWID;
 CREATE TABLE IF NOT EXISTS system_raw (
     ts REAL PRIMARY KEY, interval_s REAL NOT NULL, logical_cores INTEGER NOT NULL,
-    cpu_busy_s REAL NOT NULL, memory_available_bytes INTEGER NOT NULL) WITHOUT ROWID;
+    cpu_busy_s REAL NOT NULL, memory_available_bytes INTEGER NOT NULL,
+    gap INTEGER NOT NULL) WITHOUT ROWID;
 CREATE TABLE IF NOT EXISTS gap (start REAL NOT NULL, end REAL NOT NULL, reason TEXT NOT NULL);
 """
 
@@ -101,17 +102,18 @@ class RawFile:
                     "INSERT INTO gap VALUES (?, ?, ?)", (start, batch.taken_at, "not observed")
                 )
             self._db.execute(
-                "INSERT OR REPLACE INTO system_raw VALUES (?, ?, ?, ?, ?)",
+                "INSERT OR REPLACE INTO system_raw VALUES (?, ?, ?, ?, ?, ?)",
                 (
                     batch.taken_at,
                     batch.interval_s,
                     batch.logical_cores,
                     batch.cpu_busy_s,
                     batch.memory_available_bytes,
+                    batch.gap,
                 ),
             )
             self._db.executemany(
-                "INSERT OR REPLACE INTO workload_raw VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "INSERT OR REPLACE INTO workload_raw VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 [
                     (
                         w.taken_at,
@@ -124,6 +126,7 @@ class RawFile:
                         w.io_write_bytes,
                         w.processes,
                         w.started,
+                        w.gap,
                     )
                     for w in workloads
                 ],
@@ -202,7 +205,7 @@ class RawFile:
     def workload_samples(self, start: float, end: float) -> list[WorkloadSample]:
         rows = self._db.execute(
             "SELECT ts, interval_s, workload, source, cpu_s, memory_bytes, io_read_bytes,"
-            " io_write_bytes, processes, started FROM workload_raw"
+            " io_write_bytes, processes, started, gap FROM workload_raw"
             " WHERE ts >= ? AND ts < ? ORDER BY ts, workload",
             (start, end),
         ).fetchall()
@@ -218,6 +221,7 @@ class RawFile:
                 io_write_bytes=row[7],
                 processes=row[8],
                 started=row[9],
+                gap=bool(row[10]),
             )
             for row in rows
         ]

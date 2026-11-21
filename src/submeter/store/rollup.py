@@ -49,15 +49,11 @@ class SeriesAccumulator:
         interval = sample.interval_s
         if interval <= 0:
             return
-        cores = sample.cpu_s / interval
-        self._covered_s += interval
-        self._samples += 1
         self._cpu_s += sample.cpu_s
         self._read += sample.io_read_bytes
         self._write += sample.io_write_bytes
         self._started += sample.started
         self._processes_max = max(self._processes_max, sample.processes)
-        self._memory_weighted += sample.memory_bytes * interval
         self._memory_max = max(self._memory_max, sample.memory_bytes)
         self._memory_min = (
             sample.memory_bytes
@@ -65,6 +61,12 @@ class SeriesAccumulator:
             else min(self._memory_min, sample.memory_bytes)
         )
         self._memory_last = sample.memory_bytes
+        if sample.gap:  # not observed: it adds to the sums, never to the covered time
+            return
+        cores = sample.cpu_s / interval
+        self._covered_s += interval
+        self._samples += 1
+        self._memory_weighted += sample.memory_bytes * interval
         if cores >= self._active_share:
             self._active_s += interval
         histogram.add(self._cores, histogram.CORES, cores, interval)
@@ -87,7 +89,7 @@ class SeriesAccumulator:
             started=self._started,
             memory_min=self._memory_min,
             memory_max=self._memory_max,
-            memory_mean=self._memory_weighted / self._covered_s,
+            memory_mean=self._memory_weighted / self._covered_s if self._covered_s else None,
             memory_last=self._memory_last,
             processes_max=self._processes_max,
             cores_hist=tuple(self._cores),
@@ -137,6 +139,8 @@ def merge(buckets: Sequence[Bucket], *, start: float, width_s: float) -> Bucket:
         cores = histogram.merge(cores, bucket.cores_hist)
         memory = histogram.merge(memory, bucket.memory_hist)
     latest = ordered[-1]
+    means = [(b.memory_mean, b.covered_s) for b in ordered if b.memory_mean is not None]
+    weight = sum(covered_s for _, covered_s in means)
     return Bucket(
         series=latest.series,
         start=start,
@@ -150,7 +154,7 @@ def merge(buckets: Sequence[Bucket], *, start: float, width_s: float) -> Bucket:
         started=sum(bucket.started for bucket in ordered),
         memory_min=min(bucket.memory_min for bucket in ordered),
         memory_max=max(bucket.memory_max for bucket in ordered),
-        memory_mean=sum(bucket.memory_mean * bucket.covered_s for bucket in ordered) / covered,
+        memory_mean=sum(mean * covered_s for mean, covered_s in means) / weight if weight else None,
         memory_last=latest.memory_last,
         processes_max=max(bucket.processes_max for bucket in ordered),
         cores_hist=cores,
