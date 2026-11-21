@@ -6,11 +6,13 @@ import inspect
 from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 from typer.testing import CliRunner
 
+from submeter.attribution.rules import Rule
 from submeter.cli import app
 from submeter.collector import sampler
-from submeter.core.config import ConfigError, Settings, load_settings
+from submeter.core.config import AlertRule, ConfigError, Settings, load_settings
 
 
 # ---- R149: no profiles -----------------------------------------------------------------------
@@ -36,3 +38,12 @@ def test_hot_and_cold_sets_are_removed(tmp_path: Path) -> None:
     assert "sampling.cold_interval" in text and "sampling.hot_cpu_threshold" in text
     assert Settings().sampling.active_interval == 2.0
     assert not hasattr(sampler, "hot_keys")
+
+
+# ---- R106: workload names --------------------------------------------------------------------
+def test_workload_names_are_checked() -> None:
+    for name in ("system", "<b>x</b>", "../x"):
+        with pytest.raises(ValidationError, match="workload"):
+            Rule(workload=name, exe=("x.exe",))
+    for pattern in ("build*", "machine"):
+        assert AlertRule(name="a", workload=pattern, metric="cpu_cores", above=1).workload

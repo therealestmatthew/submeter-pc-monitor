@@ -29,6 +29,7 @@ from pydantic import (
 )
 
 from submeter.core.models import Confidence, Record, Severity
+from submeter.core.names import WorkloadPattern
 from submeter.core.units import (
     Duration,
     Fraction,
@@ -143,7 +144,7 @@ class AlertRule(Record):
     model_config = ConfigDict(extra="forbid", frozen=True, populate_by_name=True)
 
     name: str
-    workload: str = "*"
+    workload: WorkloadPattern = "*"
     metric: str
     above: float | None = None
     below: float | None = None

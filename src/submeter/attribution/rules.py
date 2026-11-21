@@ -33,6 +33,7 @@ from submeter.core.models import (
     SampleBatch,
     WorkloadSample,
 )
+from submeter.core.names import WorkloadName
 
 UNATTRIBUTED: Final = "unattributed"
 RESTRICTED: Final = "restricted"
@@ -56,7 +57,7 @@ def _folder(path: str) -> str:
 class Rule(Record):
     """One entry of rules.toml. Every condition that is given must hold."""
 
-    workload: str
+    workload: WorkloadName
     priority: int = 0
     exe: tuple[str, ...] = ()
     name: tuple[str, ...] = ()
