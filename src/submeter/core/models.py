@@ -192,3 +192,13 @@ class Finding(Record):
     window_start: float
     window_end: float
     evidence: tuple[str, ...]
+
+
+class GroupTotals(Record):
+    """What the kernel counted for one tagged group over one interval. The I/O is None when
+    the group cannot report it."""
+
+    cpu_s: float
+    io_read_bytes: int | None
+    io_write_bytes: int | None
+    processes: int

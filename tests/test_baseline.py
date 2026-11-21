@@ -33,6 +33,7 @@ from submeter.collector.sampler import Sampler, hot_keys
 from submeter.core import histogram
 from submeter.core.config import ConfigError, load_settings
 from submeter.core.models import (
+    GroupTotals,
     ProcessCounters,
     ProcessKey,
     Snapshot,
@@ -265,11 +266,14 @@ def test_attribution_order_inheritance_and_reconciliation() -> None:
         14: "tools",
         15: "agent:refactor",
     }
-    totals = aggregate(batch, assignment, kernel_workloads={"agent:refactor"})
-    assert sum(total.cpu_s for total in totals) == pytest.approx(
-        sum(sample.cpu_s for sample in batch.processes)
+    group = GroupTotals(cpu_s=0.9, io_read_bytes=None, io_write_bytes=None, processes=1)
+    totals = aggregate(batch, assignment, kernel_workloads={"agent:refactor": group})
+    polled = [total for total in totals if total.workload != "agent:refactor"]
+    assert sum(total.cpu_s for total in polled) == pytest.approx(
+        sum(sample.cpu_s for sample in batch.processes if sample.key.pid != 15)
     )
-    assert {total.workload: total.source.value for total in totals}["agent:refactor"] == "kernel"
+    tagged_total = next(total for total in totals if total.workload == "agent:refactor")
+    assert (tagged_total.cpu_s, tagged_total.source.value) == (0.9, "kernel")  # polled sum 0.6
 
 
 def test_rules_file_loads_and_rejects_empty_rules(tmp_path: Path) -> None:

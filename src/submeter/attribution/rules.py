@@ -25,6 +25,7 @@ from pydantic import model_validator
 
 from submeter.core.models import (
     AccountingSource,
+    GroupTotals,
     ProcessKey,
     ProcessSample,
     Record,
@@ -224,9 +225,13 @@ def aggregate(
     batch: SampleBatch,
     assignment: Mapping[ProcessKey, Attribution],
     *,
-    kernel_workloads: Collection[str] = (),
+    kernel_workloads: Mapping[str, GroupTotals] = {},
 ) -> tuple[WorkloadSample, ...]:
-    """Total a batch per workload, largest CPU user first."""
+    """Total a batch per workload, largest CPU user first.
+
+    A tagged workload reports its kernel group's CPU, I/O and process count in place of its
+    polled sum, because the group's figures include the processes that polling missed.
+    """
     totals: dict[str, _Total] = {}
     for process in batch.processes:
         total = totals.setdefault(assignment[process.key].workload, _Total())
@@ -236,6 +241,13 @@ def aggregate(
         total.io_write_bytes += process.io_write_bytes or 0
         total.processes += 1
         total.started += process.first_seen
+    for workload, group in kernel_workloads.items():
+        total = totals.setdefault(workload, _Total())
+        total.cpu_s, total.processes = group.cpu_s, group.processes
+        if group.io_read_bytes is not None:  # else the polled sum, until records can say None
+            total.io_read_bytes = group.io_read_bytes
+        if group.io_write_bytes is not None:
+            total.io_write_bytes = group.io_write_bytes
 
     def source(workload: str) -> AccountingSource:
         if workload in kernel_workloads:
