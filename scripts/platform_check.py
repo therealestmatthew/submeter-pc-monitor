@@ -104,7 +104,8 @@ def check_provider() -> None:
         "INFO",
         f"median {median:.1f} ms, worst {worst:.1f} ms over 20 runs for {total} processes. "
         f"With working folders: median {median_cwd:.1f} ms, worst {worst_cwd:.1f} ms. "
-        "The rule in docs/11-language.md is 10 ms for 300 processes",
+        "This is one snapshot. The Rust trigger in docs/11-language.md is the whole collector's "
+        "share of a core over 10 minutes",
     )
 
 
