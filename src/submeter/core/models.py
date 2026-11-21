@@ -77,6 +77,7 @@ class ProcessCounters(Record):
     cmdline: tuple[str, ...] | None = Field(default=None, repr=False)
     cwd: str | None = Field(default=None, repr=False)
     cpu_s: float
+    children_cpu_s: float | None = None  # Linux cutime + cstime of reaped children; not read yet
     io_read_bytes: int | None = None
     io_write_bytes: int | None = None
     memory_bytes: int

@@ -26,3 +26,10 @@ def test_validation_errors_leave_out_the_command_line() -> None:
             {"key": {"pid": 1, "started": 1.0}, "cwd": ("x", SECRET), "cpu_s": 0, "memory_bytes": 0}
         )
     assert SECRET not in str(caught.value)
+
+
+def test_counters_carry_an_optional_child_time() -> None:
+    key = ProcessKey(pid=1, started=1.0)
+    assert ProcessCounters(key=key, cpu_s=0.0, memory_bytes=0).children_cpu_s is None
+    counters = ProcessCounters(key=key, cpu_s=0.0, memory_bytes=0, children_cpu_s=2.5)
+    assert counters.children_cpu_s == 2.5
