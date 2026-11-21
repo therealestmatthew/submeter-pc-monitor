@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import contextlib
 import itertools
+import sqlite3
 import sys
+from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 from unittest import mock
@@ -13,8 +15,10 @@ import psutil
 import pytest
 from pydantic import ValidationError
 
+from submeter.collector.sampler import Sampler
 from submeter.core.models import ProcessCounters, ProcessKey, ProcessSample
 from submeter.providers.psutil_provider import PsutilProvider
+from submeter.store.raw import RawFile
 
 SECRET = "sk-abcdefghijklmnopqrstu"
 
@@ -79,3 +83,19 @@ def test_windows_memory_is_private_bytes(monkeypatch: pytest.MonkeyPatch) -> Non
     monkeypatch.setattr(sys, "platform", "win32")
     monkeypatch.setattr(psutil, "process_iter", lambda: iter([fake_process(10)]))  # no 'private'
     assert PsutilProvider().snapshot().processes[0].memory_bytes == 300  # vms, not rss
+
+
+def test_windows_threads_are_unavailable(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(sys, "platform", "win32")
+    fake = fake_process(10)
+    monkeypatch.setattr(psutil, "process_iter", lambda: iter([fake]))
+    provider, sampler = PsutilProvider(), Sampler()
+    sampler.ingest(provider.snapshot())
+    batch = sampler.ingest(provider.snapshot())
+    assert batch is not None and batch.processes[0].threads is None
+    fake.num_threads.assert_not_called()
+    raw = RawFile(tmp_path / "raw.db")
+    raw.write(batch, (), {}, keyframe=True)
+    raw.close()
+    with contextlib.closing(sqlite3.connect(tmp_path / "raw.db")) as db:
+        assert db.execute("SELECT threads FROM process_raw").fetchall() == [(None,)]

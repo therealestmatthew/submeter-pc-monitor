@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS workload_raw (
     PRIMARY KEY (ts, workload)) WITHOUT ROWID;
 CREATE TABLE IF NOT EXISTS process_raw (
     ts REAL NOT NULL, pid INTEGER NOT NULL, started REAL NOT NULL, cpu_s REAL NOT NULL,
-    memory_bytes INTEGER NOT NULL, threads INTEGER NOT NULL, keyframe INTEGER NOT NULL,
+    memory_bytes INTEGER NOT NULL, threads INTEGER, keyframe INTEGER NOT NULL,
     PRIMARY KEY (ts, pid, started)) WITHOUT ROWID;
 CREATE TABLE IF NOT EXISTS system_raw (
     ts REAL PRIMARY KEY, interval_s REAL NOT NULL, logical_cores INTEGER NOT NULL,
@@ -81,7 +81,7 @@ class RawFile:
         self._pending: dict[ProcessKey, float] = {}
         self._waited: dict[ProcessKey, float] = {}
         self._memory: dict[ProcessKey, int] = {}
-        self._threads: dict[ProcessKey, int] = {}
+        self._threads: dict[ProcessKey, int | None] = {}
 
     def write(
         self,
@@ -170,7 +170,13 @@ class RawFile:
         )
 
     def _row(
-        self, ts: float, key: ProcessKey, cpu_s: float, memory: int, threads: int, full: bool
+        self,
+        ts: float,
+        key: ProcessKey,
+        cpu_s: float,
+        memory: int,
+        threads: int | None,
+        full: bool,
     ) -> None:
         self._db.execute(
             "INSERT OR REPLACE INTO process_raw VALUES (?, ?, ?, ?, ?, ?, ?)",

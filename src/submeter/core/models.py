@@ -81,7 +81,7 @@ class ProcessCounters(Record):
     io_read_bytes: int | None = None
     io_write_bytes: int | None = None
     memory_bytes: int
-    threads: int = 0
+    threads: int | None = None
     restricted: bool = False
 
 
@@ -115,7 +115,7 @@ class ProcessSample(Record):
     io_read_bytes: int | None
     io_write_bytes: int | None
     memory_bytes: int
-    threads: int
+    threads: int | None
     first_seen: bool
     restricted: bool
 

@@ -66,9 +66,10 @@ class PsutilProvider:
                     cpu_s = times.user + times.system
                     # On Windows psutil's vms is PagefileUsage, which equals private bytes.
                     memory_bytes = int(memory.vms if sys.platform == "win32" else memory.rss)
-                    threads = process.num_threads()
+                    # psutil's Windows thread count queries the whole system for each process.
+                    threads: int | None = None if sys.platform == "win32" else process.num_threads()
                 except (psutil.AccessDenied, OSError, RuntimeError, ValueError):
-                    cpu_s, memory_bytes, threads, restricted = 0.0, 0, 0, True
+                    cpu_s, memory_bytes, threads, restricted = 0.0, 0, None, True
                 cmdline: tuple[str, ...] | None = None
                 try:
                     cmdline = tuple(process.cmdline())
