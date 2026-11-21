@@ -16,6 +16,7 @@ minimums of hourly buckets for the slow one.
 from __future__ import annotations
 
 from collections.abc import Sequence
+from datetime import UTC, date, datetime, time
 from statistics import median
 
 from submeter.core.models import Record
@@ -99,12 +100,10 @@ def usual_range(
     return middle - sensitivity * spread, middle, middle + sensitivity * spread
 
 
-def daily_minimums(
-    times: Sequence[float], values: Sequence[float], *, utc_offset_s: float = 0.0
-) -> list[tuple[float, float]]:
+def daily_minimums(times: Sequence[float], values: Sequence[float]) -> list[tuple[float, float]]:
     """The lowest value of each local day, as (start of day, minimum), in time order."""
-    lows: dict[float, float] = {}
+    lows: dict[date, float] = {}
     for moment, value in zip(times, values, strict=True):
-        day = ((moment + utc_offset_s) // 86400) * 86400 - utc_offset_s
+        day = datetime.fromtimestamp(moment, UTC).astimezone().date()
         lows[day] = min(value, lows.get(day, value))
-    return sorted(lows.items())
+    return [(datetime.combine(day, time()).timestamp(), low) for day, low in sorted(lows.items())]

@@ -7,7 +7,7 @@ import os
 import random
 import sys
 import types
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 import pytest
@@ -494,9 +494,10 @@ def test_usual_range_and_daily_minimums() -> None:
     low, middle, high = usual_range([3.4, 3.35, 3.45, 3.4, 3.38, 3.42, 3.41]) or (0, 0, 0)
     assert low < 3.35 and high > 3.45 and middle == 3.4 and not low < 4.25 < high
     assert usual_range([1.0, 2.0]) is None
-    assert daily_minimums([DAY0 + 10, DAY0 + 20, DAY0 + 86400 + 5], [5.0, 3.0, 7.0]) == [
-        (DAY0, 3.0),
-        (DAY0 + 86400, 7.0),
+    day0, day1 = (datetime(2026, 11, day).timestamp() for day in (20, 21))  # local midnights
+    assert daily_minimums([day0 + 10, day0 + 20, day1 + 5], [5.0, 3.0, 7.0]) == [
+        (day0, 3.0),
+        (day1, 7.0),
     ]
 
 
