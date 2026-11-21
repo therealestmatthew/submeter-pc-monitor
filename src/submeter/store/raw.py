@@ -30,6 +30,7 @@ from submeter.privacy.redact import Mode, redact_cmdline
 from submeter.store.files import FileMap, utc_day
 
 SCHEMA_VERSION: Final = 1
+HELD_CPU_LIMIT_S: Final = 60.0  # a quiet process's CPU is written at least this often
 
 _SCHEMA: Final = """
 CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT NOT NULL) WITHOUT ROWID;
@@ -92,6 +93,7 @@ class RawFile:
         self._cpu_share = cpu_points / 100.0
         self._memory_step = memory_step
         self._redaction: Mode = redaction
+        self._last_at: float | None = None
         self._pending: dict[ProcessKey, float] = {}
         self._waited: dict[ProcessKey, float] = {}
         self._memory: dict[ProcessKey, int] = {}
@@ -109,6 +111,8 @@ class RawFile:
         written = 0
         full = keyframe or batch.gap
         with self._undone_on_error(), self._db:
+            if self._last_at is not None and batch.taken_at // 3600 != self._last_at // 3600:
+                written += self._flush(self._last_at)  # no carried CPU crosses an hour
             if batch.gap:
                 start = batch.taken_at - batch.interval_s
                 self._db.execute(
@@ -152,7 +156,8 @@ class RawFile:
                 waited = self._waited.get(key, 0.0) + batch.interval_s
                 last = self._memory.get(key)
                 moved = last is None or abs(sample.memory_bytes - last) >= self._memory_step
-                if full or moved or pending >= self._cpu_share * waited:
+                held = pending > 0 and waited >= HELD_CPU_LIMIT_S
+                if full or moved or held or pending >= self._cpu_share * waited:
                     self._row(
                         batch.taken_at, key, pending, sample.memory_bytes, sample.threads, full
                     )
@@ -163,7 +168,17 @@ class RawFile:
                 self._threads[key] = sample.threads
             for key in batch.exited:
                 written += self._finish(batch.taken_at, key)
+        self._last_at = batch.taken_at
         return written
+
+    def _flush(self, ts: float) -> int:
+        """Write every process's pending CPU at ts, the last tick before a new hour."""
+        held = [key for key, pending in self._pending.items() if pending > 0]
+        for key in held:
+            memory, threads = self._memory[key], self._threads[key]
+            self._row(ts, key, self._pending[key], memory, threads, False)
+            self._pending[key] = self._waited[key] = 0.0
+        return len(held)
 
     @contextmanager
     def _undone_on_error(self) -> Iterator[None]:

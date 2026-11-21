@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from contextlib import closing
 from pathlib import Path
 
 import pytest
@@ -17,7 +18,7 @@ from submeter.core.models import (
     SystemCounters,
     WorkloadSample,
 )
-from submeter.store.raw import RawFile
+from submeter.store.raw import RawFile, open_read_only
 from submeter.store.rollup import merge, roll_up, well_covered
 
 DAY0 = 1_795_132_800.0  # 2026-11-20 00:00:00 UTC
@@ -124,3 +125,15 @@ def test_undecodable_text_and_a_failed_write_do_not_stop_later_writes(tmp_path: 
     assert (raw.count("workload_raw"), raw.count("process"), raw.process_cpu_total()) == (3, 2, 0.5)
     raw.close()
     assert b"tool caf\\udce9" in raw.path.read_bytes() and b"t\\udcffl" in raw.path.read_bytes()
+
+
+def test_a_quiet_process_gets_a_row_each_minute_and_none_crosses_an_hour(tmp_path: Path) -> None:
+    """R90: CPU held for a quiet process is written within 60 s and at the last tick of an hour."""
+    raw, hour = RawFile(tmp_path / "day.db"), DAY0 + HOUR
+    for at in range(int(hour) - 99, int(hour) + 101):  # 0.1% of a core at 1 s ticks
+        raw.write(batch(float(at), 1.0, processes=(process(1, 0.001),)), [], {})
+    with closing(open_read_only(raw.path)) as db:
+        rows = db.execute("SELECT ts - ?, cpu_s FROM process_raw ORDER BY ts", (hour,)).fetchall()
+    raw.close()
+    held = [(-99, 0.001), (-39, 0.06), (-1, 0.038), (59, 0.06)]  # first seen, 60 s, hour, 60 s
+    assert [(ts, round(cpu, 9)) for ts, cpu in rows] == held
