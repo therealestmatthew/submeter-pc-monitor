@@ -97,4 +97,4 @@ These come from `docs/09-telemetry.md` and `docs/10-known-limits.md`. No baselin
 
 ## What this file does not cover
 
-Linux needs its own pass later, for the parts that exist only there: the /proc reader, cgroup accounting and pressure information. None of that code exists yet.
+Linux needs its own pass after version 1, for the parts that exist only there: the /proc reader, cgroup accounting and pressure information. None of that code exists yet. Version 1 runs Linux polled through psutil, tested in CI.

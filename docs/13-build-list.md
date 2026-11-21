@@ -12,16 +12,16 @@ Three programs that share only files on disk: a collector, a server and the laun
 | 02 `core.config` | Loads, validates and hot-reloads submeter.toml. Tracks where each value came from [baseline](../src/submeter/core/config.py) | P0 |
 | 03 `providers.base` | Provider protocol and capability report [baseline](../src/submeter/providers/base.py) | P0 |
 | 04 `providers.windows.bulk` | One system-wide process snapshot per tick, with a psutil fallback | P1 |
-| 05 `providers.linux.procfs` | Direct /proc reader, plus PSI | P1 |
-| 06 `providers.system` | Per-core load, frequency, commit, paging, disk latency, run queue | P1 |
+| 05 `providers.linux.procfs` | Direct /proc reader, plus PSI. Not in version 1: Linux runs polled through the psutil provider | After v1 |
+| 06 `providers.system` | Per-core load, frequency, commit, paging, disk latency, run queue, on Windows. On Linux, version 1 has only psutil's per-core load and available memory; the Linux counters come after version 1 | P1 |
 | 07 `collector.sampler` | Hot and cold sets, adaptive cadence, deltas, gap detection, overhead guard [baseline](../src/submeter/collector/sampler.py) | P1 |
 | 08 `store.files` | The file map, one-instance locks, schema versions, integrity checks, backups, the disk budget [baseline](../src/submeter/store/files.py) | P1 |
 | 09 `store.raw` | Daily raw files: batched writes, change-only rows with keyframes, command lines stored once [baseline](../src/submeter/store/raw.py) | P1 |
 | 10 `store.rollup` | Minute and hourly buckets with sums, coverage and histograms. Summaries per executable, session and run [baseline](../src/submeter/store/rollup.py) | P1 on |
 | 11 `store.query` | Picks the tier for a window, merges histograms, states the resolution used [baseline](../src/submeter/store/query.py) | P1 |
 | 12 `cli` | All commands, each with JSON output [baseline](../src/submeter/cli.py) | P1 on |
-| 13 `launcher` | `submeter run`: starts a tree inside a Job Object or cgroup, returns the command's exit code, and writes one run file with the final totals | P2 |
-| 14 `providers.group` | Reads kernel totals for each live group and re-attaches after a restart | P2 |
+| 13 `launcher` | `submeter run`: starts a tree inside a Job Object, returns the command's exit code, and writes one run file with the final totals. On Linux it reports that tagged runs are unavailable and runs the command polled; the cgroup path comes after version 1 | P2 |
+| 14 `providers.group` | Reads Job Object totals for each live group and re-attaches after a restart. cgroup totals come after version 1 | P2 |
 | 15 `attribution` | Rule engine, inheritance, the four fixed buckets, reconciliation check [baseline](../src/submeter/attribution/rules.py) | P2 |
 | 16 `privacy.redact` | Scrubs command lines before anything is written, logs included [baseline](../src/submeter/privacy/redact.py) | P2 |
 | 17 `analysis.detectors` | Leak, slow growth, baseline anomaly, spike, swap storm, process count [baseline](../src/submeter/analysis/growth.py) | P3 |
@@ -42,11 +42,11 @@ Three programs that share only files on disk: a collector, a server and the laun
 
 ## Alongside the code
 
-- CI on Windows and Linux runners with a 30-minute soak
+- CI on Windows and Linux runners with a 30-minute soak. The Linux runner runs the portable tests
 - Recorded fixtures for every provider and detector
 - A load generator: short-lived children, a controlled leak, a CPU burn
 - Default `submeter.toml` and `rules.toml`
-- Windows scheduled task and systemd user unit
+- Windows scheduled task
 - The brief under `docs/`, `AGENTS.md` with `CLAUDE.md`, and `docs/STATUS.md`
 - Capability matrix written in phase 0
 
@@ -90,3 +90,4 @@ Three programs that share only files on disk: a collector, a server and the laun
 - Deep tracing through ETW and eBPF, which per-file tracking would need
 - One dashboard across several machines
 - Normalising CPU time by core type or frequency
+- The Linux platform layer: cgroup tagged runs, the direct /proc reader, PSI and the other Linux system counters, and the systemd user unit. Version 1 builds the platform layer for Windows only, where the builds run, because a second design doubles every platform phase and its gates could be checked only on a CI runner. Linux runs polled through psutil and is tested in CI

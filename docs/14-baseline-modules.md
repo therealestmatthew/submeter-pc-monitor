@@ -80,7 +80,7 @@ The table gives the same links module by module. "Nothing yet" means the caller 
 ## Not in the baseline, and why
 
 - The Windows bulk snapshot and the Job Object launcher. They call Windows APIs and must be written and tested on Windows.
-- The Linux /proc reader and cgroup accounting. They belong to phases 1 and 2, behind the same provider protocol.
+- The Linux /proc reader and cgroup accounting. They come after version 1, behind the same provider protocol. Version 1 runs Linux polled through the psutil provider.
 - The writers for the minute and history files, the detectors that call the growth arithmetic, the server, the dashboard and the MCP server. Each depends on decisions made in its own phase.
 
 ## Module by module

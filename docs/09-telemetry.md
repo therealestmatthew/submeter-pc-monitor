@@ -2,11 +2,11 @@
 
 > Submeter build brief · Part 2, the design · [Index](README.md)
 
-Where each metric comes from. Rows marked Docs were checked against vendor documentation on 20 November 2026. The rest are confirmed by the capability probe in phase 0. A metric the system cannot deliver is shown as unavailable, never as zero.
+Where each metric comes from. Rows marked Docs were checked against vendor documentation on 20 November 2026. The rest are confirmed by the capability probe in phase 0. A metric the system cannot deliver is shown as unavailable, never as zero. On Linux, version 1 polls through psutil, which reads the /proc files named below; a Linux source marked after version 1 is not read in version 1.
 
 | Metric | Windows | Linux | Without admin | Checked |
 | --- | --- | --- | --- | --- |
-| Tagged workload totals | Job Object accounting, which includes processes that have exited | cgroup v2: `cpu.stat` always, memory and io files where delegated | Full | Docs [1](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects) [2](https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-jobobject_basic_accounting_information) [3](https://docs.kernel.org/admin-guide/cgroup-v2.html) |
+| Tagged workload totals | Job Object accounting, which includes processes that have exited | After version 1: cgroup v2, `cpu.stat` always, memory and io files where delegated. In version 1 `submeter run` runs the command polled | Full | Docs [1](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects) [2](https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-jobobject_basic_accounting_information) [3](https://docs.kernel.org/admin-guide/cgroup-v2.html) |
 | CPU per process | One system-wide process snapshot. Microsoft marks the call as subject to change, so psutil is the fallback | `/proc/<pid>/stat` | Full | Docs [4](https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntquerysysteminformation) |
 | Memory per process | Private bytes, working set, USS | RSS, PSS and USS from `smaps_rollup` | Own user only | Phase 0 |
 | Disk I/O per process | Process I/O counters, which include non-file I/O | `/proc/<pid>/io` | Own user only | Phase 0 |
@@ -17,7 +17,7 @@ Where each metric comes from. Rows marked Docs were checked against vendor docum
 | Power | Battery only | Battery. RAPL needs root | Battery only | Phase 0 |
 | Network connections | Per process | Per process | Own user only | Phase 0 |
 | Network bytes per process | Needs administrator rights | Needs root for other users' sockets | Not in version 1 | Phase 0 |
-| Pressure signals | Run queue, commit, page writes, disk queue | PSI for CPU, memory and I/O | Full | Phase 0 |
+| Pressure signals | Run queue, commit, page writes, disk queue | After version 1: PSI for CPU, memory and I/O | Full | Phase 0 |
 
 ## What the documentation check changed
 

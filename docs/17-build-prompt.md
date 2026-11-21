@@ -18,7 +18,7 @@ I run many AI coding agents and heavy desktop apps at the same time, and I can't
 2. Live diagnosis: why is the machine slow right now?
 3. Trends: how does behaviour drift over days and weeks, and where are the leaks and regressions?
 
-Build it as a long-running local service with a web dashboard and a CLI. Windows 11 is the first target. Linux must work from the same codebase, so put everything OS-specific behind provider interfaces from the first commit.
+Build it as a long-running local service with a web dashboard and a CLI. Windows 11 is the target of version 1, and only Windows gets the platform layer: kernel accounting, the launcher and its holder, system counters and autostart. Linux must work from the same codebase, polled: there `submeter run` reports that tagged runs are unavailable and runs the command polled, and CI on a Linux runner runs the portable tests. Put everything OS-specific behind provider interfaces from the first commit, so the Linux platform layer can be added after version 1.
 
 Version 1 only observes. It must never change a process's priority or affinity, suspend it, or kill it. Placing a process tree that Submeter itself launches into a Job Object or cgroup for accounting is allowed. Setting any limit on that group is not. A control layer will come later, so shape analysis output as plain data objects a future policy engine could consume.
 
@@ -59,7 +59,7 @@ None of the three imports another, and every file has exactly one writer. The re
 
 Agents spawn thousands of processes that live for less than a second, and polling cannot see them. If children live 300 ms on average, a 1-second poll captures under a third of their CPU time. So use two paths, and label every workload with the one that measured it.
 
-Kernel accounting, for tagged workloads. `submeter run --as NAME [--label LABEL] -- COMMAND` launches the command inside a named Windows Job Object (nested jobs) or a Linux cgroup v2, and records the group in a run file. NAME is a stable workload name that is reused across runs, such as agent:refactor. LABEL identifies one run. Time series are kept per name and totals per run, so a new label never starts a new series. Warn in `doctor` when there are more than 200 distinct workload names. The kernel's totals for the group are authoritative: CPU time, memory, I/O and process counts, including processes that have already exited.
+Kernel accounting, for tagged workloads. `submeter run --as NAME [--label LABEL] -- COMMAND` launches the command inside a named Windows Job Object (nested jobs), and records the group in a run file. NAME is a stable workload name that is reused across runs, such as agent:refactor. LABEL identifies one run. Time series are kept per name and totals per run, so a new label never starts a new series. Warn in `doctor` when there are more than 200 distinct workload names. The kernel's totals for the group are authoritative: CPU time, memory, I/O and process counts, including processes that have already exited.
 
 A group's counters disappear when the group does, so:
 
@@ -68,7 +68,9 @@ A group's counters disappear when the group does, so:
 - The collector finds live groups from the run files and reads their totals each tick. After a restart it re-attaches to every live group.
 - Set no limits on the group. Do not allow breakaway and do not set kill-on-close.
 
-Bulk polling, for everything else. Do not walk processes one at a time on the hot path. On Windows, take one system-wide process snapshot per tick that returns CPU times, memory counters, I/O counters, thread and handle counts for every process. Microsoft documents that call as subject to change, so fall back to psutil if it fails, report the provider as partial while the fallback is in use, and keep a CI test that fails loudly if the snapshot stops parsing. On Linux, read /proc directly. Keep a hot set of recently active processes at the active interval and a cold set at the cold interval. Polled workloads are labelled as polled, with a note that short-lived children may be undercounted. On Linux, recover reaped children's CPU time from the parent's child-time counters.
+Linux tagged runs (after version 1). Version 1 builds kernel accounting on Windows only. On Linux, `submeter run` reports that tagged runs are unavailable and runs the command polled, so its workload is labelled polled. The design kept for later: the launcher starts the command inside a cgroup v2 and records the group in the run file. `cpu.stat` is always readable, and the memory and io files only where those controllers are delegated. The holder, final-totals and re-attach rules above apply to the cgroup in the same way.
+
+Bulk polling, for everything else. Do not walk processes one at a time on the hot path. On Windows, take one system-wide process snapshot per tick that returns CPU times, memory counters, I/O counters, thread and handle counts for every process. Microsoft documents that call as subject to change, so fall back to psutil if it fails, report the provider as partial while the fallback is in use, and keep a CI test that fails loudly if the snapshot stops parsing. On Linux, version 1 polls through the psutil provider, and the direct /proc reader comes after version 1. psutil measured about 95 ms per tick, store writes included, at 300 processes on Linux, so there the overhead guard holds the active interval at about 3.2 s or longer and the idle interval at about 9.5 s or longer. Keep a hot set of recently active processes at the active interval and a cold set at the cold interval. Polled workloads are labelled as polled, with a note that short-lived children may be undercounted. On Linux, recover reaped children's CPU time from the parent's child-time counters.
 
 Rules for both paths:
 
@@ -80,7 +82,7 @@ Rules for both paths:
 
 Memory: collect units that can be added across processes. Workload totals use USS (or PSS on Linux) so shared pages are not counted twice. USS is expensive, so read it on a slow cadence and only for the largest processes, and show the age of the reading. For growth and leak detection use private bytes on Windows and RSS plus swap on Linux, because Windows trims working sets under pressure and USS then falls for a process that is still leaking.
 
-System-wide: per-core load and frequency, commit and available memory, paging split into reads and writes, disk latency, run queue, and PSI on Linux. A CPU-second is not a fixed amount of work, because efficiency cores and reduced frequency do less with it. Report CPU time as measured and show processor frequency beside it. Do not normalise workload figures in version 1.
+System-wide, on Windows: per-core load and frequency, commit and available memory, paging split into reads and writes, disk latency and run queue. On Linux, version 1 reads only per-core load and available memory, through psutil. PSI and the other Linux system counters come after version 1. A CPU-second is not a fixed amount of work, because efficiency cores and reduced frequency do less with it. Report CPU time as measured and show processor frequency beside it. Do not normalise workload figures in version 1.
 
 Extended providers, each declaring its capability at the current privilege level (full, partial with what is missing, or unavailable with why):
 
@@ -196,7 +198,7 @@ Not configurable: observe-only behaviour, running without administrator rights, 
 
 CLI, where every command accepts --json with a stable schema:
 
-- `submeter daemon start|stop|status|install|uninstall`, installing a Windows scheduled task at logon or a systemd user unit
+- `submeter daemon start|stop|status|install|uninstall`, installing a Windows scheduled task at logon (a systemd user unit for Linux comes after version 1)
 - `submeter run --as NAME [--label LABEL] -- COMMAND`
 - `submeter top`, `submeter why`, `submeter cost`, `submeter diff A B`
 - `submeter session start|stop|list`
@@ -219,6 +221,7 @@ Version 1 cannot measure some things. Say so in the dashboard and in `doctor`, b
 
 - Work done for a workload by another process, such as the Docker daemon, a shared language server or a browser that was already open, is charged to that other process.
 - Polled workloads on Windows undercount short-lived children.
+- On Linux, tagged runs are unavailable in version 1: `submeter run` runs the command polled. PSI and the other Linux system counters are not read either, so `why` on Linux reads Inconclusive or unavailable.
 - The WSL2 and Docker Desktop VM is opaque until the guest collector exists.
 - Workload memory totals can lag by up to the USS interval.
 - CPU time is not normalised for core type or frequency.
@@ -234,10 +237,10 @@ The monitor must not become the problem. With 300 processes running: under 1% of
 Build these components, and tell me before adding any that are not listed:
 
 1. core.models and core.config
-2. providers.base, providers.windows.bulk, providers.linux.procfs, providers.system
+2. providers.base, providers.windows.bulk and providers.system (Windows counters; providers.linux.procfs and the Linux system counters come after version 1)
 3. collector.sampler (hot and cold sets, adaptive cadence, deltas, gap detection, overhead guard)
 4. store.files, store.raw, store.rollup, store.query
-5. launcher (`submeter run`) and providers.group (Job Object and cgroup totals)
+5. launcher (`submeter run`) and providers.group (Job Object totals; cgroup totals come after version 1)
 6. attribution and privacy.redact
 7. analysis.detectors, analysis.verdict, analysis.diff
 8. server.api, web, alerts
@@ -253,7 +256,7 @@ Tables, by file:
 
 API, all under /api/v1 and read-only except session markers: health, capabilities, config, epochs, workloads, workloads/{id}/processes, series, verdict, findings, diff, sessions (GET and POST), and a WebSocket at /live. Every series response names the tier and resolution it came from.
 
-Also deliver: CI on Windows and Linux; recorded fixtures for every provider and detector; a load generator that can spawn short-lived children, leak memory at a set rate and burn CPU, because the gates below depend on it; default submeter.toml and rules.toml; a Windows scheduled task and a systemd user unit; and docs/STATUS.md.
+Also deliver: CI on Windows and Linux, where the Linux runner runs the portable tests; recorded fixtures for every provider and detector; a load generator that can spawn short-lived children, leak memory at a set rate and burn CPU, because the gates below depend on it; default submeter.toml and rules.toml; a Windows scheduled task (the systemd user unit comes after version 1); and docs/STATUS.md.
 
 ## How to work
 
@@ -266,8 +269,8 @@ These are decided, so do not ask about them again: both programs run as the sign
 Work in phases. Set up CI on Windows and Linux runners in phase 0, because you can only run one OS yourself. At the end of each phase run ruff, mypy strict and pytest, confirm the gate, and write a short status to docs/STATUS.md: what works, what was verified and how, and what you could not verify. Then stop and wait for me.
 
 - Phase 0, baseline check, capability probe and CI: get the baseline passing ruff, mypy strict and pytest on both runners (it has only been run on Linux, so tell me what needed fixing on Windows), then build `submeter doctor` out into the full capability matrix, and report the measured cost of one full sample, the per-process VRAM check, the WSL2 or Docker VM measurement, and a written matrix of what each OS delivers with and without elevation.
-- Phase 1, collector, store and CLI: the bulk snapshot providers behind the existing protocol, the collector loop with adaptive cadence and the overhead guard around the existing sampler, the minute and history files built on the existing rollup functions, retention and backups, and the full `top` and `store status`. Gate: a 30-minute CI soak stays inside the budget, per-process figures agree with kernel counters (performance counters on Windows, /proc on Linux) within 5%, and totals reconcile within 2%. Killing the collector mid-write loses at most 5 seconds and corrupts nothing. CPU-hours from the hourly tier match the raw sum within 0.1%. Deleting a day of raw data frees its space at once. Do not use Task Manager as a reference; its CPU figure has changed basis between Windows builds. I will run a 24-hour soak myself.
-- Phase 2, kernel accounting, attribution and sessions. Gate: a tagged tree that spawns 500 sub-second children is charged within 2% of the kernel's total, its final totals survive its exit, a restarted collector re-attaches to live groups, and `submeter run` returns with the command's exit code while background processes it left behind are still accounted for. A session's cost must read the same before and after its raw data is deleted.
+- Phase 1, collector, store and CLI: the Windows bulk snapshot provider behind the existing protocol, the collector loop with adaptive cadence and the overhead guard around the existing sampler, the minute and history files built on the existing rollup functions, retention and backups, and the full `top` and `store status`. Gate: a 30-minute CI soak stays inside the budget, per-process figures agree with Windows performance counters within 5%, and totals reconcile within 2%. Killing the collector mid-write loses at most 5 seconds and corrupts nothing. CPU-hours from the hourly tier match the raw sum within 0.1%. Deleting a day of raw data frees its space at once. Do not use Task Manager as a reference; its CPU figure has changed basis between Windows builds. I will run a 24-hour soak myself.
+- Phase 2, kernel accounting on Windows, attribution and sessions. Gate: on Windows, a tagged tree that spawns 500 sub-second children is charged within 2% of the kernel's total, its final totals survive its exit, a restarted collector re-attaches to live groups, and `submeter run` returns with the command's exit code while background processes it left behind are still accounted for. On Linux, `submeter run` reports that tagged runs are unavailable and runs the command polled. A session's cost must read the same before and after its raw data is deleted.
 - Phase 3, analysis. Gate: every detector passes its trigger and quiet fixtures, including a leak too slow for the hourly check, and `why` answers in under two seconds.
 - Phase 4, API and dashboard. Gate: requests without a token or with a foreign Origin are refused, and a 30-day range loads in under one second and names the tier it came from.
 - Phase 5, extended providers. Hardware you do not have is tested from recorded fixtures. Say plainly which providers were never run on real hardware.

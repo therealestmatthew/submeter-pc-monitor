@@ -92,7 +92,7 @@ The chart is a bar for each workload, to either side of zero.
 
 ## How a bottleneck verdict is reached
 
-| Verdict | Windows signals | Linux signals | Ruled out when |
+| Verdict | Windows signals | Linux signals (after version 1) | Ruled out when |
 | --- | --- | --- | --- |
 | CPU-bound | Run queue above 1 per core, CPU time above 85% | CPU pressure (PSI) some above 20% | Frequency is being held down |
 | Memory-bound | Commit above 85% of limit, page writes rising | Memory pressure full above 5%, swap-out rising | Page reads only, with no writes |
@@ -100,5 +100,7 @@ The chart is a bar for each workload, to either side of zero.
 | GPU-bound | One engine type above 90% | NVML utilisation above 90% | VRAM is full, which is reported separately |
 | Thermally throttled | Frequency below 80% of maximum under load | Throttle counters rising, frequency capped | A power-saving plan is active |
 | Inconclusive | Signals disagree, or fewer than 60 seconds of data | Signals disagree, or fewer than 60 seconds of data | Never forced into another class |
+
+Version 1 does not read the Linux signals: PSI and the other Linux system counters come after version 1. On Linux `why` reads Inconclusive or unavailable in version 1.
 
 Thresholds are starting points for the builder to tune against fixtures. All of them are configurable.

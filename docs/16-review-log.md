@@ -56,6 +56,8 @@ Agents spawn thousands of sub-second processes: git, ripgrep, test runners. A 1-
 
 **Fix:** Tagged workloads run inside a Windows Job Object or a Linux cgroup. The kernel keeps exact totals for every process that ever lived in the group. Polling remains for rule-matched workloads and is labelled as such.
 
+Amended by R151 (21 November 2026): version 1 builds the Windows Job Object path only. On Linux tagged runs are unavailable, `submeter run` runs the command polled, and the cgroup path comes after version 1.
+
 ### R02: The overhead budget and the sampling rate conflict
 
 Reading 300 processes one at a time every second in Python likely costs 3 to 6% of a core on Windows (estimate), against a 1% budget. USS is worse, since its cost grows with each process's memory.

@@ -4,14 +4,14 @@
 
 ## Measure
 
-- Exact totals for tagged workloads, kept by the kernel, including processes that exit between samples.
+- Exact totals for tagged workloads on Windows, kept by the kernel, including processes that exit between samples. On Linux tagged runs come after version 1.
 - Everything else from one bulk snapshot per tick: busy processes every second, idle ones every ten.
 - Memory in units that sum across processes, with separate units for spotting growth.
 - GPU load, VRAM, frequency, throttling, battery and connections, each marked full, partial or unavailable.
 
 ## Attribute
 
-- `submeter run --as NAME -- COMMAND` tags a whole process tree at launch.
+- `submeter run --as NAME -- COMMAND` tags a whole process tree at launch, on Windows. On Linux in version 1 it runs the command polled.
 - Rules claim everything else by executable, command line, parent or folder.
 - Every workload shows whether the kernel or polling measured it.
 - Unattributed, System, Restricted and Submeter itself are always shown, and the parts must sum to the whole.

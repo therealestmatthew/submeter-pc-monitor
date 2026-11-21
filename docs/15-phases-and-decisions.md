@@ -10,11 +10,11 @@ Gate: the baseline modules pass their checks on Windows and Linux runners, and `
 
 ## P1: Collector, store, CLI
 
-Gate: a 30-minute CI soak stays inside the budget, figures are within 5% of kernel counters, and totals reconcile within 2%. Killing the collector mid-write loses at most 5 seconds and corrupts nothing. CPU-hours from the hourly tier match the raw sum within 0.1%. Deleting a day of raw data frees its space at once.
+Gate: a 30-minute CI soak stays inside the budget, per-process figures are within 5% of Windows performance counters, and totals reconcile within 2%. Killing the collector mid-write loses at most 5 seconds and corrupts nothing. CPU-hours from the hourly tier match the raw sum within 0.1%. Deleting a day of raw data frees its space at once.
 
-## P2: Kernel accounting, attribution, sessions
+## P2: Kernel accounting on Windows, attribution, sessions
 
-Gate: a tagged tree spawning 500 sub-second children is charged within 2% of the kernel total, its final totals survive its exit, a restarted collector re-attaches to live groups, and `submeter run` returns when the command does. A session's cost reads the same before and after its raw data is deleted.
+Gate: on Windows, a tagged tree spawning 500 sub-second children is charged within 2% of the kernel total, its final totals survive its exit, a restarted collector re-attaches to live groups, and `submeter run` returns when the command does. On Linux, `submeter run` reports that tagged runs are unavailable and runs the command polled. A session's cost reads the same before and after its raw data is deleted.
 
 ## P3: Analysis
 

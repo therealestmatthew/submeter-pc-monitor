@@ -5,7 +5,7 @@
 ## Job 1 · Attribution: What does each workload cost?
 
 - **Where you see it:** Workload table, `submeter cost`
-- **It works when:** The parts sum to the whole within 2%, and tagged workloads match the kernel's own totals within 2%.
+- **It works when:** The parts sum to the whole within 2%, and on Windows tagged workloads match the kernel's own totals within 2%. On Linux tagged runs are unavailable in version 1.
 
 ## Job 2 · Live diagnosis: Why is the machine slow right now?
 
@@ -22,7 +22,7 @@
 - **Interface:** Background service, web dashboard and CLI on one data store
 - **Extra telemetry:** GPU and VRAM, thermals and power, network per process
 - **Control:** Observe only. No process is ever changed in version 1
-- **Platforms:** Windows 11 first, Linux from the same codebase
+- **Platforms:** Windows 11 gets everything. Linux runs polled from the same codebase and is tested in CI. Its tagged runs, system counters and autostart come after version 1
 - **Language:** Python 3.12 throughout, with the collector as its own process
 - **Privileges:** Runs as the signed-in user. No administrator rights
 - **Data:** Kept in local files. Nothing leaves the machine
