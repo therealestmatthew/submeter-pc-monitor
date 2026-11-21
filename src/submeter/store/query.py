@@ -1,7 +1,7 @@
 """Choose which tier answers a question, and say so.
 
 A window is answered from the finest tier that still holds its whole span:
-raw samples if the window starts within raw retention, minute buckets if it
+raw samples if the raw files on disk still cover its start, minute buckets if it
 starts within minute retention, hourly buckets otherwise. If that would return
 more points than a chart can use, the choice moves to a coarser tier, and then
 to wider steps. Every answer carries the tier and resolution it came from, so
@@ -28,19 +28,20 @@ def choose_tier(
     start: float,
     end: float,
     now: float,
-    raw_retention_s: float,
+    raw_covered_from: float,
     minute_retention_s: float,
     raw_interval_s: float = 1.0,
     max_points: int = 2000,
 ) -> TierChoice:
+    """raw_covered_from is the first tick of the oldest raw file left on disk (inf if none)."""
     if end <= start:
         raise ValueError("the window must end after it starts")
     span, age = end - start, now - start
     widths = {Tier.RAW: raw_interval_s, **_WIDTH_S}
-    if age <= raw_retention_s:
-        tiers, reason = [Tier.RAW, Tier.MINUTE, Tier.HOUR], "window is inside raw retention"
+    if start >= raw_covered_from:
+        tiers, reason = [Tier.RAW, Tier.MINUTE, Tier.HOUR], "raw data on disk covers the window"
     elif age <= minute_retention_s:
-        tiers, reason = [Tier.MINUTE, Tier.HOUR], "window starts before raw retention"
+        tiers, reason = [Tier.MINUTE, Tier.HOUR], "window starts before the raw data on disk"
     else:
         tiers, reason = [Tier.HOUR], "window starts before minute retention"
     for tier in tiers:

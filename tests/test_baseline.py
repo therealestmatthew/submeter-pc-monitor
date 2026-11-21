@@ -450,7 +450,7 @@ def tier(start: float) -> TierChoice:
         start=start,
         end=DAY0,
         now=DAY0,
-        raw_retention_s=48 * 3600.0,
+        raw_covered_from=DAY0 - 48 * 3600.0,
         minute_retention_s=30 * 86400.0,
     )
 
