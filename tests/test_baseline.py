@@ -397,7 +397,7 @@ def test_raw_file_keeps_sums_exact_and_secrets_out(tmp_path: Path) -> None:
     assert reopened.process_cpu_total() == pytest.approx(total)  # suppressed rows lost nothing
     assert 120 < rows < 3 * 120  # the busy process is written every tick, the idle two are not
     assert reopened.count("command") == 1 and reopened.count("process") == 3
-    assert len(reopened.workload_samples(1000, 1120)) == 120
+    assert len(reopened.workload_samples(1000, 1121)) == 120
     reopened.close()
     assert secret.encode() not in (tmp_path / "day.db").read_bytes()
 
@@ -424,7 +424,7 @@ def test_raw_store_rolls_over_at_utc_midnight_and_marks_gaps(tmp_path: Path) -> 
 def test_rollups_reproduce_totals_and_percentiles() -> None:
     rng = random.Random(5)
     samples = [
-        workload(DAY0 + second + 1, rng.random() * 4, memory=int((200 + rng.random() * 50) * MB))
+        workload(DAY0 + second, rng.random() * 4, memory=int((200 + rng.random() * 50) * MB))
         for second in range(3600)
     ]
     minutes = roll_up(samples, width_s=60, logical_cores=16)

@@ -203,7 +203,7 @@ class RawFile:
         rows = self._db.execute(
             "SELECT ts, interval_s, workload, source, cpu_s, memory_bytes, io_read_bytes,"
             " io_write_bytes, processes, started FROM workload_raw"
-            " WHERE ts > ? AND ts <= ? ORDER BY ts, workload",
+            " WHERE ts >= ? AND ts < ? ORDER BY ts, workload",
             (start, end),
         ).fetchall()
         return [

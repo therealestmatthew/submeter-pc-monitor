@@ -107,7 +107,7 @@ def roll_up(
     """Group samples by workload and bucket, and return the finished buckets in time order."""
     open_buckets: dict[tuple[float, str], SeriesAccumulator] = {}
     for sample in samples:
-        start = bucket_start(sample.taken_at - sample.interval_s / 2, width_s)
+        start = bucket_start(sample.taken_at, width_s)
         accumulator = open_buckets.get((start, sample.workload))
         if accumulator is None:
             accumulator = SeriesAccumulator(
