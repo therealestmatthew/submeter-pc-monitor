@@ -4,7 +4,7 @@ Not the report. These notes exist so that the session can find its place after a
 
 ## Where the session stands
 
-- Stage: stage 1 report written to `01-adversarial-review.md` (R38 to R153). **Stopped for the owner's rulings.** Next: record them in `02-rulings.md`, then follow "After my rulings" in the execution prompt. Nothing outside `docs/review/` has been changed.
+- Stage: the owner ruled "Accept all." on 21 November 2026; recorded in `02-rulings.md` with 94 interactions between the accepted recommendations (32 of them assumptions to confirm). Now in "After my rulings": scope findings R140 to R153 are written into the brief on `main`, one commit each; then the other findings' document changes, in eight groups on worktree branches cherry-picked onto `main`; the 46 `fix now` code changes are built in five groups on worktree branches (`fix-g1` to `fix-g5`), test first, with evidence in `docs/review/fixes/`. Then the full checks, then stage 2.
 - Machine: Linux (Ubuntu 24.04, kernel 7.0, 8 logical cores), **not** the Windows 11 computer the prompt assumes. Windows claims are checked against vendor documentation or marked suspected.
 - Git: `4823b09 Package as delivered`, `bfcb188 Lock dependencies`. `origin` is set and `git ls-remote origin` answers (empty, public repository). The push of `main` was refused by the session's permission system and is still owed.
 - Ground output is kept in `docs/review/ground/`. Timing probes run on a quiet machine are in `docs/review/probes/measure/`.
