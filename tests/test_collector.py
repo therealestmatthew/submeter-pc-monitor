@@ -127,3 +127,12 @@ def test_exe_is_the_executable_file_and_name_is_kept_apart(monkeypatch: pytest.M
     assert batch.processes[0].name == "pytest"
     assert Rule(workload="x", exe=("python3*",)).matches(batch.processes[0])
     assert Rule(workload="y", name=("pytest",)).matches(batch.processes[0])
+
+
+def test_windows_idle_process_is_not_read(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(sys, "platform", "win32")
+    idle = fake_process(
+        0, name="System Idle Process", cpu_times=SimpleNamespace(user=0, system=9e4)
+    )
+    monkeypatch.setattr(psutil, "process_iter", lambda: iter([idle, fake_process(10)]))
+    assert [p.key.pid for p in PsutilProvider().snapshot().processes] == [10]

@@ -46,7 +46,9 @@ class PsutilProvider:
 
     def snapshot(self) -> Snapshot:
         taken_at, monotonic = time.time(), time.monotonic()
-        processes = [c for c in map(self._read, psutil.process_iter()) if c is not None]
+        # On Windows pid 0 is the Idle process: its CPU time is the machine's idle time.
+        listed = (p for p in psutil.process_iter() if not (sys.platform == "win32" and p.pid == 0))
+        processes = [c for c in map(self._read, listed) if c is not None]
         self._seen = len(processes)
         self._restricted = sum(1 for c in processes if c.restricted)
         return Snapshot(

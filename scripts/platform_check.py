@@ -21,6 +21,7 @@ from pathlib import Path
 
 import psutil
 
+from submeter.collector.sampler import Sampler
 from submeter.providers.psutil_provider import PsutilProvider
 from submeter.store.files import FileMap, InstanceLock
 from submeter.store.raw import RawFile
@@ -107,6 +108,21 @@ def check_provider() -> None:
     )
 
 
+def check_reconciliation() -> None:
+    provider, sampler = PsutilProvider(), Sampler()
+    sampler.ingest(provider.snapshot())
+    time.sleep(5.0)
+    batch = sampler.ingest(provider.snapshot())
+    assert batch is not None
+    used = sum(sample.cpu_s for sample in batch.processes)
+    record(
+        "process CPU within busy time",
+        "PASS" if used <= batch.cpu_busy_s * 1.05 else "FAIL",
+        f"over {batch.interval_s:.1f} s the processes used {used:.2f} CPU-s and the machine was "
+        f"busy {batch.cpu_busy_s:.2f} CPU-s; the processes may exceed busy time by 5% at most",
+    )
+
+
 def check_sqlite(folder: Path) -> None:
     path = folder / "2026-11-20.db"
     RawFile(path).close()
@@ -171,7 +187,7 @@ def main() -> int:
         folder = Path(name)
         for check in (check_lock, check_sqlite, check_places):
             _run(check.__name__, lambda check=check: check(folder))
-        for plain in (check_provider, check_clock):
+        for plain in (check_provider, check_reconciliation, check_clock):
             _run(plain.__name__, plain)
     failed = [name for name, verdict, _ in results if verdict == "FAIL"]
     print(
