@@ -77,7 +77,12 @@ def percentile(counts: Sequence[float], scale: Scale, q: float) -> float | None:
     total = sum(counts)
     if total <= 0:
         return None
-    target = total * min(max(q, 0.0), 100.0) / 100.0
+    # The top of the highest filled bin. Float weights can leave the running sum short of
+    # the total, so q=100 and a loop that never reaches the target both end here.
+    top = scale.edges(max(index for index, count in enumerate(counts) if count > 0))[1]
+    if q >= 100:
+        return top
+    target = total * max(q, 0.0) / 100.0
     running = 0.0
     for index, count in enumerate(counts):
         if count <= 0:
@@ -89,4 +94,4 @@ def percentile(counts: Sequence[float], scale: Scale, q: float) -> float | None:
                 return lower + (upper - lower) * inside
             return lower * math.pow(upper / lower, inside)
         running += count
-    return scale.high
+    return top
