@@ -5,7 +5,10 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from submeter.core.config import Settings
+import pytest
+from pydantic import ValidationError
+
+from submeter.core.config import Privacy, Settings
 from submeter.core.models import SampleBatch
 from submeter.privacy.redact import REDACTED, redact_cmdline
 from submeter.store.raw import RawFile
@@ -56,3 +59,11 @@ def test_scrub_keeps_harmless_words_paths_and_uuids() -> None:
     path, uuid = "/srv/0123456789abcdef0123456789abcdef/out", "123e4567-e89b-12d3-a456-426614174000"
     args = ("tool", "--compass", "--bypass-cache", path, "--resume", uuid, "--password", "hunter2")
     assert redact_cmdline(args) == (*args[:-1], REDACTED)
+
+
+def test_redact_patterns_are_checked_and_reach_the_store(tmp_path: Path) -> None:
+    """R133: a bad pattern is refused by name, and a good one hides text on the way to disk."""
+    with pytest.raises(ValidationError, match=r"'\['"):
+        Privacy(redact_patterns=("[",))
+    settings: dict[str, Any] = {"redaction": "scrub", "redact_patterns": ("corp-[0-9]{6}",)}
+    assert b"corp-123456" not in stored(tmp_path, ("tool", "corp-123456"), "tool", **settings)

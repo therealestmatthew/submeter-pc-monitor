@@ -11,6 +11,7 @@ is clamped, and unknown keys are errors, so a typo cannot silently do nothing.
 
 from __future__ import annotations
 
+import re
 import tomllib
 from collections.abc import Mapping
 from dataclasses import dataclass
@@ -23,6 +24,7 @@ from pydantic import (
     ConfigDict,
     Field,
     ValidationError,
+    field_validator,
     model_validator,
 )
 
@@ -185,6 +187,16 @@ class Attribution(Record):
 class Privacy(Record):
     redaction: Literal["scrub", "exe_only"] = "exe_only"
     redact_patterns: tuple[str, ...] = ()
+
+    @field_validator("redact_patterns")
+    @classmethod
+    def _compiles(cls, patterns: tuple[str, ...]) -> tuple[str, ...]:
+        for pattern in patterns:
+            try:
+                re.compile(pattern)
+            except re.error as error:
+                raise ValueError(f"redact pattern {pattern!r} is not valid: {error}") from error
+        return patterns
 
 
 class Providers(Record):

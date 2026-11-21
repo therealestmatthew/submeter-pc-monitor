@@ -12,6 +12,7 @@ Command lines are redacted here, on the way to disk, whatever the caller did.
 
 from __future__ import annotations
 
+import re
 import sqlite3
 from collections.abc import Iterator, Mapping, Sequence
 from contextlib import closing, contextmanager
@@ -77,6 +78,7 @@ class RawFile:
         cpu_points: float = 0.5,
         memory_step: int = 8 * 1024**2,
         redaction: Mode = "exe_only",
+        redact_patterns: Sequence[str | re.Pattern[str]] = (),
     ) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
         self.path = path
@@ -93,6 +95,7 @@ class RawFile:
         self._cpu_share = cpu_points / 100.0
         self._memory_step = memory_step
         self._redaction: Mode = redaction
+        self._patterns = tuple(re.compile(pattern) for pattern in redact_patterns)
         self._last_at: float | None = None
         self._pending: dict[ProcessKey, float] = {}
         self._waited: dict[ProcessKey, float] = {}
@@ -193,7 +196,9 @@ class RawFile:
     def _register(self, sample: ProcessSample, workload: str, seen_at: float) -> None:
         command_id: int | None = None
         if sample.cmdline:
-            cleaned = redact_cmdline(sample.cmdline, mode=self._redaction, exe=sample.exe)
+            cleaned = redact_cmdline(
+                sample.cmdline, mode=self._redaction, exe=sample.exe, extra_patterns=self._patterns
+            )
             text = _storable(" ".join(cleaned))
             self._db.execute("INSERT OR IGNORE INTO command (text) VALUES (?)", (text,))
             row = self._db.execute("SELECT id FROM command WHERE text = ?", (text,)).fetchone()
@@ -303,12 +308,14 @@ class RawStore:
         cpu_points: float = 0.5,
         memory_step: int = 8 * 1024**2,
         redaction: Mode = "exe_only",
+        redact_patterns: Sequence[str] = (),
     ) -> None:
         self._files = files
         self._keyframe_interval_s = keyframe_interval_s
         self._cpu_points = cpu_points
         self._memory_step = memory_step
         self._redaction: Mode = redaction
+        self._patterns = tuple(re.compile(pattern) for pattern in redact_patterns)
         self._file: RawFile | None = None
         self._day: date | None = None
         self._keyframe_at: float | None = None
@@ -328,6 +335,7 @@ class RawStore:
                 cpu_points=self._cpu_points,
                 memory_step=self._memory_step,
                 redaction=self._redaction,
+                redact_patterns=self._patterns,
             )
             self._day, self._keyframe_at = day, None
         due = (

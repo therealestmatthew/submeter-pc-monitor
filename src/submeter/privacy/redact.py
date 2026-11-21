@@ -64,7 +64,7 @@ def redact_cmdline(
     *,
     mode: Mode = "scrub",
     exe: str = "",
-    extra_patterns: Sequence[str] = (),
+    extra_patterns: Sequence[str | re.Pattern[str]] = (),
 ) -> tuple[str, ...]:
     """Return the command line with secrets hidden. In exe_only mode, only exe, never argv[0]."""
     if not args:
