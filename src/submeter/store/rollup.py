@@ -41,6 +41,8 @@ class SeriesAccumulator:
         self._covered_s = self._active_s = self._cpu_s = self._memory_weighted = 0.0
         self._samples = self._read = self._write = self._started = self._processes_max = 0
         self._memory_min: int | None = None
+        self._interval_min: float | None = None
+        self._interval_max: float | None = None
         self._memory_max = self._memory_last = 0
         self._cores = histogram.empty(histogram.CORES)
         self._memory = histogram.empty(histogram.MEMORY)
@@ -66,6 +68,8 @@ class SeriesAccumulator:
         cores = sample.cpu_s / interval
         self._covered_s += interval
         self._samples += 1
+        self._interval_min = min(interval, self._interval_min or interval)
+        self._interval_max = max(interval, self._interval_max or interval)
         self._memory_weighted += sample.memory_bytes * interval
         if cores >= self._active_share:
             self._active_s += interval
@@ -95,6 +99,9 @@ class SeriesAccumulator:
             cores_hist=tuple(self._cores),
             memory_hist=tuple(self._memory),
             logical_cores=self._logical_cores,
+            capacity_core_s=self._covered_s * self._logical_cores,
+            interval_min_s=self._interval_min,
+            interval_max_s=self._interval_max,
             epoch=self._epoch,
         )
 
@@ -141,6 +148,8 @@ def merge(buckets: Sequence[Bucket], *, start: float, width_s: float) -> Bucket:
     latest = ordered[-1]
     means = [(b.memory_mean, b.covered_s) for b in ordered if b.memory_mean is not None]
     weight = sum(covered_s for _, covered_s in means)
+    lows = [b.interval_min_s for b in ordered if b.interval_min_s is not None]
+    highs = [b.interval_max_s for b in ordered if b.interval_max_s is not None]
     return Bucket(
         series=latest.series,
         start=start,
@@ -160,6 +169,9 @@ def merge(buckets: Sequence[Bucket], *, start: float, width_s: float) -> Bucket:
         cores_hist=cores,
         memory_hist=memory,
         logical_cores=latest.logical_cores,
+        capacity_core_s=sum(bucket.capacity_core_s for bucket in ordered),
+        interval_min_s=min(lows, default=None),
+        interval_max_s=max(highs, default=None),
         epoch=latest.epoch,
     )
 

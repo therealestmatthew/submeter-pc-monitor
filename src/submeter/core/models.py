@@ -177,6 +177,9 @@ class Bucket(Record):
     cores_hist: tuple[float, ...]
     memory_hist: tuple[float, ...]
     logical_cores: int
+    capacity_core_s: float
+    interval_min_s: float | None
+    interval_max_s: float | None
     epoch: int
 
 

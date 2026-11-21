@@ -198,7 +198,12 @@ class RawFile:
         return 1
 
     def record_event(self, ts: float, kind: str, detail: str) -> None:
-        """Note something that starts a new epoch: an interval change, a provider falling back."""
+        """Note something that starts a new epoch.
+
+        That is a change of the sampling settings, the rules file, a provider's status, the
+        hardware or the Submeter version, or a wall-clock step the collector detected. A cadence
+        the collector changes itself does not start one.
+        """
         with self._db:
             self._db.execute("INSERT INTO event VALUES (?, ?, ?)", (ts, kind, detail))
 

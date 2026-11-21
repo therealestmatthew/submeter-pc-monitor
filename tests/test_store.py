@@ -72,3 +72,14 @@ def test_a_gap_adds_its_sums_but_no_covered_time(tmp_path: Path) -> None:
     alone = roll_up([gap], width_s=HOUR, logical_cores=2)
     assert [(b.cpu_s, b.covered_s, b.memory_mean) for b in alone] == [(5.0, 0.0, None)]
     assert merge([*alone, before], start=DAY0, width_s=HOUR).memory_mean == before.memory_mean
+
+
+def test_a_bucket_keeps_its_interval_bounds_and_capacity_in_core_seconds() -> None:
+    """R94: merging across a core-count change keeps the capacity of each part."""
+    mixed = [workload(DAY0 + 1, 1.0, 1.0), workload(DAY0 + 6, 5.0, 5.0)]
+    four = roll_up(mixed, width_s=HOUR, logical_cores=4)[0]
+    eight = roll_up([workload(DAY0 + HOUR + 5, 5.0, 5.0)], width_s=HOUR, logical_cores=8)[0]
+    merged = merge([four, eight], start=DAY0, width_s=2 * HOUR)
+    assert merged.capacity_core_s == four.covered_s * 4 + eight.covered_s * 8 == 64.0
+    assert (four.interval_min_s, four.interval_max_s) == (1.0, 5.0)
+    assert (merged.interval_min_s, merged.interval_max_s) == (1.0, 5.0)
