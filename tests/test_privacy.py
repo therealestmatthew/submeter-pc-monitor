@@ -49,3 +49,10 @@ def test_exe_only_is_the_default_because_scrub_misses_common_forms(tmp_path: Pat
     assert b"FAKEpw" not in stored(tmp_path, ("mysql", "-pFAKEpw-7x"), "mysql")
     assert Settings().privacy.redaction == "exe_only"
     assert [redact_cmdline(args) for args in SCRUB_MISSES] == list(SCRUB_MISSES)
+
+
+def test_scrub_keeps_harmless_words_paths_and_uuids() -> None:
+    """R99: secret names match whole words of a flag, and paths and UUIDs are not opaque."""
+    path, uuid = "/srv/0123456789abcdef0123456789abcdef/out", "123e4567-e89b-12d3-a456-426614174000"
+    args = ("tool", "--compass", "--bypass-cache", path, "--resume", uuid, "--password", "hunter2")
+    assert redact_cmdline(args) == (*args[:-1], REDACTED)

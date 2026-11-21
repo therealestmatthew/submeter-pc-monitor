@@ -3,10 +3,14 @@
 Command lines carry API keys, tokens and passwords. This module is applied on
 the way into the store, so no later bug can expose what was never written.
 
-It errs towards hiding too much. An argument that follows a secret-looking
-flag is hidden, values of secret-looking NAME=value pairs are hidden, known
-token shapes are hidden wherever they appear, and any long opaque string of
-letters and digits is hidden. The executable itself is always kept.
+The default mode, exe_only, keeps the executable name and nothing else. Scrub is
+opt-in and best-effort: it hides known shapes and cannot recognise every
+credential. It hides the argument after a flag one of whose words names a
+secret, the value of a NAME=value pair whose name does, known token shapes
+wherever they appear, and long opaque strings of letters and digits. It does not
+hide paths or UUIDs, or secrets passed in other forms: an attached -pPASS,
+-u user:pass, a header such as "Authorization: Bearer ...", a command inside
+bash -c, --env=NAME=value, or a connection string. The executable is always kept.
 """
 
 from __future__ import annotations
@@ -18,9 +22,9 @@ from typing import Final, Literal
 REDACTED: Final = "[redacted]"
 Mode = Literal["scrub", "exe_only"]
 
-_SECRET_NAME: Final = re.compile(
-    r"pass(word|wd)?|pwd|secret|token(?!s)|credential|authorization|bearer"
-    r"|(api|access|secret|private)[-_]?key",
+_SECRET_NAME: Final = re.compile(  # whole words of a flag or name: --compass is not a password
+    r"(^|[-_.])(pass(word|wd)?|pwd|secrets?|token|credentials?|authorization|bearer"
+    r"|(api|access|secret|private)[-_]?key)(?=$|[-_.])",
     re.IGNORECASE,
 )
 _SECRET_SHAPES: Final = (
@@ -34,11 +38,14 @@ _URL_PASSWORD: Final = re.compile(
     r"(?P<head>[a-z][a-z0-9+.-]*://[^/\s:@]+):[^@\s/]+@", re.IGNORECASE
 )
 _OPAQUE: Final = re.compile(r"^[A-Za-z0-9+/_=-]{32,}$")
+_UUID: Final = re.compile(r"^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$", re.IGNORECASE)
 
 
 def _looks_opaque(text: str) -> bool:
     return (
         bool(_OPAQUE.match(text))
+        and "/" not in text  # a path, whose folder names may be long hashes
+        and not _UUID.match(text)
         and any(c.isdigit() for c in text)
         and any(c.isalpha() for c in text)
     )
