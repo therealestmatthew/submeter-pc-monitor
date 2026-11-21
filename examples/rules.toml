@@ -1,0 +1,32 @@
+# Highest priority wins. Workloads started with
+# "submeter run" never reach these rules.
+
+[[rule]]
+workload = "opaque:wsl"
+priority = 90
+exe = ["vmmem", "vmmemWSL"]
+
+[[rule]]
+workload = "browser"
+priority = 50
+exe = ["chrome.exe", "msedge.exe", "firefox.exe"]
+include_children = true
+
+[[rule]]
+workload = "ide"
+priority = 50
+exe = ["Code.exe", "pycharm64.exe"]
+include_children = true
+
+[[rule]]
+workload = "agent:untagged"
+priority = 40
+exe = ["claude.exe", "claude"]
+include_children = true
+note = "started without submeter run, so polled"
+
+[[rule]]
+workload = "builds"
+priority = 30
+exe = ["python.exe", "node.exe", "cargo.exe"]
+cwd = 'C:\src\**'

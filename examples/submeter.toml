@@ -1,0 +1,54 @@
+[sampling]
+mode = "adaptive"
+active_interval = "1s"
+idle_interval = "5s"
+cold_interval = "10s"
+idle_after = "60s"
+uss_interval = "30s"
+uss_top_n = 25
+on_battery_multiplier = 2
+
+[sampling.overhead_limit]
+idle = "1%"
+active = "3%"
+
+[storage]
+disk_budget = "2GB"
+keyframe_interval = "10m"
+retention = { raw = "48h", minute = "30d", executables = "1y" }
+backups = { keep = 3 }
+
+[analysis.leak]
+min_duration = "2h"
+min_slope = "50MB/h"
+
+[analysis.slow_growth]
+window = "7d"
+
+[analysis.baseline]
+learning_period = "7d"
+window = "14d"
+sensitivity = 4.0
+
+[alerts]
+cooldown = "15m"
+channels = ["dashboard", "desktop"]
+
+[[alerts.rules]]
+name = "agents eating the machine"
+workload = "agent:*"
+metric = "cpu_cores"
+above = 12
+for = "5m"
+severity = "warning"
+
+[attribution]
+rules_file = "rules.toml"
+max_workload_names = 200
+
+[privacy]
+redaction = "scrub"
+
+[profile.laptop]
+sampling.active_interval = "2s"
+storage.disk_budget = "1GB"

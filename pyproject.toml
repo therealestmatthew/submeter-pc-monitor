@@ -1,0 +1,49 @@
+[project]
+name = "submeter"
+version = "0.1.0"
+description = "A per-workload PC performance monitor"
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2.7",
+    "psutil>=6.0",
+    "typer>=0.12",
+]
+
+[project.urls]
+Repository = "https://github.com/therealestmatthew/submeter-pc-monitor"
+
+[project.scripts]
+submeter = "submeter.cli:app"
+
+[dependency-groups]
+dev = [
+    "mypy>=1.10",
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.5",
+    "types-psutil",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/submeter"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+
+[tool.mypy]
+strict = true
+python_version = "3.12"
+plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+asyncio_default_fixture_loop_scope = "function"
