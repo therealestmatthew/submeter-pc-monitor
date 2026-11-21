@@ -235,7 +235,7 @@ def test_sampler_records_a_gap_instead_of_a_spike() -> None:
 
 
 # ---- attribution -----------------------------------------------------------------------------
-def test_attribution_order_inheritance_and_reconciliation() -> None:
+def test_attribution_order_inheritance_and_conservation() -> None:
     rules = RuleSet(
         rule=(
             Rule(workload="tools", exe=("tool",), priority=1),

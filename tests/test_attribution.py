@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
+import pytest
+
 from submeter.attribution.rules import (
     SELF,
     UNATTRIBUTED,
@@ -11,8 +13,9 @@ from submeter.attribution.rules import (
     Attributor,
     Rule,
     RuleSet,
+    aggregate,
 )
-from submeter.core.models import ProcessKey, ProcessSample
+from submeter.core.models import GroupTotals, ProcessKey, ProcessSample, SampleBatch
 
 MB = 1024**2
 
@@ -71,3 +74,22 @@ def test_an_inherited_workload_lasts_for_the_life_of_the_process() -> None:
     assert attributor.changes == [(ProcessKey(pid=23, started=123.0), "agent", "db")]
     gone = names(attributor.assign(later[:3], exited=[kids[1].key]))  # forgotten once exited
     assert (gone[21], gone[22]) == ("agent", "services")
+
+
+def test_capacity_reconciles_with_a_not_seen_by_polling_term() -> None:
+    processes = [sample(20, "bash", cpu_s=0.2), sample(30, "agent", cpu_s=0.3), sample(40, "x")]
+    batch = SampleBatch.model_validate(
+        {"taken_at": 1001.0, "interval_s": 1.0, "gap": False, "processes": processes}
+        | {"exited": (), "logical_cores": 4, "cpu_busy_s": 1.5, "memory_available_bytes": MB}
+    )
+    rules = RuleSet(rule=(Rule(workload="agent", exe=("bash",)),))
+    assignment = Attributor(rules).assign(processes, {processes[1].key: "agent:run"})
+    group = GroupTotals(cpu_s=0.6, io_read_bytes=None, io_write_bytes=None, processes=2)
+    totals = aggregate(batch, assignment, kernel_workloads={"agent:run": group})
+    capacity = batch.interval_s * batch.logical_cores
+    workloads = sum(total.cpu_s for total in totals)  # the group's 0.6, not the polled 0.3
+    idle, system = capacity - batch.cpu_busy_s, 0.0  # nothing is assigned to System yet
+    not_seen = batch.cpu_busy_s - workloads - system
+    assert min(capacity, idle, workloads, system, not_seen) >= 0
+    assert idle + workloads + system + not_seen == pytest.approx(capacity)
+    assert not_seen == pytest.approx(0.7)
