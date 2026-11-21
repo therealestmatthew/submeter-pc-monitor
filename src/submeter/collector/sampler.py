@@ -10,8 +10,8 @@ Three cases need care, and each is handled here and nowhere else:
   interval if it was born during it, and to no interval if it is older;
 - a pid that has been reused, which is a different process because identity
   is pid plus start time;
-- a sleep or stall, where the interval was not observed and must be recorded
-  as a gap instead of one enormous sample.
+- a sleep or stall, where the interval was not observed: the batch is marked
+  as a gap, and keeps its deltas, which are exact.
 """
 
 from __future__ import annotations
@@ -36,14 +36,13 @@ def _zero(value: int | None) -> int | None:
 
 
 class Sampler:
-    def __init__(self, *, gap_after_s: float = 30.0, suspend_slack_s: float = 2.0) -> None:
-        self._gap_after_s = gap_after_s
+    def __init__(self, *, suspend_slack_s: float = 2.0) -> None:
         self._suspend_slack_s = suspend_slack_s
         self._previous: Snapshot | None = None
         self._known: dict[ProcessKey, ProcessCounters] = {}
 
-    def ingest(self, snapshot: Snapshot) -> SampleBatch | None:
-        """Return the batch for the interval ending here. The first call returns None."""
+    def ingest(self, snapshot: Snapshot, *, expected_s: float = 1.0) -> SampleBatch | None:
+        """Return the batch for the interval of expected_s ending here. The first returns None."""
         previous, known = self._previous, self._known
         self._previous = snapshot
         self._known = {process.key: process for process in snapshot.processes}
@@ -55,19 +54,20 @@ class Sampler:
         asleep = 0.0  # how far the interval clock ran ahead of the clock that stops in suspend
         if snapshot.awake is not None and previous.awake is not None:
             asleep = elapsed - (snapshot.awake - previous.awake)
-        gap = elapsed <= 0 or elapsed > self._gap_after_s or asleep > self._suspend_slack_s
+        stalled = elapsed > 3 * expected_s + self._suspend_slack_s
+        gap = elapsed <= 0 or stalled or asleep > self._suspend_slack_s
         busy = sum(snapshot.system.cpu_busy_s) - sum(previous.system.cpu_busy_s)
         return SampleBatch(
             taken_at=snapshot.taken_at,
             interval_s=max(elapsed, wall) if gap else elapsed,
             gap=gap,
             processes=tuple(
-                self._sample(process, known.get(process.key), previous.taken_at, gap)
+                self._sample(process, known.get(process.key), previous.taken_at)
                 for process in snapshot.processes
             ),
             exited=tuple(key for key in known if key not in self._known),
             logical_cores=snapshot.system.logical_cores,
-            cpu_busy_s=0.0 if gap else max(0.0, busy),
+            cpu_busy_s=max(0.0, busy),
             memory_available_bytes=snapshot.system.memory_available_bytes,
         )
 
@@ -76,11 +76,8 @@ class Sampler:
         now: ProcessCounters,
         before: ProcessCounters | None,
         previous_at: float,
-        gap: bool,
     ) -> ProcessSample:
-        if gap:
-            cpu_s, read, write = 0.0, _zero(now.io_read_bytes), _zero(now.io_write_bytes)
-        elif before is not None:
+        if before is not None:
             cpu_s = max(0.0, now.cpu_s - before.cpu_s)
             read = _delta(now.io_read_bytes, before.io_read_bytes)
             write = _delta(now.io_write_bytes, before.io_write_bytes)

@@ -225,12 +225,12 @@ def test_sampler_deltas_new_processes_and_pid_reuse() -> None:
 
 def test_sampler_records_a_gap_instead_of_a_spike() -> None:
     sampler = Sampler()
-    sampler.ingest(snap(1000, [proc(1, 5.0)], mono=10).model_copy(update={"awake": 10.0}))
+    sampler.ingest(snap(1000, [proc(1, 5.0)], 10, mono=10).model_copy(update={"awake": 10.0}))
     batch = sampler.ingest(
-        snap(4600, [proc(1, 5.2)], mono=3610).model_copy(update={"awake": 11.0})
+        snap(4600, [proc(1, 5.2)], 11.5, mono=3610).model_copy(update={"awake": 11.0})
     )  # an hour asleep: the clock that stops during suspend moved 1 s
     assert batch is not None and batch.gap and batch.interval_s == 3600
-    assert batch.processes[0].cpu_s == 0.0 and batch.cpu_busy_s == 0.0
+    assert batch.processes[0].cpu_s == pytest.approx(0.2) and batch.cpu_busy_s == 1.5
 
 
 # ---- attribution -----------------------------------------------------------------------------

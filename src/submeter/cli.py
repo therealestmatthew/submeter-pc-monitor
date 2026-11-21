@@ -91,7 +91,7 @@ def top(
     provider, sampler = PsutilProvider(read_cwd=rule_set.needs_cwd), Sampler()
     sampler.ingest(provider.snapshot())
     time.sleep(seconds)
-    batch = sampler.ingest(provider.snapshot())
+    batch = sampler.ingest(provider.snapshot(), expected_s=seconds)
     if batch is None:
         raise typer.Exit(1)
     assignment = Attributor(rule_set, self_pid=os.getpid()).assign(batch.processes)

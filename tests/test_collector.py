@@ -162,3 +162,16 @@ def test_suspend_is_told_by_the_clock_that_stops_not_by_the_wall_clock() -> None
     awake = sampler.ingest(tick(6_501, 105, 102))  # both clocks agree; wall clock stepped ahead
     assert asleep is not None and asleep.gap
     assert awake is not None and not awake.gap
+
+
+def test_a_gap_is_past_three_expected_intervals_and_keeps_its_cpu() -> None:
+    def counters(cpu: float) -> ProcessCounters:
+        return ProcessCounters(key=ProcessKey(pid=1, started=0.0), cpu_s=cpu, memory_bytes=0)
+
+    sampler = Sampler()
+    sampler.ingest(tick(1000, 100, 100, counters(5.0)), expected_s=60)
+    slow = sampler.ingest(tick(1060.05, 160.05, 160.05, counters(6.0)), expected_s=60)
+    stall = sampler.ingest(tick(1095.05, 195.05, 195.05, counters(9.0)))  # 35 s at a 1 s cadence
+    assert slow is not None and not slow.gap
+    assert stall is not None and stall.gap and stall.cpu_busy_s == pytest.approx(35.0)
+    assert stall.processes[0].cpu_s == 3.0
