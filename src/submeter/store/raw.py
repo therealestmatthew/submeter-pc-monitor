@@ -270,6 +270,7 @@ class RawStore:
         workload_of: Mapping[ProcessKey, str],
     ) -> int:
         day = utc_day(batch.taken_at)
+        day = day if self._day is None else max(day, self._day)  # never reopen an earlier day
         if self._file is None or day != self._day:
             self.close()
             self._file = RawFile(
