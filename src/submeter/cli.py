@@ -40,11 +40,11 @@ FileOption = Annotated[
 ]
 
 
-def _load(file: Path | None, profile: str | None) -> LoadedSettings:
+def _load(file: Path | None) -> LoadedSettings:
     files = FileMap.discover()
     path = file if file is not None else files.settings_file
     try:
-        return load_settings(path if path.exists() else None, profile=profile, env=os.environ)
+        return load_settings(path if path.exists() else None, env=os.environ)
     except ConfigError as error:
         for problem in error.problems:
             typer.echo(f"error: {problem}", err=True)
@@ -112,13 +112,12 @@ def top(
 @config_app.command("show")
 def config_show(
     file: FileOption = None,
-    profile: str | None = None,
     effective: Annotated[
         bool, typer.Option("--effective", help="Every value with its source. This is the default.")
     ] = False,
 ) -> None:
     """Print every setting with the layer it came from."""
-    for key, value, source in _load(file, profile).effective():
+    for key, value, source in _load(file).effective():
         typer.echo(f"{key:<44}{value:<26}{source}")
 
 

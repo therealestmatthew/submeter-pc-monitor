@@ -1,7 +1,7 @@
 """Settings: one validated, immutable object built from layered sources.
 
-Precedence, lowest to highest: built-in default, submeter.toml, a named
-profile inside that file, SUBMETER_* environment variables, command-line
+Precedence, lowest to highest: built-in default, submeter.toml,
+SUBMETER_* environment variables, command-line
 overrides. Every value remembers which layer it came from, which is what
 `submeter config show --effective` prints.
 
@@ -289,26 +289,18 @@ def _from_environment(env: Mapping[str, str]) -> dict[str, Any]:
 def load_settings(
     path: Path | None = None,
     *,
-    profile: str | None = None,
     env: Mapping[str, str] | None = None,
     overrides: Mapping[str, Any] | None = None,
 ) -> LoadedSettings:
     """Build settings from every layer and record where each value came from."""
     layers: list[tuple[str, Mapping[str, Any]]] = []
-    profiles: Mapping[str, Any] = {}
     if path is not None:
         try:
             with path.open("rb") as handle:
                 document = tomllib.load(handle)
         except tomllib.TOMLDecodeError as error:
             raise ConfigError([f"{path}: {error}"]) from error
-        profiles = document.pop("profile", {})
         layers.append(("file", document))
-    if profile is not None:
-        if profile not in profiles:
-            known = ", ".join(sorted(profiles)) or "none defined"
-            raise ConfigError([f"profile {profile!r} not found (available: {known})"])
-        layers.append((f"profile:{profile}", profiles[profile]))
     if env:
         layers.append(("env", _from_environment(env)))
     if overrides:

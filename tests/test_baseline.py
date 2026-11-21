@@ -120,22 +120,18 @@ def test_config_layers_and_sources(tmp_path: Path) -> None:
     file.write_text(
         '[sampling]\nactive_interval = "2s"\n[storage]\ndisk_budget = "1GB"\n'
         '[[alerts.rules]]\nname = "busy"\nmetric = "cpu_cores"\nabove = 12\nfor = "5m"\n'
-        '[profile.laptop]\nsampling.idle_interval = "10s"\n'
     )
     loaded = load_settings(
         file,
-        profile="laptop",
         env={"SUBMETER_SAMPLING__COLD_INTERVAL": "30s", "SUBMETER_HOME": "/x"},
     )
     sampling = loaded.settings.sampling
-    assert (sampling.active_interval, sampling.idle_interval, sampling.cold_interval) == (
+    assert (sampling.active_interval, sampling.cold_interval) == (
         2.0,
-        10.0,
         30.0,
     )
     assert loaded.settings.alerts.rules[0].duration == 300
     assert loaded.sources["sampling.active_interval"] == "file"
-    assert loaded.sources["sampling.idle_interval"] == "profile:laptop"
     assert loaded.sources["sampling.cold_interval"] == "env"
     assert dict((key, source) for key, _, source in loaded.effective())["api.port"] == "default"
 
