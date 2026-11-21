@@ -3,14 +3,10 @@
 from __future__ import annotations
 
 import os
-import stat
-import sys
 import threading
-from datetime import date
 from pathlib import Path
 
 import psutil
-import pytest
 
 from submeter.core.models import Tier
 from submeter.store.files import FileMap, InstanceLock
@@ -96,26 +92,3 @@ def test_acquire_waits_for_a_lock_freed_late(tmp_path: Path) -> None:
     threading.Timer(0.3, first.release).start()
     assert second.acquire(wait_s=1.0)
     second.release()
-
-
-@pytest.mark.skipif(sys.platform == "win32", reason="permission bits mean nothing on Windows")
-def test_submeter_files_are_private_to_the_user(tmp_path: Path) -> None:
-    """R100: under umask 0o022, folders are 0700 and files 0600, and anything else is flagged."""
-    files = FileMap.discover({"SUBMETER_HOME": str(tmp_path)})
-    mask = os.umask(0o022)
-    try:
-        files.raw_dir.mkdir(parents=True)  # made before this rule, at 0755
-        files.ensure()
-        raw = RawFile(files.raw_file(date(2026, 11, 20)))
-        lock = InstanceLock(files.lock_file("collector"))
-        assert lock.acquire()
-    finally:
-        os.umask(mask)
-    folders = (files.settings_dir, files.data_dir, files.raw_dir, files.state_dir, files.logs_dir)
-    assert {stat.S_IMODE(folder.stat().st_mode) for folder in folders} == {0o700}
-    assert {stat.S_IMODE(path.stat().st_mode) for path in (raw.path, lock.pid_file)} == {0o600}
-    assert files.readable_by_others() == []
-    lock.pid_file.chmod(0o644)
-    assert files.readable_by_others() == [str(lock.pid_file)]
-    lock.release()
-    raw.close()

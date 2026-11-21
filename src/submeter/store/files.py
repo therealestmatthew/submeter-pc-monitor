@@ -113,29 +113,13 @@ class FileMap:
         """Create every directory. Safe to call at each start."""
         for folder in (
             self.settings_dir,
-            self.data_dir,
-            self.state_dir,
             self.raw_dir,
             self.minute_dir,
             self.backups_dir,
             self.runs_dir,
             self.logs_dir,
         ):
-            folder.mkdir(0o700, parents=True, exist_ok=True)  # on Windows: an owner-only ACL
-            if sys.platform != "win32":
-                folder.chmod(0o700)  # also a folder made before this rule
-
-    def readable_by_others(self) -> list[str] | None:
-        """Submeter paths other users can read; None on Windows, where mode bits mean nothing."""
-        if sys.platform == "win32":
-            return None
-        found = []
-        for root in (self.settings_dir, self.data_dir, self.state_dir):
-            for path in (root, *root.rglob("*")) if root.exists() else ():
-                with contextlib.suppress(OSError):  # a file can go between listing and stat
-                    if path.stat().st_mode & 0o044:
-                        found.append(str(path))
-        return found
+            folder.mkdir(parents=True, exist_ok=True)
 
     def expired_raw(self, now: float, retention_s: float, rolled_up_until: float) -> list[Path]:
         """Raw files whose whole day ended more than retention_s ago, oldest first.
@@ -226,7 +210,7 @@ class InstanceLock:
     """An exclusive lock held for as long as a program runs, so two copies cannot.
 
     The lock file is only ever locked, never written. The holder's pid goes in a file beside it,
-    NAME.pid, private to this user. The operating system frees the lock if the holder dies.
+    NAME.pid, which anyone may read. The operating system frees the lock if the holder dies.
 
     The POSIX path is exercised by the tests. The Windows path is exercised against a stand-in
     for msvcrt, which checks the calls made but not how Windows answers them. It still needs
@@ -252,7 +236,6 @@ class InstanceLock:
         self._fd = fd
         with contextlib.suppress(OSError):  # the pid is a convenience; the lock is what matters
             started = psutil.Process().create_time()
-            self.pid_file.touch(0o600)  # private before anything is written to it
             self.pid_file.write_text(f"{os.getpid()} {started!r}", encoding="ascii")
         return True
 

@@ -65,7 +65,6 @@ class RawFile:
     ) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
         self.path = path
-        path.touch(0o600)  # private before SQLite opens it; -wal and -shm copy its mode
         self._db = sqlite3.connect(path)
         self._db.execute("PRAGMA journal_mode=WAL")
         self._db.execute("PRAGMA synchronous=NORMAL")
