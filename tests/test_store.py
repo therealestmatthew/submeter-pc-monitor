@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from submeter.attribution.rules import Attributor, RuleSet, aggregate
 from submeter.collector.sampler import Sampler
 from submeter.core.models import (
@@ -49,7 +51,8 @@ def test_one_hour_read_and_rolled_up_matches_the_whole_day_rollup(tmp_path: Path
         raw.write(batch(at, 5.0), written[-1:], {})
         at += 5.0
     hour = DAY0 + 2 * HOUR
-    buckets = roll_up(raw.workload_samples(hour, hour + HOUR), width_s=HOUR, logical_cores=8)
+    read = RawFile.workload_samples(raw.path, hour, hour + HOUR)
+    buckets = roll_up(read, width_s=HOUR, logical_cores=8)
     raw.close()
     whole_day = [b for b in roll_up(written, width_s=HOUR, logical_cores=8) if b.start == hour]
     assert [(b.start - hour, b.cpu_s) for b in buckets] == [(0.0, HOUR)]
@@ -64,7 +67,7 @@ def test_a_gap_adds_its_sums_but_no_covered_time(tmp_path: Path) -> None:
         if tick is not None:
             raw.write(tick, aggregate(tick, attributor.assign(tick.processes)), {})
     before, after = roll_up(
-        raw.workload_samples(DAY0, DAY0 + 2 * HOUR), width_s=HOUR, logical_cores=2
+        RawFile.workload_samples(raw.path, DAY0, DAY0 + 2 * HOUR), width_s=HOUR, logical_cores=2
     )
     raw.close()
     assert (after.covered_s, after.samples, well_covered(after)) == (600.0, 120, False)
@@ -83,3 +86,18 @@ def test_a_bucket_keeps_its_interval_bounds_and_capacity_in_core_seconds() -> No
     assert merged.capacity_core_s == four.covered_s * 4 + eight.covered_s * 8 == 64.0
     assert (four.interval_min_s, four.interval_max_s) == (1.0, 5.0)
     assert (merged.interval_min_s, merged.interval_max_s) == (1.0, 5.0)
+
+
+def test_reading_a_raw_file_never_writes_to_it(tmp_path: Path) -> None:
+    """R91: the reader opens the file read-only, so the collector stays its only writer."""
+    with pytest.raises(FileNotFoundError):
+        RawFile.workload_samples(tmp_path / "2026-11-21.db", DAY0, DAY0 + HOUR)
+    assert list(tmp_path.iterdir()) == []
+    writer = RawFile(tmp_path / "day.db")
+    for k in range(1, 11):
+        writer.write(batch(DAY0 + k, 1.0), [workload(DAY0 + k, 0.5, 1.0)], {})
+    wal = tmp_path / "day.db-wal"
+    size = wal.stat().st_size
+    assert len(RawFile.workload_samples(writer.path, DAY0, DAY0 + HOUR)) == 10
+    assert wal.stat().st_size == size > 0
+    writer.close()

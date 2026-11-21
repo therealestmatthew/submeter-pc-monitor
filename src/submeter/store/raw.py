@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import sqlite3
 from collections.abc import Mapping, Sequence
+from contextlib import closing
 from datetime import date
 from pathlib import Path
 from typing import Final
@@ -53,6 +54,13 @@ CREATE TABLE IF NOT EXISTS system_raw (
     gap INTEGER NOT NULL) WITHOUT ROWID;
 CREATE TABLE IF NOT EXISTS gap (start REAL NOT NULL, end REAL NOT NULL, reason TEXT NOT NULL);
 """
+
+
+def open_read_only(path: Path) -> sqlite3.Connection:
+    """Open a raw file to read. It never creates the file, writes to it or checkpoints its log."""
+    if not path.is_file():
+        raise FileNotFoundError(f"no raw file at {path}")
+    return sqlite3.connect(f"{path.resolve().as_uri()}?mode=ro", uri=True)
 
 
 class RawFile:
@@ -207,13 +215,16 @@ class RawFile:
         with self._db:
             self._db.execute("INSERT INTO event VALUES (?, ?, ?)", (ts, kind, detail))
 
-    def workload_samples(self, start: float, end: float) -> list[WorkloadSample]:
-        rows = self._db.execute(
-            "SELECT ts, interval_s, workload, source, cpu_s, memory_bytes, io_read_bytes,"
-            " io_write_bytes, processes, started, gap FROM workload_raw"
-            " WHERE ts >= ? AND ts < ? ORDER BY ts, workload",
-            (start, end),
-        ).fetchall()
+    @staticmethod
+    def workload_samples(path: Path, start: float, end: float) -> list[WorkloadSample]:
+        """The workload rows with start <= ts < end, read without opening the file for writing."""
+        with closing(open_read_only(path)) as db:
+            rows = db.execute(
+                "SELECT ts, interval_s, workload, source, cpu_s, memory_bytes, io_read_bytes,"
+                " io_write_bytes, processes, started, gap FROM workload_raw"
+                " WHERE ts >= ? AND ts < ? ORDER BY ts, workload",
+                (start, end),
+            ).fetchall()
         return [
             WorkloadSample(
                 taken_at=row[0],

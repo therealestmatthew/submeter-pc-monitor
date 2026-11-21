@@ -397,7 +397,7 @@ def test_raw_file_keeps_sums_exact_and_secrets_out(tmp_path: Path) -> None:
     assert reopened.process_cpu_total() == pytest.approx(total)  # suppressed rows lost nothing
     assert 120 < rows < 3 * 120  # the busy process is written every tick, the idle two are not
     assert reopened.count("command") == 1 and reopened.count("process") == 3
-    assert len(reopened.workload_samples(1000, 1121)) == 120
+    assert len(RawFile.workload_samples(tmp_path / "day.db", 1000, 1121)) == 120
     reopened.close()
     assert secret.encode() not in (tmp_path / "day.db").read_bytes()
 
