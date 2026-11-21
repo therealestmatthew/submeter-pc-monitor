@@ -10,13 +10,13 @@ from __future__ import annotations
 
 from enum import StrEnum
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class Record(BaseModel):
     """Base for every record: immutable, and strict about its fields."""
 
-    model_config = ConfigDict(extra="forbid", frozen=True)
+    model_config = ConfigDict(extra="forbid", frozen=True, hide_input_in_errors=True)
 
 
 class Availability(StrEnum):
@@ -74,8 +74,8 @@ class ProcessCounters(Record):
     key: ProcessKey
     parent_pid: int | None = None
     exe: str = ""
-    cmdline: tuple[str, ...] | None = None
-    cwd: str | None = None
+    cmdline: tuple[str, ...] | None = Field(default=None, repr=False)
+    cwd: str | None = Field(default=None, repr=False)
     cpu_s: float
     io_read_bytes: int | None = None
     io_write_bytes: int | None = None
@@ -108,8 +108,8 @@ class ProcessSample(Record):
     key: ProcessKey
     parent_pid: int | None
     exe: str
-    cmdline: tuple[str, ...] | None
-    cwd: str | None
+    cmdline: tuple[str, ...] | None = Field(repr=False)
+    cwd: str | None = Field(repr=False)
     cpu_s: float
     io_read_bytes: int | None
     io_write_bytes: int | None
