@@ -60,7 +60,7 @@ class Rule(Record):
     cmdline: str | None = None
     cwd: str | None = None
     parent: tuple[str, ...] = ()
-    include_children: bool = False
+    include_children: bool | None = None  # None: follow attribution.inherit_from_parent
     note: str = ""
 
     @model_validator(mode="after")
@@ -182,7 +182,9 @@ class Attributor:
                 return Attribution(
                     workload=rule.workload,
                     reason=f"rule for {rule.workload}",
-                    inheritable=self._inherit or rule.include_children,
+                    inheritable=(
+                        self._inherit if rule.include_children is None else rule.include_children
+                    ),
                 )
         return None
 
