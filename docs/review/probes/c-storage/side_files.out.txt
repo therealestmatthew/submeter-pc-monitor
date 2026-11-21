@@ -1,0 +1,15 @@
+SQLite 3.50.4 on linux
+1. a cleanly closed file, opened for one query and closed again:
+  read-only (mode=ro)        reads 50 ticks, last 50; before: 2026-11-19.db 73728 B; after: 2026-11-19.db 73728 B, 2026-11-19.db-shm 32768 B, 2026-11-19.db-wal 0 B
+  read-write (the default)   reads 50 ticks, last 50; before: 2026-11-19.db 73728 B; after: 2026-11-19.db 73728 B
+  immutable (immutable=1)    reads 50 ticks, last 50; before: 2026-11-19.db 73728 B; after: 2026-11-19.db 73728 B
+2. a file whose writer was killed:
+  the writer reported tick 120 and was killed; on disk: 2026-11-20.db 4096 B, 2026-11-20.db-shm 32768 B, 2026-11-20.db-wal 3926392 B
+  immutable=1  reader: fails with OperationalError: no such table: system_raw
+  mode=ro      reader: reads 120 ticks, last 120
+  the .db alone, moved elsewhere: fails with OperationalError: no such table: system_raw
+  read-write   reader: reads 120 ticks, last 120; on disk after: 2026-11-20.db 491520 B
+  .db deleted with a 1969392 B log left behind, then created again under the same name: integrity ok, 0 ticks in the new file; on disk: 2026-11-20.db 40960 B
+3. retention while a reader has the file open:
+  deleting the .db under an open reader on linux: allowed; the reader still reads 50 ticks; this process still holds ['2026-11-18.db (deleted)', '2026-11-18.db-shm', '2026-11-18.db-wal']; left in the folder: 2026-11-18.db-shm 32768 B, 2026-11-18.db-wal 0 B
+  after the reader closed: 2026-11-18.db-shm 32768 B, 2026-11-18.db-wal 0 B

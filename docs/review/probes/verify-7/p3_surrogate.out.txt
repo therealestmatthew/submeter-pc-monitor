@@ -1,0 +1,10 @@
+$ uv run python docs/review/probes/verify-7/p3_surrogate.py
+scrub    last argument  ticks: UnicodeEncodeError, UnicodeEncodeError, UnicodeEncodeError; system rows: 0
+scrub    argv[0]        ticks: UnicodeEncodeError, UnicodeEncodeError, UnicodeEncodeError; system rows: 0
+scrub    exe            ticks: UnicodeEncodeError, UnicodeEncodeError, UnicodeEncodeError; system rows: 0
+exe_only last argument  ticks: ok, ok, ok; system rows: 3
+exe_only argv[0]        ticks: UnicodeEncodeError, UnicodeEncodeError, UnicodeEncodeError; system rows: 0
+exe_only exe            ticks: UnicodeEncodeError, UnicodeEncodeError, UnicodeEncodeError; system rows: 0
+after one failed tick, good pid 1: process rows 0, process_raw rows 1
+record_event with the character: UnicodeEncodeError
+exit=0

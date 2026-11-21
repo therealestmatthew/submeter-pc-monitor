@@ -1,0 +1,8 @@
+$ uv run python docs/review/probes/verify-8/tooling_gate.py
+1. mypy on a Windows-only wrong return type
+   as run here: exit 0; Success: no issues found in 1 source file
+   --platform win32: exit 1; Found 1 error in 1 file (checked 1 source file)
+2. ruff format --check on a folder holding only note.md
+   exit 1; 1 file would be reformatted
+   ruff version: exit 0; ruff 0.17.6
+exit=0

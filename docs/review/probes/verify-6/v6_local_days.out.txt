@@ -1,0 +1,4 @@
+offsets the OS gives across the window, in hours: [-5.0, -4.0]; fixed offset -5
+days whose fixed-offset minimum misses the nightly low: ['2026-11-01']
+Theil-Sen slope of daily minimums: fixed offset 9.63 MiB/day, per-reading offset 10.02 MiB/day (true 10.00)
+tzdata package installed: False

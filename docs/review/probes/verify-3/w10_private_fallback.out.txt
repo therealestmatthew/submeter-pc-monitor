@@ -1,0 +1,2 @@
+with 'private' (= 333000000): provider kept 333000000; warnings: none
+without 'private': provider kept 111000000 (rss is 111000000, vms is 333000000); warnings: none; fell back to working set silently: True

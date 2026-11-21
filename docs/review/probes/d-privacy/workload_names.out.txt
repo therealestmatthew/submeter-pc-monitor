@@ -1,0 +1,15 @@
+$ uv run python docs/review/probes/d-privacy/workload_names.py
+  accepted: rule with workload = 'system'
+  accepted: rule with workload = 'restricted'
+  accepted: rule with workload = 'unattributed'
+  accepted: rule with workload = 'submeter'
+  accepted: rule with workload = 'machine'
+  accepted: rule with workload = ''
+  accepted: rule with workload = 'a\nb'
+  accepted: rule with workload = '../../x'
+  accepted: rule with workload = 'agent:*'
+  accepted: rule with workload = '<img src=x onerror="alert(1)">'
+  accepted: rule with workload = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+  workload 'system': 0.5 CPU-s from 1 process
+  workload 'submeter': 0.5 CPU-s from 1 process
+exit=0

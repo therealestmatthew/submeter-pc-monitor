@@ -1,0 +1,23 @@
+$ uv run python docs/review/probes/a-linux/linux_sources.py
+pressure: readable {'cpu': True, 'memory': True, 'io': True}; the cpu file has lines ['some', 'full']
+  per cgroup, in this shell's own cgroup: ['cpu', 'memory', 'io']
+temperatures: hwmon chips with readable sensors {'iwlwifi_1': 1, 'nvme': 2, 'coretemp': 5, 'dell_smm': 5}; psutil {'nvme': 2, 'dell_smm': 5, 'iwlwifi_1': 1, 'coretemp': 5}
+frequency: 8 CPUs, current readable for 8, maximum for 8, driver intel_pstate; psutil gives 8 readings
+throttle counters: present for 8 of 8 CPUs (GenuineIntel), files ['core_throttle_count', 'core_throttle_max_time_ms', 'core_throttle_total_time_ms', 'package_throttle_count', 'package_throttle_max_time_ms', 'package_throttle_total_time_ms'], package events since boot 0, up 8.5 days
+battery: 1 found; psutil reports one: True
+RAPL: 5 energy counters, readable 0, modes ['0o400'], owner uids [0]
+connections: {"other users' processes denied": 293, 'own processes denied': 5, 'own processes read': 158}
+  system-wide list: 90 sockets, 32 with no process visible
+GPU: cards {'card5': 'evdi', 'card3': 'evdi', 'card1': 'i915', 'card4': 'evdi', 'card2': 'evdi'}; NVML library None; AMD sysfs load files 0
+  DRM fdinfo: 12 processes of this user hold a GPU client, fields ['drm-active-stolen-system0', 'drm-active-system0', 'drm-client-id', 'drm-driver', 'drm-engine-capacity-video', 'drm-engine-copy', 'drm-engine-render', 'drm-engine-video', 'drm-engine-video-enhance', 'drm-pdev', 'drm-purgeable-stolen-system0', 'drm-purgeable-system0', 'drm-resident-stolen-system0', 'drm-resident-system0', 'drm-shared-stolen-system0', 'drm-shared-system0', 'drm-total-stolen-system0', 'drm-total-system0']; 298 processes could not be inspected
+commit: Committed_AS / CommitLimit = 2.74 with vm.overcommit_memory = 0; memory in use = 0.69 of RAM; swap in use = 0.51
+
+what the capability matrix should print here
+  pressure          full         cpu, memory, io
+  thermal.temp      full         4 chips
+  thermal.throttle  full         frequency and counters
+  power.battery     full         
+  power.energy      unavailable  RAPL counters are readable by root only
+  net.connections   partial      own-user processes only
+  gpu.load          unavailable  no NVML library and no AMD card
+exit=0

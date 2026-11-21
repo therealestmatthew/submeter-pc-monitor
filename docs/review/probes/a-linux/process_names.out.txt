@@ -1,0 +1,29 @@
+$ uv run python docs/review/probes/a-linux/process_names.py
+1. 452 processes; the kernel's comm is 15 characters long for 109 of them
+  psutil's name() is longer than comm, repaired from the command line: 61
+  executable not readable (other users, kernel threads): 295
+   131  same as the executable's file name
+    20  set by the program itself or by its launcher
+          'Isolated Web Co' is 'firefox'
+          'Isolated Web Co' is 'thunderbird-bin'
+          'Privileged Cont' is 'firefox'
+          'RDD Process' is 'firefox'
+          'RDD Process' is 'thunderbird-bin'
+          'Socket Process' is 'firefox'
+     5  a script's name, the executable is an interpreter
+          'apport-gtk' is 'python3.12'
+          'update-manager' is 'python3.12'
+
+2. one script, started three ways (name() / comm / executable)
+  ./script with #!interpreter  'submeter-probe-' / 'submeter-probe-' / 'python'
+  ./script with #!/usr/bin/env 'python3' / 'python3' / 'python'
+  interpreter script           'python3.14' / 'python3.14' / 'python'
+
+3. what rules claim here (processes per workload)
+  examples/rules.toml: {'restricted': 295, 'unattributed': 136, 'agent:untagged': 20}
+  the same with Linux names: {'restricted': 295, 'unattributed': 105, 'agent:untagged': 20, 'browser': 31}
+  browser: the rule claims 31 processes; the browsers' own cgroups hold 15; in both 14
+  cgroups of the processes the browser rule claims: {'app-com.google.Chrome-N.scope': 2, 'vte-spawn-N.scope': 17, 'snap.firefox.firefox-N.scope': 12}
+  in a browser's cgroup and not claimed by the rule: {'crashhelper': 1}
+  names stored as exe inside those cgroups: {'Web Content': 3, 'Isolated Web Co': 2, 'chrome': 2, 'crashhelper': 1, 'Privileged Cont': 1, 'Socket Process': 1, 'firefox': 1, 'WebExtensions': 1}
+exit=0

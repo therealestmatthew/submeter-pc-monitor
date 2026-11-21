@@ -1,0 +1,9 @@
+interval 1.0 s, 8 cores, gap False
+true busy core-seconds          1.20
+provider cpu_busy_s             1.44  (over by 0.24 = interrupt + DPC counted twice)
+process System Idle Process  cpu_s 6.80 restricted True
+process System               cpu_s 0.16 restricted False
+process worker.exe           cpu_s 0.88 restricted False
+sum of per-process CPU          7.84  vs busy 1.44
+per-process sum exceeds busy:   True
+idle core-seconds in the interval 6.80, charged to pid 0: 6.80

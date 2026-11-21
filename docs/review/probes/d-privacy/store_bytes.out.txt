@@ -1,0 +1,20 @@
+$ uv run python docs/review/probes/d-privacy/store_bytes.py
+redaction = scrub
+  absent   flag then value, split (the tested form)
+  ON DISK  HTTP header, split
+  ON DISK  shell wrapper, split
+  ON DISK  one unsplit string
+  ON DISK  rewritten title, unsplit
+  ON DISK  exe given as a full path
+  absent   working folder
+  ON DISK  event detail
+redaction = exe_only
+  absent   flag then value, split (the tested form)
+  absent   HTTP header, split
+  absent   shell wrapper, split
+  ON DISK  one unsplit string
+  ON DISK  rewritten title, unsplit
+  ON DISK  exe given as a full path
+  absent   working folder
+  ON DISK  event detail
+exit=0

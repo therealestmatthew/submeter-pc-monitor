@@ -1,0 +1,19 @@
+$ uv run python docs/review/probes/d-privacy/error_output.py
+typer 0.29.2
+  the baseline app does not set it, so pretty_exceptions_show_locals = False
+  library default: stderr does not show the local value and has no locals panel
+  pretty_exceptions_show_locals=True: stderr shows the local value and has locals panel
+pydantic, a ProcessCounters holding a raw command line
+  a required field is missing (cpu_s):
+    str(error) contains the secret: False
+    error.errors() inputs contain the secret: True
+    last line: Field required [type=missing, input_value={'key': ProcessKey(pid=1,...9q'), 'memory_bytes': 1}, input_type=dic
+  a field has the wrong type:
+    str(error) contains the secret: False
+    error.errors() inputs contain the secret: False
+    last line: Input should be a valid number, unable to parse string as a number [type=float_parsing, input_value='much', in
+  an unknown field is passed:
+    str(error) contains the secret: False
+    error.errors() inputs contain the secret: False
+    last line: Extra inputs are not permitted [type=extra_forbidden, input_value='blue', input_type=str]
+exit=0

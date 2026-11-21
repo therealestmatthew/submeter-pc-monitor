@@ -1,0 +1,113 @@
+$ uv run python docs/review/probes/f-consistency/stated_twice.py
+== memory budget for collector and server
+   11-language.md:22: - The collector process holds more than 80 MB.
+   17-build-prompt.md:56: None of the three imports another, and every file has exactly one writer. The reason is that the collector is the hot path, and I want to be able to r
+   17-build-prompt.md:230: The monitor must not become the problem. With 300 processes running: under 1% of one core at idle cadence, under 3% at active cadence, and under 150 M
+== SQLite synchronous setting
+   17-build-prompt.md:138: - Durability: synchronous=NORMAL. A crash or power loss may lose up to 5 seconds of samples and must never corrupt a file. Keep read transactions shor
+== when a bucket is final, idempotent rollups
+   17-build-prompt.md:123: Build hourly buckets from raw data while it still exists. Rollups are idempotent: recomputing a bucket gives the same row. A bucket is final 30 second
+== Job Object breakaway and kill-on-close
+   17-build-prompt.md:69: - Set no limits on the group. Do not allow breakaway and do not set kill-on-close.
+== which files are private to the user
+   06-storage.md:20: | `api-token`, `*.lock` | Server, each program | Until rotated | The local API token, readable only by you, and one lock per program so two copies can
+   14-baseline-modules.md:177: - Not here yet: reloading while running, and the three built-in alert rules. The rules list holds only your own.
+   16-review-log.md:243: **Fix:** A file map per platform with one override, a one-instance lock per program, rotating redacted logs, and a token file only you can read.
+   17-build-prompt.md:137: - One-instance lock per program. Rotating logs, 5 files of 5 MB each, with the same redaction as the store. The API token lives in a file only the cur
+== readers accept an older schema version
+   13-build-list.md:18: | 08 `store.files` | The file map, one-instance locks, schema versions, integrity checks, backups, the disk budget [baseline](../src/submeter/store/fi
+   16-review-log.md:281: **Fix:** At most 5 seconds lost and never a corrupt file, short read transactions, an integrity check at start, a daily backup of history, and a schem
+   17-build-prompt.md:140: - Back up the history file daily with SQLite's online backup and keep 3 copies. Migrate it only after a backup. Every file carries a schema version, a
+== where the Origin header is checked
+   13-build-list.md:30: | 20 `server.api` | HTTP and WebSocket API, read-only apart from session markers, with token, Host and Origin checks | P4 |
+   15-phases-and-decisions.md:25: Gate: requests without a token or with a foreign Origin are refused. A 30-day range loads in under 1 second and states the tier it came from.
+   16-review-log.md:75: **Fix:** Command lines are redacted before they are written. The API needs a token and checks Host and Origin headers. The MCP server never returns co
+   17-build-prompt.md:148: Binding to 127.0.0.1 is not enough, because any web page in my browser can reach a local port. Require a token on every HTTP and WebSocket request, re
+   17-build-prompt.md:272: - Phase 4, API and dashboard. Gate: requests without a token or with a foreign Origin are refused, and a 30-day range loads in under one second and na
+== what MCP never returns
+   05-data-flow.md:50: 7. The server exposes an API on loopback, protected by a token, to three readers: the dashboard, live over WebSocket; the CLI, where every command tak
+   08-configuration.md:125: - The MCP server never returns command lines, whatever the redaction mode.
+   16-review-log.md:75: **Fix:** Command lines are redacted before they are written. The API needs a token and checks Host and Origin headers. The MCP server never returns co
+   17-build-prompt.md:148: Binding to 127.0.0.1 is not enough, because any web page in my browser can reach a local port. Require a token on every HTTP and WebSocket request, re
+   17-build-prompt.md:193: Not configurable: observe-only behaviour, running without administrator rights, sending nothing off the machine, loopback binding, the token requireme
+== rules match on the parent
+   08-configuration.md:217: Rules claim processes that were not started with `submeter run`. The highest-priority match wins, and `submeter rules test` shows which rule claimed a
+   14-baseline-modules.md:261: - A rule may match on exe, cmdline, cwd and parent, the program that started the process. Every condition it gives must hold. Program names match on f
+   17-build-prompt.md:96: - Rules live in rules.toml and match on executable, command-line pattern, parent chain or working directory, with explicit priority. Do not match on e
+== parent link and start time
+   14-baseline-modules.md:260: - A parent link counts only if the parent started no later than the child.
+   16-review-log.md:107: **Fix:** The environment rule is gone. Group membership replaces it. A parent link counts only if the parent started before the child.
+   17-build-prompt.md:77: - Identify a process by pid plus start time. Treat a parent link as valid only if the parent started before the child.
+== Linux child-time counters
+   05-data-flow.md:65: *Figure:* Share of a spawn-heavy workload's CPU time that each method captures. The polling figures are computed, not measured: they assume child proc
+   17-build-prompt.md:71: Bulk polling, for everything else. Do not walk processes one at a time on the hot path. On Windows, take one system-wide process snapshot per tick tha
+== polled children undercounted, which platform
+   03-cli-output.md:22: Note   polled workloads may undercount short-lived children
+   10-known-limits.md:10: | Short-lived children of polled workloads | Their CPU time is undercounted on Windows, by about 70% at a 1-second interval in the polling model in [D
+   16-review-log.md:55: Agents spawn thousands of sub-second processes: git, ripgrep, test runners. A 1-second poll never sees most of them, so the workload you most want mea
+   17-build-prompt.md:71: Bulk polling, for everything else. Do not walk processes one at a time on the hot path. On Windows, take one system-wide process snapshot per tick tha
+   17-build-prompt.md:221: - Polled workloads on Windows undercount short-lived children.
+== what starts a new epoch
+   04-features.md:24: - Every change of settings, rules or hardware starts a new epoch, marked on the charts.
+   06-storage.md:98: - An epoch is a stretch of time in which the sampling intervals, the rules file, each provider's status, the hardware and the Submeter version all sta
+   08-configuration.md:5: Two files: `submeter.toml` for settings and `rules.toml` for attribution rules. Both are validated on load, and unknown keys are rejected. Most settin
+   08-configuration.md:116: - Any change to sampling, rules or providers starts a new epoch, which is marked on every chart.
+   16-review-log.md:257: **Fix:** Epochs. Any such change starts one and is marked on every chart, and a comparison of maxima or percentiles across an interval change is flagg
+   17-build-prompt.md:130: Epochs. An epoch is a stretch of time in which the sampling intervals, the rules file, each provider's status, the hardware and the Submeter version a
+   17-build-prompt.md:189: - Every effective change starts a new epoch and is marked on the charts, so a shift in the data can be traced to a settings change.
+== CPU-bound and memory-bound thresholds
+   02-what-it-looks-like.md:74: | Memory-bound | Serious | Commit above 86%. Stays until it falls below 82% | high | "Commit 88% of limit", "Page writes rising", "IDE private bytes s
+   02-what-it-looks-like.md:75: | CPU-bound | Warning | CPU time above 86%. Stays until it falls below 80% | high | "Run queue 2.0 per core", "Agents hold 67% of CPU time", "Frequenc
+   07-analysis.md:97: | CPU-bound | Run queue above 1 per core, CPU time above 85% | CPU pressure (PSI) some above 20% | Frequency is being held down |
+   07-analysis.md:98: | Memory-bound | Commit above 85% of limit, page writes rising | Memory pressure full above 5%, swap-out rising | Page reads only, with no writes |
+== a verdict for a healthy machine
+   02-what-it-looks-like.md:17: 3. **Verdict banner.** A severity chip that reads Healthy, Warning or Serious, a title such as "No bottleneck", the line "confidence: high · last 5 mi
+   02-what-it-looks-like.md:60: | Steady day | Nothing. Builds bursts by 1.4 cores for 6 seconds in every 37. GPU 16%, overhead 0.6% | Healthy: No bottleneck | None |
+   02-what-it-looks-like.md:77: | No bottleneck | Healthy | None of the above | high | "No pressure signals", "Commit 65% of limit", "Frequency at maximum" |
+== verdict classes listed
+   02-what-it-looks-like.md:62: | Memory leak in IDE | IDE memory climbs 0.16 GB each second until it reaches 13.5 GB. Overhead 0.7% | Warning: Memory tightening above 74% commit, th
+   02-what-it-looks-like.md:76: | Memory tightening | Warning | Commit above 74% | moderate | "Commit 78% of limit", "No page writes yet" |
+   17-build-prompt.md:157: - Bottleneck verdict for a window: CPU-bound, memory-bound, I/O-bound, GPU-bound, thermally throttled or inconclusive. Always include a confidence lev
+== accounting source of System and Restricted
+   02-what-it-looks-like.md:44: | System | counters | 0.35 | 2.6 GB | n/a |
+   02-what-it-looks-like.md:45: | Restricted | partial | 0.16 | 0.3 GB | 14 |
+   02-what-it-looks-like.md:140: system  counters · 0.35 cores · 2.6 GB
+   02-what-it-looks-like.md:149: restricted  partial · 0.16 cores · 0.3 GB
+   03-cli-output.md:18: system           kernel        0.24        n/a       n/a          n/a
+   03-cli-output.md:19: restricted       polled        0.05        n/a       n/a           14
+== how hourly buckets are built
+   05-data-flow.md:52: *Figure:* Data moves one way. The highlighted provider is the exact path: the kernel totals CPU, memory and I/O for every process in a tagged group, i
+   16-review-log.md:133: **Fix:** Hourly rollups are computed from raw samples while those still exist.
+   17-build-prompt.md:123: Build hourly buckets from raw data while it still exists. Rollups are idempotent: recomputing a bucket gives the same row. A bucket is final 30 second
+== who holds a group after the command ends
+   16-review-log.md:147: **Fix:** The launcher holds the group while the command runs and saves its totals when the command ends. Anything that outlives the command is held op
+   17-build-prompt.md:56: None of the three imports another, and every file has exactly one writer. The reason is that the collector is the hot path, and I want to be able to r
+   17-build-prompt.md:67: - `submeter run` must return when the command returns, even if the command left background processes behind. Those processes stay in the group, so som
+== how long a run file is kept, and who reads it
+   06-storage.md:17: | `runs/*.json` | Launcher | Until read | One small file per tagged run: its group, its label and its final totals | That run's exact totals |
+   13-build-list.md:23: | 13 `launcher` | `submeter run`: starts a tree inside a Job Object or cgroup, returns the command's exit code, and writes one run file with the final
+   17-build-prompt.md:54: - the launcher, `submeter run`: starts a tagged process tree and writes one small run file for it.
+   17-build-prompt.md:62: Kernel accounting, for tagged workloads. `submeter run --as NAME [--label LABEL] -- COMMAND` launches the command inside a named Windows Job Object (n
+   17-build-prompt.md:66: - The launcher holds the group open while the command runs, passes the command's exit code through, and writes the group's totals to its run file when
+   17-build-prompt.md:68: - The collector finds live groups from the run files and reads their totals each tick. After a restart it re-attaches to every live group.
+== the only API write
+   13-build-list.md:30: | 20 `server.api` | HTTP and WebSocket API, read-only apart from session markers, with token, Host and Origin checks | P4 |
+   13-build-list.md:82: - `POST /sessions` the only write
+   17-build-prompt.md:254: API, all under /api/v1 and read-only except session markers: health, capabilities, config, epochs, workloads, workloads/{id}/processes, series, verdic
+== an ingest path for a second collector
+   16-review-log.md:81: **Fix:** The VM is shown as its own workload, labelled opaque. The ingest API accepts a second collector, so the Linux build can run inside WSL and re
+   17-build-prompt.md:79: - WSL2 and Docker Desktop appear on Windows as a single VM process. Show it as its own workload labelled opaque. Design the ingest path so a second co
+== who runs as the signed-in user
+   08-configuration.md:122: - The collector and server run as the signed-in user. They never ask for administrator rights.
+   15-phases-and-decisions.md:46: | Administrator rights | No. Both programs run as the signed-in user | The Windows machine is a work computer, where administrator rights are often un
+   17-build-prompt.md:148: Binding to 127.0.0.1 is not enough, because any web page in my browser can reach a local port. Require a token on every HTTP and WebSocket request, re
+   17-build-prompt.md:264: These are decided, so do not ask about them again: both programs run as the signed-in user and never request administrator rights, nothing is sent off
+== how many programs keep logs
+   01-overview.md:29: - **Size of the build:** 3 programs, 25 components, 3 kinds of data file, 8 phases
+   03-cli-output.md:83: logs/ (2 programs)      each         18 MB
+   05-data-flow.md:52: *Figure:* Data moves one way. The highlighted provider is the exact path: the kernel totals CPU, memory and I/O for every process in a tagged group, i
+   06-storage.md:9: Data that expires together lives in a file together, so retention is always a file delete: instant, exact, and with nothing left behind to compact. Ea
+   06-storage.md:19: | `logs/*.log` | Each program | 5 files of 5 MB | Each program's own diagnostics, with the same redaction as the store | Nothing that was measured |
+   06-storage.md:114: | Logs | 0.05 GB | 2 programs, 5 files of 5 MB each |
+   13-build-list.md:5: Three programs that share only files on disk: a collector, a server and the launcher. Together they are 25 components, 18 tables across three kinds of
+exit=0

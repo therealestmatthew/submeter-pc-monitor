@@ -1,0 +1,26 @@
+$ uv run python docs/review/probes/d-privacy/redact_side_effects.py
+1. redact_text on log lines
+  LEAK launch failed: tool --api-key FAKEtok0123456789abcdef
+  LEAK environment: API_TOKEN=FAKEtok0123456789abcdef
+  LEAK upstream said 401 for Authorization: Bearer FAKEtok0123456789abcdef
+  LEAK 127.0.0.1 "GET /api/v1/live?token=FAKEtok0123456789abcdef HTTP/1.1" 101
+  LEAK could not read ['mysql', '--password', 'FAKEpw-7x']
+  ok   ctrl: connect postgres://alice:[redacted]@db/a
+  ok   ctrl: key [redacted] rejected
+2. harmless arguments
+  HIDDEN python [redacted]
+  HIDDEN cc1 [redacted] main.c
+  HIDDEN git checkout [redacted]
+  HIDDEN rg --passthru [redacted]
+  HIDDEN trainer --tokenizer [redacted]
+  HIDDEN tool --token-limit [redacted]
+  HIDDEN codex --dangerously-bypass-approvals-and-sandbox [redacted]
+  kept   ctrl: tool --max-tokens 4096
+  kept   ctrl: chrome --type=renderer
+  kept   ctrl: uv run pytest -n 8
+3. privacy.redact_patterns
+  RawStore accepts: files, keyframe_interval_s, cpu_points, memory_step, redaction
+  RawFile accepts: path, cpu_points, memory_step, redaction
+  load_settings accepted the pattern '('
+  redact_cmdline then raised PatternError: missing ), unterminated subpattern at position 0
+exit=0

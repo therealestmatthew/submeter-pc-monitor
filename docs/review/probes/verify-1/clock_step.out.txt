@@ -1,0 +1,4 @@
+one process at 1.00 cores, 120 one-second ticks, one wall-clock step at tick 60
+   back-30s: true CPU 120 s; sampler credited 120; stored rows 120, stored CPU 120; gap batches 0; batches stamped earlier than the one before 1; fullest minute covered_s 90 of 60 with cpu_s 90; files written in order ['2026-11-20.db']
+   back-50s-midnight: true CPU 120 s; sampler credited 120; stored rows 120, stored CPU 120; gap batches 0; batches stamped earlier than the one before 1; fullest minute covered_s 71 of 60 with cpu_s 71; files written in order ['2026-11-20.db', '2026-11-21.db', '2026-11-20.db', '2026-11-21.db']
+   forward-5s: true CPU 120 s; sampler credited 119; stored rows 120, stored CPU 119; gap batches 1; batches stamped earlier than the one before 0; fullest minute covered_s 61 of 60 with cpu_s 55; files written in order ['2026-11-20.db']

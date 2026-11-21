@@ -1,0 +1,23 @@
+1. settings load_settings accepts, and the interval between samples they imply
+   idle_interval 45s                              accepted;   45.0 s between samples
+   cold_interval 60s                              accepted;   60.0 s between samples
+   idle 5s (default) x on_battery_multiplier 7    accepted;   35.0 s between samples
+   idle 60s x on_battery_multiplier 10            accepted;  600.0 s between samples
+2. Sampler() with both clocks advancing by the interval; one process at 0.5 cores
+     29 s: gap=False, process used  14.5 CPU-s, credited  14.5; machine busy recorded  14.5
+     31 s: gap=True, process used  15.5 CPU-s, credited   0.0; machine busy recorded   0.0
+     45 s: gap=True, process used  22.5 CPU-s, credited   0.0; machine busy recorded   0.0
+     60 s: gap=True, process used  30.0 CPU-s, credited   0.0; machine busy recorded   0.0
+3. submeter top --seconds N --json, sleep replaced by a clock offset (real counters)
+   --seconds 2                                          exit 0; 448 processes, interval_s   2.2, CPU-s summed 0.470
+   --seconds 31                                         exit 0; 448 processes, interval_s  31.1, CPU-s summed 0.000
+   --seconds 60, no sleep                               exit 0; 448 processes, interval_s  60.1, CPU-s summed 0.000
+   --seconds 60, 40 s asleep, monotonic counts sleep    exit 0; 448 processes, interval_s  60.1, CPU-s summed 0.000
+   --seconds 60, 40 s asleep, monotonic stops in sleep  exit 0; 448 processes, interval_s  60.1, CPU-s summed 0.000
+4. one-hour suspend between two 10-minute stretches at 2.00 cores (monotonic stops)
+   gap batches 1, gap table rows 1; workload rows written for it:
+     batch interval_s 3601, workload row interval_s [3601.0]
+   minute bucket at +2400 s: covered_s 3601 of 60, cpu_s 0, well_covered True
+   hour bucket at +0 s: covered_s 4201, cpu_s 1200, mean cores 0.29, well_covered True
+   hour bucket at +3600 s: covered_s 599, cpu_s 1198, mean cores 2.00, well_covered False
+   truth: observed 1200 s at 2.00 cores; the 09:00 hour was observed for 600 s

@@ -1,0 +1,4 @@
+$ uv run python docs/review/probes/d-privacy/uv_run_network.py
+uv 0.11.14 (x86_64-unknown-linux-gnu): `uv run python -c pass` exited 0
+connect() calls made by uv and its children: 0, families: []
+exit=0

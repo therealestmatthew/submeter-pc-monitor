@@ -1,0 +1,30 @@
+$ uv run python docs/review/probes/a-linux/process_identity.py
+1. the same processes, three ways
+  two Python processes: 448 of 448 start times identical to the last bit
+  /proc read, start ticks / 100 + btime: 448 of 448 identical
+  /proc read, (start ticks + btime x 100) / 100: 448 of 448
+
+2. what the start time is made of
+  btime equals floor(wall clock - time since boot): True
+  the fraction dropped is 0.925 s, so a step forward of 0.075 s or back of 0.925 s moves btime, and every start time, by a whole second
+  field 22 of a child started now is 0.00 s from CLOCK_BOOTTIME and 0 s from time.monotonic()
+  time this machine has spent suspended since boot: -0 s, and the two clocks differ by exactly that
+  time.monotonic() is clock_gettime(CLOCK_MONOTONIC)
+
+3. the baseline while the wall clock is set back one hour (the collector keeps running)
+  before the step       : child's start minus its parent's +2 s, workload 'tagged', gap False, CPU credited 0.43 s of 0.43 s
+  interval with the step: child's start minus its parent's -3597 s, workload 'unattributed', gap False, CPU credited 0.00 s of 0.46 s
+  a later interval      : child's start minus its parent's -3596 s, workload 'unattributed', gap False, CPU credited 0.44 s of 0.44 s
+  keys a program started after the step would compute: 448 of 448 differ from the ones the running collector holds
+
+4. a provider that works out the start time afresh at every tick
+  a normal interval:       446 processes, 0 counted as started, 2 as exited, 2.82 CPU-s credited of 2.93 busy, gap False
+  btime one second lower:  452 processes, 452 counted as started, 446 as exited, 0.15 CPU-s credited of 1.95 busy, gap False
+  the interval after that: 453 processes, 1 counted as started, 0 as exited, 2.19 CPU-s credited of 2.13 busy, gap False
+
+5. a pid reused between two snapshots (imitated by ageing psutil's cached object)
+  snapshot 1: the process is missing from the snapshot
+  snapshot 2: the process is missing from the snapshot
+  snapshot 3: present, key has the true start time: True, first seen True, CPU credited 0.00 s
+  credited 0.00 s in three intervals; it used 2.28 s
+exit=0

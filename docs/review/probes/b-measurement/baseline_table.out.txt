@@ -1,0 +1,33 @@
+$ uv run python docs/review/probes/b-measurement/baseline_table.py
+1. docs/07 table, replayed from its own daily peaks
+   floor on the deviation, as the sentence in docs/07 says
+      days flagged: [23, 24, 25, 26, 27, 28, 29, 30]
+      ranges more than 0.015 GB from the table: 11 of 23
+         day 18: 3.21 to 3.63, table 3.23 to 3.61
+         day 21: 3.17 to 3.70, table 3.19 to 3.69
+         day 22: 3.11 to 3.71, table 3.13 to 3.7
+         day 23: 3.11 to 3.71, table 3.09 to 3.73
+   floor on the scaled spread, as usual_range(floor=0.03) does
+      days flagged: [14, 23, 24, 25, 26, 27, 28, 29, 30]
+      ranges more than 0.015 GB from the table: 19 of 23
+         day 8: 3.30 to 3.54, table 3.25 to 3.6
+         day 9: 3.27 to 3.57, table 3.24 to 3.6
+         day 13: 3.28 to 3.58, table 3.25 to 3.61
+         day 14: 3.31 to 3.55, table 3.25 to 3.61
+      half-widths printed for days 8 to 16: 0.175 0.180 0.175 0.190 0.185 0.180 0.180 0.180 0.190
+      a floor of 0.03 on the deviation gives 0.178; on the scaled spread it gives 0.120
+      day 8 from days 1 to 7: sentence 3.242 to 3.598, code 3.300 to 3.540
+      usual_range() defaults: floor=0.0 and min_values=5; core/config.py has no floor setting
+      a steady series with the default floor: (3.4, 3.4, 3.4) for [3.4, 3.41]
+
+2. the same rule on minute buckets: 14 days of history, then one more day
+   cores in use, lognormal(0.5, 0.8) as in the histogram test: range -3.22 to 6.52 around 1.65; 61 of 1440 ordinary minutes fall outside
+   memory in GB, 3.4 with normal noise of 0.05: range 3.20 to 3.60 around 3.40; 1 of 1440 ordinary minutes fall outside
+
+3. slow growth: 10 MiB/h for 7 days on hourly buckets, defaults from core/config.py
+   settings: slow_growth has ['window']; leak.min_slope is 50 MiB/h
+   window starts at midnight: 7 daily minimums spanning 6 days, leak.min_slope: flagged=False, not enough data yet
+   window starts at midnight: 7 daily minimums spanning 6 days, no threshold: flagged=False, not enough data yet
+   window starts at 09:00: 8 daily minimums spanning 7 days, leak.min_slope: flagged=False, growth is below the threshold
+   window starts at 09:00: 8 daily minimums spanning 7 days, no threshold: flagged=True, sustained growth with no plateau
+exit=0

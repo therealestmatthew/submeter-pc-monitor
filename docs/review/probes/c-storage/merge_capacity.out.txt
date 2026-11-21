@@ -1,0 +1,4 @@
+60 minute buckets: epochs [3, 4], logical cores [8, 16], CPU 43200 s of 43200 core-seconds of capacity: 100% busy
+the merged hour keeps epoch 4 and logical_cores 16 (the latest of each): CPU over covered_s x logical_cores = 75%
+merge sorts by start, so the order given does not matter: epoch 4, logical_cores 16. Fields of Bucket that could say an epoch or a capacity changed inside it: ['cores_hist', 'logical_cores', 'epoch']
+roll_up takes one logical_cores and one epoch for the whole call: an hour built directly from raw samples is stamped epoch 4, 16 cores

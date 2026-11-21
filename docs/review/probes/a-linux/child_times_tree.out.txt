@@ -1,0 +1,14 @@
+$ uv run python docs/review/probes/a-linux/child_times_tree.py
+1. a parent, its child and twelve grandchildren, polled every 0.1 s
+  CPU time used below the parent (its own counter at the end): 6.15 s
+  polling alone, each process up to its last sighting:        5.20 s
+  polling plus every counter:                                 14.56 s
+  less the last own time of each process that ended:          9.36 s
+  less the last counter of each process that ended as well:   6.15 s
+
+2. where the CPU time of reaped children has collected on this machine
+  pid 1 (systemd): own 224 s, reaped children 1,244 s
+  this user's service manager, which adopts this login's orphans (systemd): own 107 s, reaped children 11,138 s
+  the six largest counters: claude 87,945 s, containerd-shim 26,137 s, claude 24,108 s, containerd-shim 16,013 s, claude 15,974 s, containerd-shim 14,379 s
+  all counters together 242,015 s; all live processes' own time 154,180 s
+exit=0

@@ -1,0 +1,36 @@
+1. Can a record say that a metric is unavailable?
+   ProcessCounters with cpu_s=None: refused (ValidationError: 1 validation error for ProcessCounters)
+   ProcessCounters with memory_bytes=None: refused (ValidationError: 1 validation error for ProcessCounters)
+   ProcessCounters with io_read_bytes=None: accepted
+   WorkloadSample with io_read_bytes=None: refused (ValidationError: 1 validation error for WorkloadSample)
+   WorkloadSample with memory_bytes=None: refused (ValidationError: 1 validation error for WorkloadSample)
+   Availability('opaque'), as docs/03 prints for vm.guest: refused (ValueError: 'opaque' is not a valid Availability)
+2. Fields the records have
+   ProcessCounters: key, parent_pid, exe, cmdline, cwd, cpu_s, io_read_bytes, io_write_bytes, memory_bytes, threads, restricted
+   ProcessSample: key, parent_pid, exe, cmdline, cwd, cpu_s, io_read_bytes, io_write_bytes, memory_bytes, threads, first_seen, restricted
+   SampleBatch: taken_at, interval_s, gap, processes, exited, logical_cores, cpu_busy_s, memory_available_bytes
+   SystemCounters: logical_cores, cpu_busy_s, memory_total_bytes, memory_available_bytes
+   WorkloadSample: taken_at, interval_s, workload, source, cpu_s, memory_bytes, io_read_bytes, io_write_bytes, processes, started
+   Finding: kind, severity, confidence, workload, window_start, window_end, evidence
+   Bucket: series, start, width_s, covered_s, samples, active_s, cpu_s, io_read_bytes, io_write_bytes, started, memory_min, memory_max, memory_mean, memory_last, processes_max, cores_hist, memory_hist, logical_cores, epoch
+   catalogue row 'CPU time: sum, histogram of cores': cpu_s, cores_hist
+   catalogue row 'Memory for growth: min, max, mean, last, histogram': memory_min, memory_max, memory_mean, memory_last, memory_hist
+   catalogue row 'Memory for totals (USS or PSS): max, mean, age of the reading': no Bucket field
+   catalogue row 'Disk bytes read and written: sum': io_read_bytes, io_write_bytes
+   catalogue row 'Processes alive and started: max and mean; sum': processes_max, started
+   catalogue row 'Threads and handles: max': no Bucket field
+   catalogue row 'GPU load by engine type: max, mean': no Bucket field
+   catalogue row 'VRAM: max, mean': no Bucket field
+   catalogue row 'Connections: max, mean': no Bucket field
+   catalogue row 'Load per core and frequency: min, max, mean': no Bucket field
+   catalogue row 'Commit, available memory, page reads and writes': no Bucket field
+   catalogue row 'Run queue and pressure stall time': no Bucket field
+   catalogue row 'Disk latency and queue': no Bucket field
+   catalogue row 'Submeter's own cost: max, mean': no Bucket field
+   10 of 14 catalogue rows have no field in Bucket
+3. Values the brief allows
+   retention.raw = 60d (docs/08: 'keep full detail longer'), minute = 30d; a 12-hour window 45 days back is answered from the minute tier, which was deleted 15 days earlier
+   retention.raw = 'forever': model_dump_json gives {"raw":null,"m..., and model_dump(mode='json') gives raw=inf, which json.dumps writes as Infinity
+4. One process's start time, three ways (ProcessKey compares this float exactly)
+   psutil equals ticks/100 + btime: True; with boot time taken from the two clocks instead of btime the value differs by 0.925 s. The kernel's own figure is an integer: True (clock ticks since boot)
+   same pid, same process, unequal keys: True

@@ -1,0 +1,20 @@
+1. A parent that exits while its child lives on (default inherit_from_parent=True)
+   reparented to pid 1: pid 12 was 'agent:untagged' (inherited from pid 11), then 'unattributed' (no rule matched); totals after: {'unattributed': 2.0, 'agent:untagged': 0.1}
+   parent pid left stale: pid 12 was 'agent:untagged' (inherited from pid 11), then 'unattributed' (no rule matched); totals after: {'unattributed': 2.0, 'agent:untagged': 0.1}
+2. I/O that the provider could not read (None) for a process claimed by a rule
+   process dockerd: io_read_bytes=None, io_write_bytes=None
+   process other: io_read_bytes=4096, io_write_bytes=8192
+   workload docker: source=polled, io_read_bytes=0, io_write_bytes=0
+   workload unattributed: source=polled, io_read_bytes=4096, io_write_bytes=8192
+3. A workload named in kernel_workloads, with a child the polling never saw
+   source=kernel, cpu_s=0.4: the label says kernel, the figure is the polled sum. aggregate() has no parameter that carries a group's own totals
+4. A chain of processes, each the parent of the next, that no rule matches
+   depth 1500, parents first: assigned
+   depth 900, children first: assigned
+   depth 1500, children first: RecursionError: maximum recursion depth exceeded
+5. A parent cycle, and equal CPU totals
+   cycle between pids 40 and 41: {41: 'unattributed', 40: 'unattributed'}
+   two workloads with equal CPU sort in the order first seen: ['a', 'b']
+6. Background processes that outlive the program a rule matched
+   a server the agent started: 'agent:untagged' while the agent runs, then 'unattributed'
+   a grandchild whose parent was never sampled: 'unattributed' (no rule matched)

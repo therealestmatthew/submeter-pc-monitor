@@ -1,0 +1,40 @@
+$ uv run python docs/review/probes/verify-4/linux_platform_readonly.py
+L1/L2/L3. where a tagged group can live, and what it passes down
+  root            owner uid 0     cgroup.procs uid 0     passes down: cpuset cpu io memory hugetlb pids rdma misc dmem
+  user.slice      owner uid 0     cgroup.procs uid 0     passes down: cpu memory pids
+  user-N.slice    owner uid 0     cgroup.procs uid 0     passes down: cpu memory pids
+  user@N.service  owner this user cgroup.procs this user passes down: cpu memory pids
+  app.slice       owner this user cgroup.procs this user passes down: memory pids
+  systemctl show user@N.service: ['Delegate=yes', 'DelegateControllers=cpu', 'memory', 'pids']
+  groups directly below app.slice (siblings a delegated scope would affect): 22
+  this process's own group passes down: nothing
+  probe cgroups left anywhere by earlier reviewers: 0
+  user bus socket present: True; DBUS_SESSION_BUS_ADDRESS set: True
+  io.* files in app.slice: ['io.pressure']
+  files that could count processes started: none
+  pids.* files: ['pids.current', 'pids.events', 'pids.events.local', 'pids.max', 'pids.peak']
+
+L4. what the kernel's memory figure holds, in this user's live leaf groups
+  68 leaf groups, memory.current 9.31 GB; shares {'anon': 0.6, 'file': 0.31, 'kernel': 0.08}
+
+L5. commit against the commit limit
+  vm.overcommit_memory 0; Committed_AS / CommitLimit 2.65
+  memory in use (1 - MemAvailable/MemTotal) 0.62
+  the built-in rule 'commit_fraction above 0.90' would be: True
+
+L7. GPU sources
+  cards and drivers: {'card1': 'i915', 'card2': 'evdi', 'card3': 'evdi', 'card4': 'evdi', 'card5': 'evdi'}
+  processes with a DRM client in fdinfo (readable ones): 12
+  other users' processes: fdinfo denied 294, readable 0
+
+L8. arithmetic only, from the lead's own measured rate (no timing here)
+  own processes 158, resident 11.23 GB, top 25 8.23 GB
+  at 25.1 ms per GB and one round every 30 s: 0.69% of a core
+  at 29.3 ms per GB and one round every 30 s: 0.80% of a core
+  lead's figure re-derived: 241.6 ms / 30 s = 0.805%
+
+L9. other users' command lines
+  /proc options: ['rw,nosuid,nodev,noexec,relatime']; hidepid set: False
+  other users' processes with a non-empty command line: 134; with args: 67
+  baseline provider: 452 processes; other users' (root included) handed on with a command line: 134
+exit=0

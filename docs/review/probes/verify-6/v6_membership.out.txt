@@ -1,0 +1,6 @@
+interval 1 s, phase 0.2 s: raw sum by end 3600, by middle 3600; 1 per-minute window 3540 (-1.67%); 2 widened window 3600 (+0.00%); 3 whole hour 3600 (+0.00%)
+interval 1 s, phase 0.7 s: raw sum by end 3600, by middle 3600; 1 per-minute window 3600 (+0.00%); 2 widened window 3600 (+0.00%); 3 whole hour 3600 (+0.00%)
+interval 5 s, phase 2 s: raw sum by end 3600, by middle 3600; 1 per-minute window 3300 (-8.33%); 2 widened window 3600 (+0.00%); 3 whole hour 3600 (+0.00%)
+interval 2 s, phase 0.5 s: raw sum by end 3600, by middle 3600; 1 per-minute window 3480 (-3.33%); 2 widened window 3600 (+0.00%); 3 whole hour 3600 (+0.00%)
+sample ending +0.0 s from midnight is in file 2026-11-21; end rule puts it in 23:59, roll_up's middle rule in 23:59 (of 2026-11-20)
+sample ending +0.2 s from midnight is in file 2026-11-21; end rule puts it in 00:00, roll_up's middle rule in 23:59 (of 2026-11-20)

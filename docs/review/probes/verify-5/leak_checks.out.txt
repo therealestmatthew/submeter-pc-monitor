@@ -1,0 +1,27 @@
+$ uv run python docs/review/probes/verify-5/leak_checks.py
+M3. leak acceptance against the default threshold
+   min_slope = 52,428,800 bytes/h; 50 MB decimal = 50,000,000
+   100 MiB/h, 120 buckets spanning 119 min: not enough data yet
+   100 MiB/h, 121 buckets spanning 120 min: FLAGGED
+   50 MiB/h         121 buckets flagged  noise  0 MB: 100%  noise  5 MB:  45%  noise 30 MB:  45%
+   50 MB/h decimal  121 buckets flagged  noise  0 MB:   0%  noise  5 MB:   0%  noise 30 MB:  14%
+   55 MiB/h         121 buckets flagged  noise  0 MB: 100%  noise  5 MB: 100%  noise 30 MB:  97%
+
+M4. docs/07 browser warm-up, sliding 2-hour window, checks every 5 min, hours 2-4
+   noise-free warm-up (a fixture a builder might write): flagged=False
+   minute buckets                 noise +/- 5 MB:  0 of 60 runs falsely flagged
+   minute buckets                 noise +/-20 MB: 11 of 60 runs falsely flagged
+   minute buckets                 noise +/-40 MB: 34 of 60 runs falsely flagged
+   5-minute points as in docs/07  noise +/- 5 MB:  1 of 60 runs falsely flagged
+   5-minute points as in docs/07  noise +/-20 MB: 42 of 60 runs falsely flagged
+   5-minute points as in docs/07  noise +/-40 MB: 51 of 60 runs falsely flagged
+   staircase +256 MiB every 120 min (128 MiB/h), noise 5 MB, 12 h, one check per 5 min
+      sliding 2 h window: flagged in 0 of 121 checks
+      growing window    : flagged in 53 of 121 checks
+
+M5. slow growth
+   SlowGrowth fields: ['window']; window = 7.0 d
+   7 d of hourly buckets from 00:00: 7 daily minimums spanning 6 d; with leak.min_slope: not enough data yet; with 5 MiB/h: not enough data yet
+   8 d of hourly buckets from 00:00: 8 daily minimums spanning 7 d; with leak.min_slope: growth is below the threshold; with 5 MiB/h: FLAGGED
+   7 d of hourly buckets from 09:00: 8 daily minimums spanning 7 d; with leak.min_slope: growth is below the threshold; with 5 MiB/h: FLAGGED
+exit=0

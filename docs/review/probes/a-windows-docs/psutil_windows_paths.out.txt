@@ -1,0 +1,14 @@
+psutil 7.2.2, psutil/_pswindows.py
+create_time       cext.proc_times line 914 main; self._proc_info line 921 fallback
+cpu_times         cext.proc_times line 940 main; self._proc_info line 945 fallback
+memory_info       self._get_raw_meminfo line 817 main
+_get_raw_meminfo  cext.proc_memory_info line 791 main; self._proc_info line 797 fallback
+num_threads       self._proc_info line 926 main
+cmdline           cext.proc_cmdline line 768 main; cext.proc_cmdline line 771 fallback; cext.proc_cmdline line 775 main
+io_counters       cext.proc_io_counters line 1024 main; self._proc_info line 1029 fallback
+cwd               cext.proc_cwd line 966 main
+ppid              ppid_map line 785 main
+name              self.exe line 740 main
+exe               cext.proc_exe line 747 main; cext.proc_exe line 756 main
+main path is a whole-system query: ['num_threads']
+oneshot_enter body: ['    self._proc_info.cache_activate(self)', '    self.exe.cache_activate(self)']

@@ -1,0 +1,4 @@
+1. A child seen alive, then reaped by this process
+   last seen alive with 0.42 CPU-s; the parent's child time then rose by 0.42 CPU-s; crediting both gives 0.84 for 0.42 used
+2. A grandchild whose parent exits first
+   the grandchild used 0.31 CPU-s; this process's child time rose by 0.05 CPU-s (the launcher's own start-up only)

@@ -1,0 +1,5 @@
+$ uv run python docs/review/probes/d-privacy/port_first.py
+the client was answered: 200 {"status":"ok"}
+the stand-in, which is not Submeter, received: ['Authorization: Bearer FAKE-api-token']
+a server starting afterwards cannot bind the port: Address already in use
+exit=0

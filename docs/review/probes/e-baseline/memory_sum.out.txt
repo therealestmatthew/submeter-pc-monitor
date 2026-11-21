@@ -1,0 +1,7 @@
+name, processes, summed RSS, summed PSS, summed USS (MiB), RSS over PSS
+   claude            10      3474      2475      2353  x1.40
+   chrome            17      3115      1599      1369  x1.95
+   Isolated Web Co    3       956       693       618  x1.38
+   WebExtensions      2       228        92        52  x2.49
+   Web Content        3       223        43        23  x5.14
+all 155 own processes: RSS 11327 MiB, PSS 6659 MiB, x1.70

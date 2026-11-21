@@ -1,0 +1,19 @@
+$ uv run python docs/review/probes/measure/snapshot_cost.py
+python 3.14.5 on linux; load average (0.90283203125, 1.0224609375, 1.06982421875)
+1. baseline psutil provider, snapshot()
+  447 processes: wall median 111.2 ms, worst 121.8 ms; CPU median 111.1 ms, worst 121.8 ms over 20 runs
+  scaled to 300 processes: 74.6 ms (7.5 times the 10 ms switching rule)
+  as a share of one core: 11.1% at a 1 s interval, 2.2% at 5 s (limits: 3% active, 1% idle)
+2a. direct /proc reader, stat only
+  448 processes: wall median 11.2 ms, worst 17.7 ms; CPU median 11.2 ms, worst 17.6 ms over 20 runs
+  scaled to 300 processes: 7.5 ms (0.7 times the 10 ms switching rule)
+  as a share of one core: 1.1% at a 1 s interval, 0.2% at 5 s (limits: 3% active, 1% idle)
+2b. direct /proc reader, stat + statm + io
+  449 processes: wall median 23.2 ms, worst 27.1 ms; CPU median 23.2 ms, worst 27.1 ms over 20 runs
+  scaled to 300 processes: 15.5 ms (1.5 times the 10 ms switching rule)
+  as a share of one core: 2.3% at a 1 s interval, 0.5% at 5 s (limits: 3% active, 1% idle)
+3. baseline pipeline per tick (snapshot + deltas + attribution + totals)
+  447 processes: wall median 125.9 ms, worst 134.5 ms; CPU median 125.8 ms, worst 134.2 ms over 20 runs
+  scaled to 300 processes: 84.5 ms (8.4 times the 10 ms switching rule)
+  as a share of one core: 12.6% at a 1 s interval, 2.5% at 5 s (limits: 3% active, 1% idle)
+exit=0

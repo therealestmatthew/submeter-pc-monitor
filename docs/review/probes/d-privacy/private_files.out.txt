@@ -1,0 +1,6 @@
+$ uv run python docs/review/probes/d-privacy/private_files.py
+1. folders: home 0700, data 0700, raw 0700
+2. database 0600, side files made by SQLite: {'-shm': '0600', '-wal': '0600'}
+3. token 0600, pid file 0600
+4. backup into a new file 0644, into a file made first 0600
+exit=0

@@ -1,0 +1,16 @@
+$ uv run python docs/review/probes/a-linux/cgroup_side_effects.py
+1. what a transient scope switches on for its neighbours
+  app.slice passes down, before: memory pids
+  plain scope: scope has [memory pids]; app.slice passes down [memory pids] while it runs; cpu.stat True, memory.peak True, cpu.weight False
+  Delegate=yes: scope has [cpu memory pids]; app.slice passes down [cpu memory pids] while it runs; cpu.stat True, memory.peak True, cpu.weight True
+  Delegate=memory pids: scope has [memory pids]; app.slice passes down [memory pids] while it runs; cpu.stat True, memory.peak True, cpu.weight False
+  app.slice passes down, afterwards: memory pids
+  cgroups directly below app.slice that the change applies to: 22
+
+2. one busy process in group X against four in group Y, all on one CPU
+  the delegated root passes down: cpu memory pids
+  cpu controller not passed down to X and Y: X gets 20% (per thread: 20%)
+  cpu controller passed down to X and Y:     X gets 50% (per group: 50%)
+  weight written by this probe: none; each group keeps the default weight of 100
+  probe cgroup removed: True
+exit=0

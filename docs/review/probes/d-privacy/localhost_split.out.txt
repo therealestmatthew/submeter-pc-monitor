@@ -1,0 +1,6 @@
+$ uv run python docs/review/probes/d-privacy/localhost_split.py
+1. a second program bound [::1] on the same port while 127.0.0.1 was held: True
+2. this machine resolves localhost to, in order: ['127.0.0.1']
+   a client given http://localhost:32921 was answered by: ["the listener on 127.0.0.1 received ['Authorization: Bearer FAKE-api-token']"]
+3. both with SO_REUSEADDR: the second bind was refused here (Address already in use)
+exit=0

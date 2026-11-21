@@ -1,0 +1,284 @@
+{
+ "lens": "A, \"true on this machine\", Windows half: checked against vendor documentation (Microsoft Learn, sqlite.org, docs.python.org) and against vendor code shipped in .venv (psutil 7.2.2 _pswindows.py) or published by the vendor (psutil and libuv C sources on GitHub). No Windows machine was used.",
+ "findings": [
+  {
+   "title": "On Windows a tagged group has no current memory figure, so the brief's 'kernel totals: CPU time, memory, I/O' is false for memory",
+   "lens": "A-windows",
+   "severity": "critical",
+   "status": "verified",
+   "evidence": "Brief: docs/17-build-prompt.md:62 says the kernel totals are authoritative for 'CPU time, memory, I/O and process counts', and docs/05-data-flow.md:52 says 'the kernel totals CPU, memory and I/O for every process in a tagged group'. QueryInformationJobObject (https://learn.microsoft.com/en-us/windows/win32/api/jobapi2/nf-jobapi2-queryinformationjobobject) lists the information classes. Only these return memory: (1) JOBOBJECT_BASIC_ACCOUNTING_INFORMATION has no memory member at all. (2) JOBOBJECT_EXTENDED_LIMIT_INFORMATION (https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-jobobject_extended_limit_information) has only peaks: 'PeakProcessMemoryUsed: The peak memory used by any process ever associated with the job.' and 'PeakJobMemoryUsed: The peak memory usage of all processes currently associated with the job.' The limit fields are commit: 'the limit for the virtual memory that can be committed'. (3) JOBOBJECT_LIMIT_VIOLATION_INFORMATION (https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-jobobject_limit_violation_information) says 'JobMemory: If the ViolationLimitFlags member specifies JOB_OBJECT_LIMIT_JOB_MEMORY, this member contains the committed memory for all processes in the job at the time the notification was sent.' That needs a notification limit, which 17-build-prompt.md:69 forbids ('Set no limits on the group').",
+   "impact": "A tagged workload's memory on Windows cannot come from the kernel. If the build follows the brief, it will either show a peak-commit figure labelled as a current exact total, or an empty value. Both break priority 1 ('never show a wrong number'). The unit also differs: the job's peak is commit (private bytes), while workload totals use USS (17-build-prompt.md:81). The run file's 'peak and mean memory' (17-build-prompt.md:127) cannot come from the job either, except a peak-commit value.",
+   "proposed_change": "docs/17-build-prompt.md:62 and docs/05-data-flow.md:52: say that on Windows the job provides CPU time, I/O and process counts, including exited processes, plus peak commit (PeakJobMemoryUsed), and no current memory. Current memory for a tagged group is summed from per-process reads of the members that JobObjectBasicProcessIdList returns, in the same unit as other workloads (USS, or private bytes for growth), labelled with the age of the reading. Run summaries state 'peak commit' as that unit. docs/09-telemetry.md row 'Tagged workload totals': change Full to 'CPU, I/O, process counts: full. Memory: peak commit only.'",
+   "cost": "Three sentences in two documents and one table cell",
+   "needs_decision": false,
+   "disposition": "fix now",
+   "refutation_attempt": "I looked for any documented information class that returns current job memory. QueryInformationJobObject lists 16 classes. None other than the limit-violation class returns a current figure, and that one only fills JobMemory after a notification limit is exceeded. Undocumented classes such as JobObjectMemoryUsageInformation exist outside Microsoft Learn, so they do not count here. I checked docs/10-known-limits.md and R06/R15: neither covers this.",
+   "related_prior_findings": "R01, R06, R15",
+   "would_confirm": "On Windows: create a job, assign a child that allocates 200 MB, then QueryInformationJobObject with JobObjectExtendedLimitInformation before and after the child frees it. Expect PeakJobMemoryUsed to stay at the peak, and no documented class to show the drop."
+  },
+  {
+   "title": "The psutil provider includes pid 0 (System Idle Process) and charges all idle time to it as process CPU; the bulk snapshot will hit the same entry",
+   "lens": "A-windows",
+   "severity": "critical",
+   "status": "verified",
+   "evidence": "src/submeter/providers/psutil_provider.py:44 maps every psutil.process_iter() entry and excludes no pid. psutil handles pid 0 like this: _pswindows.py:736-737 names pid 0 'System Idle Process' without opening it. Process.cpu_times (_pswindows.py:938-948) calls cext.proc_times, which returns AccessDenied for pid 0 (psutil proc_utils.c psutil_handle_from_pid: 'if (pid == 0) ... return psutil_oserror_ad(\"automatically set for PID 0\")', https://raw.githubusercontent.com/giampaolo/psutil/release-7.2.2/psutil/arch/windows/proc_utils.c). It then falls back to self._proc_info(), the SystemProcessInformation entry for pid 0 (proc_info.c reads UserTime and KernelTime with no pid-0 special case). Microsoft (https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-2000-server/cc958321(v=technet.10)): 'The Idle process runs a thread on each processor... You can see processor time for the Idle process on the Processes tab in Task Manager (called the System Idle Process)'. Probe docs/review/probes/a-windows-docs/windows_shaped_inputs.py feeds the real provider and Sampler these shapes for 8 cores at 0.85 idle. Output: 'process System Idle Process  cpu_s 6.80 restricted True', 'sum of per-process CPU 7.84 vs busy 1.44', 'per-process sum exceeds busy: True'.",
+   "impact": "On Windows the Restricted bucket (pid 0 has no readable command line, so it is restricted) receives the machine's whole idle time every interval. The reconciliation invariant (attributed + unattributed + system + restricted + idle = capacity within 2%, 17-build-prompt.md:98) then fails by roughly the idle share. The restricted count and the 'how much is restricted' check in windows-priorities.md:51 are also inflated. SystemProcessInformation returns 'one for each process running in the system', and psutil finds pid 0 in it, so the planned bulk provider has the same trap.",
+   "proposed_change": "src/submeter/providers/psutil_provider.py: skip pid 0 on Windows (one condition in snapshot()). docs/17-build-prompt.md, 'Bulk polling' paragraph: add 'Exclude pid 0 (the Idle process, whose time is idle time) from per-process rows on Windows. Pid 4 (System) belongs to the System workload.' docs/reference/windows-priorities.md item 3: add the check that the per-process CPU sum never exceeds busy time.",
+   "cost": "Two lines of code, one sentence in the brief and one in the checklist",
+   "needs_decision": false,
+   "disposition": "fix now",
+   "refutation_attempt": "I looked for an existing exclusion in psutil_provider.py, sampler.py, the attribution rules and the brief: none. I confirmed that psutil.name() special-cases pid 0, so the outer AccessDenied handler is not reached. I confirmed that create_time for pid 0 also falls back (proc_info.c sets create_time = 0, which the Python side turns into boot time), so the process is not dropped. The probe uses stand-ins, so the exact size on a real machine needs Windows.",
+   "related_prior_findings": "R07",
+   "would_confirm": "On Windows, standard user: a = psutil.Process(0).cpu_times(); b = psutil.cpu_times(percpu=True); sleep 10; repeat. Expect Δ(a.user + a.system) ≈ Σ Δidle across cores. Then run PsutilProvider().snapshot() twice and confirm the Sampler batch's per-process CPU sum is greater than cpu_busy_s."
+  },
+  {
+   "title": "A job's name disappears when its last handle closes while processes are still in it, so 're-attach by name after a restart' fails, and the collector cannot be the holder",
+   "lens": "A-windows",
+   "severity": "high",
+   "status": "verified",
+   "evidence": "Job Objects (https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects): 'The job is destroyed when its last handle has been closed and all associated processes have been terminated.' and 'Only named job objects can be opened.' Life Cycle of an Object (https://learn.microsoft.com/en-us/windows-hardware/drivers/kernel/life-cycle-of-an-object): 'A temporary object can be accessed by name only as long as its handle count is nonzero. Once the handle count decrements to zero, the object's name is removed from the object manager's namespace. Such objects can still be accessed by pointer as long as their reference count remains greater than zero.' Kernel object namespaces (https://learn.microsoft.com/en-us/windows/win32/termserv/kernel-object-namespaces): job objects are per-session; 'For processes started under a client session, the system uses the client session namespace by default.' Brief: 17-build-prompt.md:67 says 'a small detached holder, or the collector. Choose one and test it', and :68 says 'After a restart it re-attaches to every live group.' 15-phases-and-decisions.md:17 (P2 gate) requires 're-attaches to live groups'.",
+   "impact": "If the collector is the holder, a collector restart after the launcher has returned closes the last handle. The job keeps running, unnamed and unreachable. Its totals, including exited children, are lost, and its processes lose group membership, so attribution falls to rules or parent. That breaks the P2 gate and the 'exact' label. The same happens if a detached holder crashes, or if the collector runs in another session (for example a task set to run whether or not the user is logged on) and looks up a session-local name.",
+   "proposed_change": "docs/17-build-prompt.md, Collection bullets (:66-68): replace 'a small detached holder, or the collector. Choose one' with 'On Windows a job can be reopened by name only while some process holds a handle to it, so the holder must be a separate detached process that keeps a handle until ActiveProcesses is 0 and then writes the final totals. The collector opens groups by name to read them but is never the only holder. If no handle survives, record the run as accounting lost, never as zero. The collector and launcher must run in the same logon session, or names must use the Global\\\\ prefix.' Add to R15's fix the clause that the collector cannot be the holder on Windows.",
+   "cost": "Three sentences in the build prompt and one clause in the review log",
+   "needs_decision": false,
+   "disposition": "fix now",
+   "refutation_attempt": "I checked whether the brief already requires a separate holder: it leaves the choice open (17-build-prompt.md:67). I checked whether a process inside a job counts as a handle: the kernel document separates pointer references from the handle count, and the name follows the handle count. I looked for a documented way to get a job handle from a member process: IsProcessInJob only answers yes or no for a given job handle or 'any job'. R15 states the fix but not this limit.",
+   "related_prior_findings": "R15",
+   "would_confirm": "On Windows: CreateJobObjectW(NULL, 'Local\\\\submeter-probe'); create a child with PROC_THREAD_ATTRIBUTE_JOB_LIST that sleeps 60 s; CloseHandle(job). Then OpenJobObjectW(JOB_OBJECT_QUERY, FALSE, 'Local\\\\submeter-probe') should return NULL with GetLastError()==2, while IsProcessInJob(child, NULL) still returns TRUE."
+  },
+  {
+   "title": "'Do not allow breakaway' makes some CreateProcess calls fail inside a tagged run, and a program whose own job sets UI limits cannot nest; launching through Submeter can change a program's behaviour (fixed rule 1)",
+   "lens": "A-windows",
+   "severity": "high",
+   "status": "verified",
+   "evidence": "Process Creation Flags (https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags), CREATE_BREAKAWAY_FROM_JOB: 'If the calling process is associated with a job, the job must set the JOB_OBJECT_LIMIT_BREAKAWAY_OK limit.' libuv source (https://raw.githubusercontent.com/libuv/libuv/v1.x/src/win/process.c), uv_spawn comment: 'CREATE_BREAKAWAY_FROM_JOB makes the CreateProcess call fail if we're under job control that doesn't allow breakaway.' Job Objects (https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects), on preventing breakaway: 'if a child process attempts to associate itself or another child process with a job by calling AssignProcessToJobObject, the call will fail. If the process was designed to be associated with a specific job, this failure may prevent the process from working properly.' Nested Jobs (https://learn.microsoft.com/en-us/windows/win32/procthread/nested-jobs): 'the jobs are nested by default if the system can form a valid job hierarchy and neither job sets UI limits'. Brief: 17-build-prompt.md:69 'Set no limits on the group. Do not allow breakaway'.",
+   "impact": "A tagged run can break a program that asks for breakaway (its CreateProcess fails), or a program that puts its own children into a job with UI restrictions. Leaving out JOB_OBJECT_LIMIT_BREAKAWAY_OK is a setting that changes what a launched process can do. That conflicts with fixed rule 1 ('never changes a process... no setting that enables one'), and it can make agents fail only when measured.",
+   "proposed_change": "docs/17-build-prompt.md:69: replace 'Do not allow breakaway' with the owner's choice. Recommended: 'Set JOB_OBJECT_LIMIT_BREAKAWAY_OK only (never SILENT_BREAKAWAY_OK), so a program that explicitly asks to leave can, as it could without Submeter. Such a process is measured by polling, and the workload is labelled exact for the processes that stayed in the group.' Add to docs/10-known-limits.md: 'processes that explicitly break away from a tagged group, and programs whose own job uses UI limits, are polled'.",
+   "cost": "Two sentences in the brief and one table row",
+   "needs_decision": true,
+   "decision_question": "Tagged groups must either forbid breakaway (no gap in accounting, but some programs fail or misbehave when launched with submeter run, which strains fixed rule 1) or allow explicit breakaway (programs behave as they would without Submeter, but processes that leave are only polled). Recommendation: allow explicit breakaway (JOB_OBJECT_LIMIT_BREAKAWAY_OK, not SILENT) and label the gap. Fixed rule 1 outranks completeness, and CREATE_BREAKAWAY_FROM_JOB is uncommon in agent toolchains.",
+   "disposition": "fix now",
+   "refutation_attempt": "I checked whether Windows 8+ nesting removes the problem: nesting covers AssignProcessToJobObject into a new job, except when either job has UI limits. It does not cover CREATE_BREAKAWAY_FROM_JOB, which the flags page ties to BREAKAWAY_OK. I checked node/libuv, the likely agent runtime: it does not request breakaway and swallows ERROR_ACCESS_DENIED from AssignProcessToJobObject (same source), so Claude Code itself is probably unaffected. That narrows the impact but does not remove it. Which common tools request breakaway or use UI-limit jobs (for example Chromium-based sandboxes) is not documented, so the breadth is suspected.",
+   "related_prior_findings": "R01, R15",
+   "would_confirm": "On Windows: in a job without BREAKAWAY_OK, run python -c \"import subprocess; subprocess.Popen(['cmd','/c','exit'], creationflags=subprocess.CREATE_BREAKAWAY_FROM_JOB)\" and expect OSError winerror 5. Then launch an Electron app (VS Code) and Edge inside the job and check whether renderer processes start and whether chrome://sandbox reports the job level."
+  },
+  {
+   "title": "Assign-after-create leaves a window in which children escape; the brief does not say how the command is put in the job, and the usual fix (CREATE_SUSPENDED) is a suspend",
+   "lens": "A-windows",
+   "severity": "medium",
+   "status": "verified",
+   "evidence": "Job Objects: 'After a process is associated with a job, by default any child processes it creates using CreateProcess are also associated with the job.' Children created before the association are therefore not in it. UpdateProcThreadAttribute (https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-updateprocthreadattribute): 'PROC_THREAD_ATTRIBUTE_JOB_LIST: The lpValue parameter is a pointer to a list of job handles to be assigned to the child process, in the order specified. Supported in Windows 10 and newer'. AssignProcessToJobObject remarks mention CREATE_SUSPENDED as the creation pattern. Brief 17-build-prompt.md:62 says only 'launches the command inside a named Windows Job Object'. Python's subprocess STARTUPINFO lpAttributeList supports only handle_list, so this needs ctypes CreateProcessW.",
+   "impact": "A fast command (a shell that immediately spawns git or rg) can create children before AssignProcessToJobObject runs. Those children are outside the group, and their CPU is lost from the 'exact' total, exactly in the spawn-heavy case R01 exists for. The alternative, CREATE_SUSPENDED then ResumeThread, is a suspend, which fixed rule 1 lists by name.",
+   "proposed_change": "docs/17-build-prompt.md:62: add 'On Windows create the command directly in the job with PROC_THREAD_ATTRIBUTE_JOB_LIST (Windows 10+), through CreateProcessW via ctypes, so no child can start outside it and no process is ever suspended.'",
+   "cost": "One sentence; ctypes CreateProcessW is part of the launcher build either way",
+   "needs_decision": false,
+   "disposition": "fix now",
+   "refutation_attempt": "I looked for a launch method in docs/13-build-list.md, docs/14-baseline-modules.md and docs/17-build-prompt.md: none is given. I checked whether Python's subprocess can pass a job list: STARTUPINFO only exposes handle_list, so the race is real for a Popen-based launcher.",
+   "related_prior_findings": "R01",
+   "would_confirm": "On Windows: Popen a cmd /c that starts 50 'cmd /c exit' children in a loop, AssignProcessToJobObject right after Popen returns, then compare the job's TotalProcesses with 51. Repeat with JOB_LIST and expect exactly 51."
+  },
+  {
+   "title": "Nested tagged runs double count: a parent job's totals include every child job's processes",
+   "lens": "A-windows",
+   "severity": "medium",
+   "status": "verified",
+   "evidence": "Nested Jobs (https://learn.microsoft.com/en-us/windows/win32/procthread/nested-jobs): 'Resource accounting information for a nested job describes the usage of every process associated with that job, including processes in child jobs. Each job in a job chain therefore represents the aggregated resources used by its own processes and the processes of every child job below it in the job chain.' AssignProcessToJobObject: 'Accounting information is added to the immediate job and aggregated in each parent job in the job chain.' Brief 17-build-prompt.md:62 uses nested jobs and treats each group's kernel totals as authoritative. :94 maps each process to exactly one workload, which the group totals do not respect.",
+   "impact": "An agent tagged agent:main that runs 'submeter run --as agent:test -- pytest' produces two workloads whose kernel totals both include pytest. Workload CPU sums exceed the machine total, the 2% reconciliation fails, and cost and diff charge the work twice. cgroup v2 is also hierarchical, so Linux has the same issue.",
+   "proposed_change": "docs/17-build-prompt.md, Collection: add 'When submeter run starts inside an existing tagged group, record the parent group in the run file. Report a parent's totals minus its tagged children's totals, so each CPU-second belongs to one workload.' Add a P2 gate case: a nested tagged run reconciles within 2%.",
+   "cost": "Two sentences and one gate clause",
+   "needs_decision": false,
+   "disposition": "fix now",
+   "refutation_attempt": "I searched docs/ for nested or inner tagged runs: 03-cli-output.md:53 mentions 'nested jobs available' only as a capability. No rule subtracts child totals. The run-file design (one file per run) has no parent field.",
+   "related_prior_findings": "R07, R29",
+   "would_confirm": "On Windows: job A runs a child that creates job B and spawns a 2 s CPU burner into it. Expect JobObjectBasicAccountingInformation for both A and B to show about 2 s."
+  },
+  {
+   "title": "The bulk snapshot reads CPU times, start time and I/O from members Microsoft documents only as Reserved, and the psutil fallback calls the same NtQuerySystemInformation, once per process, on its main path",
+   "lens": "A-windows",
+   "severity": "high",
+   "status": "verified",
+   "evidence": "NtQuerySystemInformation (https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntquerysysteminformation): '[NtQuerySystemInformation may be altered or unavailable in future versions of Windows...]'. The documented SYSTEM_PROCESS_INFORMATION names NumberOfThreads, ImageName, UniqueProcessId, InheritedFromUniqueProcessId, HandleCount, SessionId, VirtualSize, WorkingSetSize, PagefileUsage, PrivatePageCount and so on. CreateTime, UserTime and KernelTime fall inside 'BYTE Reserved1[48]', and the I/O counters inside 'LARGE_INTEGER Reserved7[6]', with 'The other members of the structure are reserved for internal use by the operating system.' The same page notes that SystemBasicProcessInformation 'doesn't need to synchronize timing data (eliminating processor wakes)'. Brief 17-build-prompt.md:71 relies on this call returning 'CPU times, memory counters, I/O counters'. psutil code, probe docs/review/probes/a-windows-docs/psutil_windows_paths.out.txt: 'num_threads       self._proc_info line 926 main'; create_time, cpu_times, _get_raw_meminfo and io_counters call self._proc_info as their AccessDenied fallback (lines 921, 945, 797, 1029). proc_info.c: 'calls NtQuerySystemInformation with SystemProcessInformation... queries all processes, then walks the list for the target pid' ('This is slower because it iterates over all processes'). oneshot_enter caches _proc_info per process only. The provider calls num_threads for every process (psutil_provider.py:64).",
+   "impact": "R17's fix assumes psutil is an independent fallback. It is not: psutil's Windows path depends on the same call for thread counts and for every process the user cannot open. A layout change breaks both at once. The fallback also makes one whole-system query per process per sample (N queries, each N entries long), so its cost grows with the square of the process count, and each query wakes processors. The fallback the brief says to use when the fast path fails is the slowest path on Windows.",
+   "proposed_change": "docs/17-build-prompt.md:71 and R17 in docs/16-review-log.md: state that CPU times, start time and I/O are Reserved members of the documented structure, and that psutil uses the same call, so the fallback does not remove the dependency. The CI parse test is the real guard. src/submeter/providers/psutil_provider.py: do not call num_threads on Windows (record threads as unavailable in the fallback), so the fallback makes whole-system queries only for processes it cannot open.",
+   "cost": "Two sentences in the brief, one in the review log, and about five lines in the provider (threads must become optional in ProcessCounters)",
+   "needs_decision": false,
+   "disposition": "fix now",
+   "refutation_attempt": "I re-read psutil 7.2.2 _pswindows.py with the AST probe: num_threads has no direct cext call. I checked whether oneshot() shares one query across processes: it caches per Process object only (oneshot_enter body in the probe output). I checked R17: it says 'A psutil fallback' with no note of the shared dependency. I did not measure the per-call cost (no Windows), so the quadratic cost is reasoned from code.",
+   "related_prior_findings": "R02, R17",
+   "would_confirm": "On Windows with about 300 processes: time [p.num_threads() for p in psutil.process_iter()] against a single psutil.Process(os.getpid()).num_threads(); expect total ≈ N × single. Then time PsutilProvider().snapshot() and compare with the 10 ms rule."
+  },
+  {
+   "title": "A Windows scheduled task, as the brief installs it, will not start on battery, stops when the laptop unplugs, is killed after 72 hours and runs below normal priority; performance counters also need an interactive logon",
+   "lens": "A-windows",
+   "severity": "high",
+   "status": "verified",
+   "evidence": "TaskSettings.DisallowStartIfOnBatteries (https://learn.microsoft.com/en-us/windows/win32/taskschd/tasksettings-disallowstartifonbatteries): 'If True, the task will not be started if the computer is running on batteries... The default is True.' StopIfGoingOnBatteries (https://learn.microsoft.com/en-us/windows/win32/taskschd/tasksettings-stopifgoingonbatteries): 'the task will be stopped if the computer is going onto batteries... The default is True.' ExecutionTimeLimit (https://learn.microsoft.com/en-us/windows/win32/taskschd/tasksettings-executiontimelimit): 'By default, a task will be stopped 72 hours after it starts to run.' and 'A value of PT0S will enable the task to run indefinitely.' Priority (https://learn.microsoft.com/en-us/windows/win32/taskschd/tasksettings-priority): 'The default value is 7.', where 7 maps to 'BELOW_NORMAL_PRIORITY_CLASS'. Limited User Access Support (https://learn.microsoft.com/en-us/windows/win32/perfctrs/limited-user-access-support): 'Any users in interactive logon sessions can view counter data. However, users in non-interactive logon sessions must be in the Performance Monitoring Users group to view counter data.' Brief: 17-build-prompt.md:199 says only 'installing a Windows scheduled task at logon'. 08-configuration.md:71 has on_battery_multiplier, so running on battery is expected.",
+   "impact": "On a work laptop the collector does not run on battery and dies after three days of uptime. Trends get silent gaps, and the P1 soak and the 24-hour soak can pass on mains power and still fail in use. At priority 7 the collector is starved when the CPU is saturated, which is when live diagnosis is needed. A task set to run whether or not the user is logged on cannot read the GPU or processor-frequency counters.",
+   "proposed_change": "docs/17-build-prompt.md:199: specify the task: LogonTrigger for the current user only; LogonType InteractiveToken (run only when the user is logged on); DisallowStartIfOnBatteries=false; StopIfGoingOnBatteries=false; ExecutionTimeLimit=PT0S; MultipleInstancesPolicy=IgnoreNew; RestartOnFailure; Priority as the owner decides. Add a doctor check that reads back these settings.",
+   "cost": "One paragraph in the brief",
+   "needs_decision": true,
+   "decision_question": "The collector's own task priority: keep the Task Scheduler default 7 (below normal, the collector starves under load), or set 5 (normal)? Setting a priority on Submeter's own process is not changing an observed process, but fixed rule 1 names 'priority'. Recommendation: priority 5, with a sentence in the brief that rule 1 covers observed processes, not Submeter's own.",
+   "disposition": "fix now",
+   "refutation_attempt": "I searched docs/ for 'scheduled task', 'battery', 'execution time' and '72': only 17-build-prompt.md:199 and 13-build-list.md:49 mention the task, with no settings. These are the documented defaults for a task registered without settings. Whether a standard user may register a logon-triggered task for themselves is not settled here (see not_checked).",
+   "related_prior_findings": "R10, R30",
+   "would_confirm": "On Windows as a standard user: schtasks /create /tn SubmeterProbe /tr \"cmd /c exit\" /sc onlogon, then schtasks /query /tn SubmeterProbe /xml. Expect DisallowStartIfOnBatteries true, StopIfGoingOnBatteries true, ExecutionTimeLimit PT72H and Priority 7 (or Access is denied, which settles the registration question instead)."
+  },
+  {
+   "title": "The per-core busy sum likely counts interrupt and DPC time twice on Windows, which inflates busy time and the System bucket",
+   "lens": "A-windows",
+   "severity": "medium",
+   "status": "suspected",
+   "evidence": "psutil cpu.c (https://raw.githubusercontent.com/giampaolo/psutil/release-7.2.2/psutil/arch/windows/cpu.c) computes per core 'systemt = kernel - idle', with the comment 'kernel time includes idle time on windows'. InterruptTime and DpcTime are returned as separate fields and not subtracted from system. Microsoft Processor object (https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2003/cc786359(v=ws.10)): '% DPC Time is a component of % Privileged Time because DPCs are executed in privileged mode.' The % Privileged Time description says calls to the system include 'page faults and interrupts'. The provider computes busy = sum(t) - idle (psutil_provider.py:115-122), which is user + (kernel - idle) + interrupt + dpc. psutil's own _cpu_busy_time (__init__.py:1752-1765) does the same. Probe windows_shaped_inputs.out.txt: 'true busy core-seconds 1.20', 'provider cpu_busy_s 1.44 (over by 0.24 = interrupt + DPC counted twice)'. 02-what-it-looks-like.md:141 defines System as 'Kernel time, interrupts, deferred calls'.",
+   "impact": "Machine busy time, cores in use and the System workload are overstated by the interrupt and DPC time. That is usually 1 to 3% of a core, but much more during a driver DPC storm, which is a case the live verdict should diagnose. The 2% reconciliation can still close, because System is a residual, so a test will not catch it.",
+   "proposed_change": "docs/reference/windows-priorities.md item 3: add the check 'over 10 s, Σ per core Δ(user+system+idle) equals Δwall × cores'. If it holds, change psutil_provider._system() on Windows to subtract interrupt and dpc as well (they are already inside system).",
+   "cost": "One checklist line, then a one-line code change once confirmed",
+   "needs_decision": false,
+   "disposition": "fix now",
+   "refutation_attempt": "The Microsoft statement is about performance-counter privileged time. That SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION.KernelTime includes DPC and interrupt time is not stated on the NtQuerySystemInformation page (DpcTime and InterruptTime are in Reserved1 there). So this stays suspected. If KernelTime excluded them, user + kernel would not cover elapsed time, which the GetSystemTimes-style definition implies it does.",
+   "related_prior_findings": "R07",
+   "would_confirm": "On Windows: t0 = psutil.cpu_times(percpu=True); w0 = time.perf_counter(); sleep 10; t1, w1. For each core compare Δ(user+system+idle) with (w1-w0). Equal means interrupt and dpc are inside system, which confirms the double count; equal to Δ(user+system+idle+interrupt+dpc) refutes it."
+  },
+  {
+   "title": "pyproject allows Python 3.12, whose time.monotonic() on Windows steps in 15.6 ms, too coarse for 250 ms intervals",
+   "lens": "A-windows",
+   "severity": "medium",
+   "status": "verified",
+   "evidence": "What's New in Python 3.13 (https://docs.python.org/3/whatsnew/3.13.html): 'On Windows, monotonic() now uses the QueryPerformanceCounter() clock for a resolution of 1 microsecond, instead of the GetTickCount64() clock which has a resolution of 15.6 milliseconds.' and 'On Windows, time() now uses the GetSystemTimePreciseAsFileTime() clock for a resolution of 1 microsecond, instead of the GetSystemTimeAsFileTime() clock which has a resolution of 15.6 milliseconds.' pyproject.toml:5 'requires-python = \">=3.12\"'. 08-configuration.md:61 allows active_interval '250ms to 10s'. sampler.py:53 uses snapshot.monotonic differences as interval_s. windows-priorities.md:28 says the checks pass on 3.12 and 3.13.",
+   "impact": "On Windows with Python 3.12 each 250 ms interval is measured as about 234, 250 or 266 ms, so per-interval rates and the cores-in-use histogram carry up to ±6% error. Totals still telescope. A machine where uv picks 3.12 gives noisier percentiles than one on 3.13, with nothing in the data to say why.",
+   "proposed_change": "pyproject.toml: requires-python = \">=3.13\" (this checkout already resolves 3.14.5). Or, in docs/17-build-prompt.md 'Stack and conventions', say 'Python 3.13 or newer on Windows, because earlier versions' monotonic clock steps in 15.6 ms'.",
+   "cost": "One line",
+   "needs_decision": false,
+   "disposition": "fix now",
+   "refutation_attempt": "I checked whether the sampler uses perf_counter (QueryPerformanceCounter on all versions): it uses the Snapshot.monotonic value from time.monotonic() (psutil_provider.py:43). I checked whether the gap rule depends on resolution: no, 30 s and 2 s thresholds are far above 15.6 ms. So the effect is rate noise only, which is why this is medium.",
+   "related_prior_findings": "R08"
+  },
+  {
+   "title": "The one-instance lock is not freed at once when the holder is killed, and acquire() never retries; the test and platform_check also read the lock file while it is locked",
+   "lens": "A-windows",
+   "severity": "medium",
+   "status": "verified",
+   "evidence": "LockFile (https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-lockfile): 'If a process terminates with a portion of a file locked or closes a file that has outstanding locks, the locks are unlocked by the operating system. However, the time it takes for the operating system to unlock these locks depends upon available system resources... If this is not done, access to these files may be denied if the operating system has not yet unlocked them.' The same page also says: 'If the locking process opens the file a second time, it cannot access the specified region through this second handle until it unlocks the region.' Code: files.py:219-231, where acquire() returns False on the first refusal with no retry. platform_check.py:55 waits a fixed 0.5 s after kill before asserting that the lock is free. tests/test_baseline.py:329 and platform_check.py:52 call read_bytes() on the lock file while it is locked (byte 0, past EOF of an empty file).",
+   "impact": "After a crash, or when Task Manager ends the collector, a restarting collector (scheduled-task restart or the user) can be refused and exit as 'another copy is already running', leaving no collector. platform_check can report a false FAIL. If Windows refuses the read of a locked range past EOF (not settled by the documentation), test_file_map_names_expiry_and_lock fails on Windows and blocks the P0 gate.",
+   "proposed_change": "src/submeter/store/files.py InstanceLock.acquire(): when refused and the pid in NAME.pid is not running, retry every 100 ms for up to 5 s before giving up. tests/test_baseline.py:329 and scripts/platform_check.py:52: check emptiness with stat().st_size == 0 instead of read_bytes(). platform_check.py:55: poll for up to 5 s instead of a single 0.5 s sleep.",
+   "cost": "About fifteen lines across three files",
+   "needs_decision": false,
+   "disposition": "fix now",
+   "refutation_attempt": "I checked that the same-process second-handle refusal (windows-priorities item 2.2) is supported by the documentation ('Exclusive locks cannot overlap an existing locked region'), so that part holds. I checked whether the code already waits or retries: it does not. Whether a read past EOF hits ERROR_LOCK_VIOLATION is not in the documentation, so that half is suspected. Note: platform_check's 'this process refused' (line 51) tests a different process from the holder, not a second handle in one process; only the pytest test covers 2.2.",
+   "related_prior_findings": "R30",
+   "would_confirm": "On Windows: (1) hold the lock in a child, TerminateProcess it, then loop InstanceLock.acquire() every 10 ms and record the time to success over 50 trials. (2) While holding the lock, Path(lock).read_bytes() from the same process: PermissionError [WinError 33] confirms the test failure."
+  },
+  {
+   "title": "Reading command lines through the PEB opens every process for memory reads, which Defender's LSASS rule (a standard-protection rule) denies and logs",
+   "lens": "A-windows",
+   "severity": "medium",
+   "status": "suspected",
+   "evidence": "ASR rules reference (https://learn.microsoft.com/en-us/defender-endpoint/attack-surface-reduction-rules-reference), rule 'Block credential stealing from the Windows local security authority subsystem', listed under 'Standard protection rules': 'Some apps enumerate all running processes and attempt to open them with exhaustive permissions. This ASR rule denies the app's open process actions and records the details to the Security log in Windows Event Viewer. This rule can generate numerous noise.' and 'This ASR rule produces a large volume of audit events'. psutil _pswindows.py:763-775: cmdline() tries the PEB method first ('PEB method detects cmdline changes but requires more privileges') and falls back on AccessDenied. The provider calls cmdline() for every process every sample (psutil_provider.py:69). windows-priorities.md:89 says 'If a probe is flagged, stop and tell me'.",
+   "impact": "On a managed work computer the collector, and platform_check itself, may appear in the Security log or EDR console as a process that repeatedly tries to open lsass. That can get it blocked or flagged, and stop the P0 probe on the owner's own rule.",
+   "proposed_change": "docs/17-build-prompt.md, Bulk polling: add 'Open other processes only with PROCESS_QUERY_LIMITED_INFORMATION, never PROCESS_VM_READ. Read command lines with NtQueryInformationProcess ProcessCommandLineInformation, once per new process, never per sample, and never for lsass.exe.' docs/reference/windows-priorities.md item 7: add 'after the run, check the Defender Operational log (event IDs 1121 and 1122) and the Security log for denied opens of lsass.exe'.",
+   "cost": "Two sentences in the brief and one in the checklist",
+   "needs_decision": false,
+   "disposition": "fix now",
+   "refutation_attempt": "Whether a standard user's OpenProcess of lsass with PROCESS_VM_READ reaches the ASR filter, or is refused by the process DACL first, is not documented, so this stays suspected. I checked that the provider caches command lines: it does not, and it calls cmdline() each snapshot (raw.py stores a command once, but the read still happens).",
+   "would_confirm": "On a Windows machine with ASR in audit or block mode: run 'uv run python scripts/platform_check.py', then Get-WinEvent -LogName 'Microsoft-Windows-Windows Defender/Operational' | ? Id -in 1121,1122 | ? Message -match 'lsass'. Any event naming python.exe confirms it."
+  }
+ ],
+ "measurements": "Logic probes only; no timing was re-measured. psutil_windows_paths.out.txt: on the main path, num_threads calls self._proc_info (line 926), a whole-system NtQuerySystemInformation query. create_time (921), cpu_times (945), _get_raw_meminfo (797) and io_counters (1029) use it as the AccessDenied fallback. ppid uses ppid_map (Toolhelp snapshot, line 785). oneshot_enter caches _proc_info and exe per process only. windows_shaped_inputs.out.txt, 8 cores, 1 s, per core user 0.10 / privileged 0.05 (interrupt 0.01, DPC 0.02 inside it) / idle 0.85: true busy 1.20 core-s; provider cpu_busy_s 1.44 (+0.24); System Idle Process cpu_s 6.80 restricted True; per-process sum 7.84 against busy 1.44.",
+ "nothing_found": [
+  "Job creation without elevation: AssignProcessToJobObject requires only JOB_OBJECT_ASSIGN_PROCESS on the job and 'PROCESS_SET_QUOTA and PROCESS_TERMINATE' on the process, which a launcher holds on its own child. No privilege is named. Nesting exists since Windows 8, so the Windows 11 target is fine.",
+  "Job accounting after exit: JOBOBJECT_BASIC_ACCOUNTING_INFORMATION TotalUserTime and TotalKernelTime cover 'all active processes associated with the job, as well as all terminated processes no longer associated with the job, in 100-nanosecond ticks', and TotalProcesses counts terminated ones. That matches the brief for CPU and process counts. Memory is the exception, reported above.",
+  "Same-process second handle on the lock: LockFile 'Exclusive locks cannot overlap an existing locked region' plus the second-handle sentence, so windows-priorities item 2.2 holds. Locking one byte past EOF of an empty file is documented: 'You can lock bytes that are beyond the end of the current file.'",
+  "psutil 'restricted' on Windows behaves as the brief says (10-known-limits.md:16): cpu_times, memory_info (private field) and io_counters fall back to the whole-system query rather than raising AccessDenied, so CPU time and working set are counted. Only an unreadable command line or working folder marks a process restricted. name() uses SystemProcessIdInformation (no handle), so the provider's outer AccessDenied branch is rarely reached.",
+  "WSL2 and Docker VM CPU on the host: Hyper-V scheduler types page: 'Starting with Windows 10, version 1803, the root scheduler is used by default on client systems only', with 'the NT scheduler manag[ing] all aspects of assigning work', so guest CPU is charged to a host process and the P0 'VM share' measurement is possible on Windows 11 client.",
+  "Kernel object namespaces: job names default to the per-session namespace, and creating them under Global\\\\ needs no privilege (the SeCreateGlobalPrivilege check covers only file-mapping and symbolic-link objects).",
+  "SQLite WAL lifecycle on close: sqlite.org/wal.html: 'When the last connection to a database closes, that connection does one last checkpoint and then deletes the WAL and its associated shared-memory file', which matches raw.py close(). Readers of a closed WAL-mode file need write permission on the directory to create -shm and -wal (same user, so fine). 'WAL does not work over a network filesystem': the data folder must stay on a local disk, as windows-priorities item 6 already requires.",
+  "Python 3.13 and 3.14 clocks on Windows: monotonic is QueryPerformanceCounter at 1 microsecond and time() is GetSystemTimePreciseAsFileTime. Only 3.12 is affected (reported above)."
+ ],
+ "not_checked": [
+  {
+   "what": "Pid 0 size: that the System Idle Process's CPU times equal total idle time on a real machine",
+   "why": "Needs Windows; the chain is psutil code plus archived Microsoft text",
+   "how_to_check": "Standard user: compare Δ(psutil.Process(0).cpu_times().user+system) with Σ Δidle from psutil.cpu_times(percpu=True) over 10 s; expect equal"
+  },
+  {
+   "what": "Job name lost after the last handle closes while members live",
+   "why": "Needs Windows",
+   "how_to_check": "ctypes CreateJobObjectW('Local\\\\probe'), child created with PROC_THREAD_ATTRIBUTE_JOB_LIST sleeping 60 s, CloseHandle(job), then OpenJobObjectW(JOB_OBJECT_QUERY,FALSE,name): expect NULL with error 2, and IsProcessInJob(child,NULL)=TRUE"
+  },
+  {
+   "what": "Breakaway refusal and UI-limit nesting failures in real tools",
+   "why": "Needs Windows and the owner's toolchain",
+   "how_to_check": "In a job without BREAKAWAY_OK: subprocess.Popen(..., creationflags=CREATE_BREAKAWAY_FROM_JOB) should raise winerror 5. Launch VS Code, Edge and the agent CLI inside the job and confirm their child processes start; check IsProcessInJob for the renderers"
+  },
+  {
+   "what": "Nesting under the real launchers (Windows Terminal, VS Code terminal, Claude Code shell)",
+   "why": "Needs Windows",
+   "how_to_check": "From each: IsProcessInJob(GetCurrentProcess(),NULL); create the command with JOB_LIST into a new job; expect success, and record any error code"
+  },
+  {
+   "what": "Whether per-core KernelTime includes DPC and interrupt time (double count)",
+   "why": "Microsoft documents it only for performance counters",
+   "how_to_check": "Over 10 s, per core Δ(user+system+idle) from psutil.cpu_times(percpu=True) against Δperf_counter: equal confirms the double count"
+  },
+  {
+   "what": "Cost of the psutil fallback (one whole-system query per process)",
+   "why": "Timing needs Windows",
+   "how_to_check": "With about 300 processes: median of 20 PsutilProvider().snapshot() calls, and the same with num_threads removed; compare with the 10 ms rule"
+  },
+  {
+   "what": "That SystemProcessInformation returns CPU times and create time for other users' and SYSTEM processes without elevation",
+   "why": "Microsoft documents those fields only as Reserved; psutil relies on it",
+   "how_to_check": "ctypes NtQuerySystemInformation(5) as a standard user; count SYSTEM-owned entries with nonzero UserTime+KernelTime (Reserved1 offsets 0x20/0x28/0x30 on x64)"
+  },
+  {
+   "what": "Standard user can register a logon task with the settings proposed above",
+   "why": "Not settled by the pages read",
+   "how_to_check": "schtasks /create /tn SubmeterProbe /xml task.xml (LogonTrigger UserId=current user, InteractiveToken, DisallowStartIfOnBatteries=false, StopIfGoingOnBatteries=false, ExecutionTimeLimit=PT0S, Priority 5) without elevation; expect SUCCESS"
+  },
+  {
+   "what": "GPU Engine, GPU Process Memory and Processor Information counters readable by a standard user",
+   "why": "Docs say interactive users can view counters; the specific GPU sets are not checked",
+   "how_to_check": "PdhOpenQuery, PdhAddEnglishCounterW('\\\\GPU Engine(*)\\\\Utilization Percentage') and '\\\\Processor Information(_Total)\\\\% Processor Performance', two PdhCollectQueryData calls 1 s apart; expect valid data, run once from the logon task"
+  },
+  {
+   "what": "Lock release time after TerminateProcess, and reading the locked empty file",
+   "why": "LockFile says the release time is resource-dependent; read-past-EOF behaviour is undocumented",
+   "how_to_check": "50 trials of kill-holder then acquire every 10 ms, recording the latency; Path(lock).read_bytes() while locked, where PermissionError [WinError 33] means the test fails on Windows"
+  },
+  {
+   "what": "Defender ASR events caused by the provider",
+   "why": "Needs a managed machine",
+   "how_to_check": "After platform_check, Get-WinEvent Defender/Operational IDs 1121 and 1122 plus Security log entries naming python.exe and lsass.exe"
+  },
+  {
+   "what": "Job CPU time granularity (tick-sampled or exact)",
+   "why": "No Microsoft page read states it; it matters for 'exact' at sub-second child lifetimes",
+   "how_to_check": "Spawn 500 children each busy 5 ms in a job; compare job TotalUserTime+TotalKernelTime with the sum of QueryProcessCycleTime converted at nominal frequency; clustering at multiples of about 15.6 ms means tick sampling"
+  },
+  {
+   "what": "Monotonic clock across suspend on Python 3.13+ (QueryPerformanceCounter)",
+   "why": "Already windows-priorities item 5; GetTickCount64 and QPC sleep behaviour pages not re-read in this attempt",
+   "how_to_check": "submeter top --seconds 60 with a one-minute sleep inside; expect one gap and no CPU burst"
+  },
+  {
+   "what": "Per-process connections for other users' processes without elevation (the brief says own user only)",
+   "why": "Not checked against GetExtendedTcpTable documentation",
+   "how_to_check": "GetExtendedTcpTable(TCP_TABLE_OWNER_PID_ALL) as a standard user; count rows owned by SYSTEM pids"
+  },
+  {
+   "what": "%APPDATA% redirection or roaming, and Microsoft Store Python's private AppData copy",
+   "why": "Python 'Using Python on Windows' page and Folder Redirection docs not re-read in this attempt",
+   "how_to_check": "Read HKCU\\\\...\\\\Explorer\\\\User Shell Folders AppData and Local AppData; GetDriveTypeW on the data folder (expect DRIVE_FIXED); sys.executable must not be under WindowsApps"
+  },
+  {
+   "what": "msvcrt.locking maps to LockFile",
+   "why": "Python msvcrt and Microsoft _locking pages not re-fetched in this attempt; the LockFile semantics above assume this mapping",
+   "how_to_check": "Read https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/locking and https://docs.python.org/3/library/msvcrt.html"
+  }
+ ],
+ "probe_files": [
+  "/code/submeter-pc-monitor/submeter-pc-monitor-extract/docs/review/probes/a-windows-docs/psutil_windows_paths.py",
+  "/code/submeter-pc-monitor/submeter-pc-monitor-extract/docs/review/probes/a-windows-docs/psutil_windows_paths.out.txt",
+  "/code/submeter-pc-monitor/submeter-pc-monitor-extract/docs/review/probes/a-windows-docs/windows_shaped_inputs.py",
+  "/code/submeter-pc-monitor/submeter-pc-monitor-extract/docs/review/probes/a-windows-docs/windows_shaped_inputs.out.txt"
+ ]
+}

@@ -1,0 +1,6 @@
+1. psutil create_time() for a fresh Process, before and after btime moves by 1 s
+   same process, two fresh objects: start times differ by 1.000 s
+2. one-hour step back between two snapshots, child born after it
+   child start minus parent start -3600 s; parent -> 'probe', child -> 'unattributed' (no rule matched)
+3. no cache: every process re-read with btime one second lower than the tick before
+   456 processes; first_seen 456; reported exited 456; CPU credited 0.000 s, machine busy 0.460 s

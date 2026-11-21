@@ -1,0 +1,13 @@
+$ uv run python docs/review/probes/a-linux/io_children.py
+1. the child wrote 32 MB, then exited and was reaped by this probe
+  child while alive, after writing: wchar +32.0 MB, write_bytes +32.0 MB
+  this probe before reaping the child: wchar +0.0 MB, write_bytes +0.0 MB
+  this probe after reaping the child:  wchar +32.0 MB, write_bytes +32.0 MB
+  baseline sampler, write_bytes deltas for the two processes:
+    interval in which the child wrote: child 32.0 MB, probe 0.0 MB
+    interval in which it was reaped:   probe 32.0 MB (child gone)
+    a workload holding both is charged 64.0 MB for 32 MB written
+
+2. the same writer started by a shell that only waits for it
+  this probe after reaping the shell: wchar +32.0 MB, write_bytes +32.0 MB
+exit=0

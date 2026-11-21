@@ -1,0 +1,33 @@
+$ uv run python docs/review/probes/b-measurement/gap_rule.py
+1. accepted settings, and what Sampler() with its default gap_after_s=30 makes of them
+   defaults on mains, idle         accepted; interval   5.0 s ->  0 of 20 ticks called a gap, 100% of the CPU time credited
+   defaults on battery, idle       accepted; interval  10.0 s ->  0 of 20 ticks called a gap, 100% of the CPU time credited
+   idle_interval = 31s             accepted; interval  31.0 s -> 20 of 20 ticks called a gap,   0% of the CPU time credited
+   idle_interval = 60s             accepted; interval  60.0 s -> 20 of 20 ticks called a gap,   0% of the CPU time credited
+   battery x2 (default), idle 16s  accepted; interval  32.0 s -> 20 of 20 ticks called a gap,   0% of the CPU time credited
+   battery x7, idle 5s (default)   accepted; interval  35.0 s -> 20 of 20 ticks called a gap,   0% of the CPU time credited
+   battery x10, idle 5s (default)  accepted; interval  50.0 s -> 20 of 20 ticks called a gap,   0% of the CPU time credited
+   battery x4, active 8s           accepted; interval  32.0 s -> 20 of 20 ticks called a gap,   0% of the CPU time credited
+   cold_interval = 60s, own batch  accepted; interval  60.0 s -> 20 of 20 ticks called a gap,   0% of the CPU time credited
+
+2. a one-hour suspend between two samples, then four ordinary seconds
+   batch gap=False interval      1 s -> aggregate() returns 1 workload row, cpu 0.50 s over 1 s
+   batch gap=True  interval   3601 s -> aggregate() returns 1 workload row, cpu 0.00 s over 3601 s
+   batch gap=False interval      1 s -> aggregate() returns 1 workload row, cpu 0.50 s over 1 s
+   batch gap=False interval      1 s -> aggregate() returns 1 workload row, cpu 0.50 s over 1 s
+   batch gap=False interval      1 s -> aggregate() returns 1 workload row, cpu 0.50 s over 1 s
+   minute bucket +    0 s: covered      1 s of 60, cpu 0.50 s, well covered False, cores p50 0.487
+   minute bucket + 1800 s: covered   3601 s of 60, cpu 0.00 s, well covered True, cores p50 0.005
+   minute bucket + 3600 s: covered      3 s of 60, cpu 1.50 s, well covered False, cores p50 0.487
+   hour bucket   +    0 s: covered   3602 s of 3600, cpu 0.50 s, mean cores 0.0001 (the process used 0.5 while awake)
+   hour bucket   + 3600 s: covered      3 s of 3600, cpu 1.50 s, mean cores 0.5000 (the process used 0.5 while awake)
+   a wall clock stepped forward by an hour gives the sampler the same two clock readings
+
+3. a 35-second stall with both clocks running, then one ordinary second
+   batch gap=False interval    1 s: the process used  0.50 CPU-s, credited  0.50, machine busy recorded  0.50
+   batch gap=True  interval   35 s: the process used 17.50 CPU-s, credited  0.00, machine busy recorded  0.00
+   batch gap=False interval    1 s: the process used  0.50 CPU-s, credited  0.50, machine busy recorded  0.50
+
+4. submeter top --seconds 31 --json, on this machine as it is
+   exit code 0; 3 workload rows covering 449 processes over 31.2 s; CPU time reported in total: 0.00 s
+exit=0

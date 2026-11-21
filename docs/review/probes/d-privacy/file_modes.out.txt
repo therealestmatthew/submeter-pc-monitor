@@ -1,0 +1,46 @@
+$ uv run python docs/review/probes/d-privacy/file_modes.py
+the home folder itself is 0750; the umask this was run with is listed first
+  umask 0002
+    dir  0775  readable by owner, group, everyone  data
+    dir  0775  readable by owner, group, everyone  data/backups
+    dir  0775  readable by owner, group, everyone  data/minute
+    dir  0775  readable by owner, group, everyone  data/raw
+    file 0644  readable by owner, group, everyone  data/raw/2026-11-20.db
+    file 0644  readable by owner, group, everyone  data/raw/2026-11-20.db-shm
+    file 0644  readable by owner, group, everyone  data/raw/2026-11-20.db-wal
+    dir  0775  readable by owner, group, everyone  data/runs
+    dir  0775  readable by owner, group, everyone  settings
+    dir  0775  readable by owner, group, everyone  state
+    file 0600  readable by owner  state/collector.lock
+    file 0664  readable by owner, group, everyone  state/collector.pid
+    dir  0775  readable by owner, group, everyone  state/logs
+  umask 0022
+    dir  0755  readable by owner, group, everyone  data
+    dir  0755  readable by owner, group, everyone  data/backups
+    dir  0755  readable by owner, group, everyone  data/minute
+    dir  0755  readable by owner, group, everyone  data/raw
+    file 0644  readable by owner, group, everyone  data/raw/2026-11-20.db
+    file 0644  readable by owner, group, everyone  data/raw/2026-11-20.db-shm
+    file 0644  readable by owner, group, everyone  data/raw/2026-11-20.db-wal
+    dir  0755  readable by owner, group, everyone  data/runs
+    dir  0755  readable by owner, group, everyone  settings
+    dir  0755  readable by owner, group, everyone  state
+    file 0600  readable by owner  state/collector.lock
+    file 0644  readable by owner, group, everyone  state/collector.pid
+    dir  0755  readable by owner, group, everyone  state/logs
+  umask 0077
+    dir  0700  readable by owner  data
+    dir  0700  readable by owner  data/backups
+    dir  0700  readable by owner  data/minute
+    dir  0700  readable by owner  data/raw
+    file 0600  readable by owner  data/raw/2026-11-20.db
+    file 0600  readable by owner  data/raw/2026-11-20.db-shm
+    file 0600  readable by owner  data/raw/2026-11-20.db-wal
+    dir  0700  readable by owner  data/runs
+    dir  0700  readable by owner  settings
+    dir  0700  readable by owner  state
+    file 0600  readable by owner  state/collector.lock
+    file 0600  readable by owner  state/collector.pid
+    dir  0700  readable by owner  state/logs
+  Path.mkdir(mode=0o700, parents=True): parent 0755, leaf 0700
+exit=0

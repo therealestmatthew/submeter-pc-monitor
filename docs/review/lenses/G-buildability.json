@@ -1,0 +1,254 @@
+{
+ "lens": "G. Buildability",
+ "findings": [
+  {
+   "title": "Two accuracy gates use the measured source as their own reference, so they cannot catch CPU time that is missed",
+   "lens": "G. Buildability",
+   "severity": "high",
+   "status": "verified",
+   "evidence": "docs/17-build-prompt.md:269 (P1): 'per-process figures agree with kernel counters (performance counters on Windows, /proc on Linux) within 5%'. On Linux the provider under test is component 05 'Direct /proc reader' (docs/13-build-list.md:15), so it reads the same counters as the reference. docs/17-build-prompt.md:62: 'The kernel's totals for the group are authoritative', and docs/15-phases-and-decisions.md:17 (P2): 'charged within 2% of the kernel total'. Submeter's tagged figure is the group's kernel total by definition. An independent reference exists and agrees: docs/review/probes/a-linux/cgroup_scope.out.txt 'payload CPU seconds, kernel: 0.646515' against 'payload CPU seconds, wait4: 0.646941' (0.07% apart). Escape routes that a self-referential gate cannot see, from https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects: 'After a process is associated with a job, by default any child processes it creates using CreateProcess are also associated with the job. (Child processes created using Win32_Process.Create are not associated with the job.)'",
+   "impact": "The Linux half of the P1 gate checks only that /proc is parsed correctly. It cannot detect CPU time that polling misses between ticks (R01) or cold-set rows that have gone stale. The P2 gate checks only that the stored number matches the number read: a process outside the group, whether started before assignment (see the launcher finding) or through WMI, is missing from both sides, so the gate passes with a wrong total.",
+   "proposed_change": "docs/15-phases-and-decisions.md P1 and P2, and docs/17-build-prompt.md:269-270. Use the load generator's own accounting as the reference. P1: 'Each burner process reports its own CPU seconds (getrusage RUSAGE_SELF on Linux, GetProcessTimes on Windows) at known instants. Over a 10-minute window, the CPU seconds Submeter stores for that process agree within 5% or 0.05 s, whichever is larger.' P2: 'The load generator waits for its 500 children and reports their summed CPU time (wait4 or RUSAGE_CHILDREN on Linux; GetProcessTimes on handles it keeps open on Windows). The run's stored CPU seconds equal that sum plus the generator's own time within 2%, and a grandchild started in the command's first millisecond is a member of the group (IsProcessInJob, cgroup.procs).' Keep the kernel and performance-counter comparison as a parsing check only.",
+   "cost": "About 10 lines in docs 15 and 17, plus a reporting requirement on the load generator (see the test-assets finding)",
+   "needs_decision": false,
+   "disposition": "fix now",
+   "refutation_attempt": "Searched docs/ for any other reference figure. R10 (docs/16-review-log.md:113) chose 'kernel counters', 17:269 rules out Task Manager, and nothing names an independent figure. Whether Windows PDH Process counters come from the same data as NtQuerySystemInformation is not verified, so the Windows half of P1 may be a real cross-check. The Linux half of P1 and all of P2 remain self-referential by the brief's own wording.",
+   "related_prior_findings": "R10, R01, R15"
+  },
+  {
+   "title": "Most other gates need data, hardware or a person that no builder session or CI runner has, and several have no pass criterion",
+   "lens": "G. Buildability",
+   "severity": "high",
+   "status": "verified",
+   "evidence": "P0 (docs/15:9). '`doctor` is correct on both' has no reference. 'Per-process VRAM is checked against the adapter total' needs component 23 (P5, docs/13:33) and a GPU, and standard runners have none (see the CI finding). 'over a working day' (docs/15:45) is the owner's day. docs/17:268 asks for 'a written matrix of what each OS delivers with and without elevation', but the work computer has no administrator rights (docs/15:46) while the Windows runner always has them. P1 (docs/15:13). The budget is defined 'With 300 processes running' (docs/17:230), and the runner's process count is unknown. 'CPU-hours from the hourly tier match the raw sum within 0.1%' cannot be tested in a 30-minute soak, because no hourly bucket closes ('A bucket is final 30 seconds after it ends', 17:123). 'I will run a 24-hour soak myself' (17:269) has no procedure and no pass criterion. P3 (docs/15:21). 'a leak too slow for the hourly check' needs at least 7 days of hourly data (17:155). '`why` answers in under 2 seconds' names no machine, data volume, or cold or warm start. P4 (docs/15:25). 'A 30-day range loads in under 1 second' needs 30 days of minute and hourly files that nothing generates, and 'loads' could mean the API response or a rendered chart. P5 (docs/15:29). 'recorded fixtures' for hardware no one named has, for example 'NVML library None' in a-linux/linux_sources.out.txt. P6 (docs/15:33). 'its own cost' does not say how a request identifies its run, and 'no response contains a command line' has no oracle. P7 (docs/15:37) needs WSL2, and https://ubuntu.com/wsl/docs/latest/howto/run-workflows-azure/ says: 'GitHub runners, however, run as a service. This means that they are not on a user session, hence they cannot run WSL (or any other store application).'",
+   "impact": "Builders and checkers would each invent the procedure, the reference and the data, so a gate's pass would mean different things in different sessions. Gates that depend on the owner have no written steps for the owner to follow.",
+   "proposed_change": "docs/15-phases-and-decisions.md, with docs/17:268-274 restated to match. P0: doctor --json on each runner matches a committed expected matrix for that runner; on the owner's machine, the owner confirms each line against the probe output. VRAM: if GPU Process Memory counters exist, record the per-process sum and the adapter total every 5 s for 30 min under a stated load and report the drift; otherwise record 'no counters' and mark gpu.memory partial. WSL share: the owner runs a probe at the start and end of one working day that reads the cumulative CPU time of the vmmem or vmmemWSL processes and the machine's busy time. The elevated column comes from the administrator runner, the unelevated column from the owner's machine. P1: the hourly check runs on a synthetic raw fixture of 3 hours with one gap, deterministically. The soak spawns idle processes up to 300 and measures the collector's own CPU seconds from its own counters. The 24-hour soak states its pass criteria: overhead budget, no growth in collector memory beyond X MB, integrity_check ok, gaps only where recorded. P3: `why --json` wall time from process start, median of 5 after one warm-up, on the owner's machine, with 24 h of raw data at 300 processes. P4: GET /api/v1/series for 30 days over a synthetic 30-day store returns in under 1 s and names tier hour. P5: say 'synthetic fixtures from vendor structures' where nothing was recorded. P6: seed canary command lines and working folders into the fixtures, then scan every MCP response for them; 'own' means the run named in the caller's environment (see the interfaces finding). P7: an owner procedure.",
+   "cost": "About 30 changed lines in docs 15 and 17",
+   "needs_decision": false,
+   "disposition": "fix now",
+   "refutation_attempt": "Checked whether prompts/01 already makes the plan supply procedures. Stage 2 item 6 asks for 'the exact commands or procedure' per gate, but it inherits these gates' wording and their missing data, so the plan would have to invent the references above. Checked R10 (docs/16:111-113): its fix created the 30-minute soak and the owner's 24-hour soak without procedures, and does not address the hourly bucket or the 300-process load.",
+   "related_prior_findings": "R10, R16, R19"
+  },
+  {
+   "title": "Hosted CI runners cannot stand in for the owner's machine: the Windows runner is an elevated service with no user session and no GPU",
+   "lens": "G. Buildability",
+   "severity": "high",
+   "status": "verified",
+   "evidence": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners: 'Windows virtual machines are configured to run as administrators with User Account Control (UAC) disabled.' and 'The Linux and macOS virtual machines both run using passwordless sudo.' Standard public-repository rows: 'Linux | 4 | 16 GB | 14 GB | x64' and 'Windows | 4 | 16 GB | 14 GB | x64'. GPU appears only under larger runners ('GPU-powered runners'). https://ubuntu.com/wsl/docs/latest/howto/run-workflows-azure/: 'GitHub runners, however, run as a service. This means that they are not on a user session'. docs/17-build-prompt.md:266: 'Set up CI on Windows and Linux runners in phase 0, because you can only run one OS yourself.' From lens A, docs/review/probes/a-linux/cgroup_scope.out.txt case 4: a login with no session bus gets 'exit code 1: Failed to connect to bus: No medium found'. No .github folder exists (g-buildability/shared_files.out.txt).",
+   "impact": "On Windows CI every process is readable, so Restricted counts, OpenProcess failures, the token-file ACL and any accidental need for elevation (fixed rule 2) all pass in CI and fail on the work computer, and doctor in CI reports the administrator's matrix. The logon task, desktop notifications (component 22), WSL2 (P7) and GPU (P0, P5) cannot run there. Builders work on Windows, so the Linux-only work (component 05, the cgroup halves of 13 and 14, the systemd unit) can show red-then-green only in CI. If the Ubuntu job has no user systemd, the cgroup launcher fails unless CI sets one up with sudo, which the owner's setup would not need.",
+   "proposed_change": "docs/15 (P0) and docs/17:266 should say: 'CI proves portability: ruff, mypy (also with --platform for the other OS), pytest, fixture parsing and logic on both OSes. It does not prove privilege behaviour, hardware or session features, because Windows runners are administrators with UAC off. Tests that need an unprivileged user, a user session (logon task, notifications, WSL) or hardware (GPU, battery, suspend) are marked and run on the owner's machine at the gate, from a written procedure.' The plan should have CI run on every pushed branch from wave 1, so reviewers can read the red and green runs of Linux-only tasks.",
+   "cost": "A paragraph in docs 15 and 17; the CI workflow is a P0 task",
+   "needs_decision": false,
+   "disposition": "fix now",
+   "refutation_attempt": "Searched docs/ and docs/reference/windows-priorities.md for any statement that CI runs unprivileged or in a user session. There is none; section 8 covers working copies only. A CI job might create a local standard user and run the privilege tests under it, but I could not verify that this works from a service session, so it stays in would_confirm rather than the proposal. Process count, Job Object nesting inside the runner's own job, and timing noise on shared runners are unverified.",
+   "would_confirm": "A workflow on both runners. Windows: `whoami /groups | findstr S-1-16-12288` (High Mandatory Level means elevated); `(Get-Process).Count`; a short ctypes script calling IsProcessInJob, CreateJobObjectW, AssignProcessToJobObject on a child, and QueryInformationJobObject(JobObjectBasicAccountingInformation) after the child exits. Ubuntu: `cat /proc/self/cgroup; echo $XDG_RUNTIME_DIR; systemctl --user is-system-running; systemd-run --user --scope -p Delegate=yes true; echo $?; ps -e --no-headers | wc -l`.",
+   "related_prior_findings": "R10"
+  },
+  {
+   "title": "Phase gates depend on later phases: P0 on P1 and P5 code, P1 on P2's reconciliation and a server program with no component, P2 and P3 on the P4 API, and an early P7 on an ingest route that is in no list",
+   "lens": "G. Buildability",
+   "severity": "high",
+   "status": "verified",
+   "evidence": "P0 (docs/15:9, 17:268) asks for the cost of one full sample, but the bulk providers are components 04 and 05 in P1 (docs/13:14-15). Only psutil exists in P0, measured here at a median of 111 ms for 447 processes (docs/review/00-working-notes.md). The VRAM check needs component 23 in P5 (13:33), and the WSL share needs a day of collection (component 07, P1). P1's 'totals reconcile within 2%' (15:13) needs 'the four fixed buckets, reconciliation check', which is component 15 in P2 (13:25). P1 asks for 'the minute and history files ..., retention and backups' (17:269), yet no component is the server process: server.api is component 20 in P4 (13:30), and docs/14:84 lists 'the server' as not built. P2's 'A session's cost reads the same before and after its raw data is deleted' (15:17) needs session markers, but 'POST /sessions the only write' (13:82) is P4, and only the server writes history (AGENTS.md:43). For P3's `why` (15:21), docs/05:50 routes the CLI through the API ('The server exposes an API ... to three readers: the dashboard ...; the CLI'), while 17:46 says 'The API, CLI and dashboard are thin readers over store and analysis'. P7 'moves to directly after phase 2' (15:37), but R05's fix (16:81), 'The ingest API accepts a second collector', has no route among the 13 (13:70-83), and the API is P4. Components per phase in 13: P0 3, P1 9, P2 4, P3 3, P4 3, P5 1, P6 2, P7 0.",
+   "impact": "Builders either pull later components forward without tracking them or fail the gate. The Rust trigger in docs/11 would be decided in P0 on the provider the brief already expects to miss the target.",
+   "proposed_change": "In docs/15 and docs/13: (a) P0 times a minimal bulk-snapshot prototype on Windows and a /proc reader on Linux, or the cost measurement moves to the P1 gate. The VRAM check and the WSL share become owner procedures, and the P0 matrix covers only what P0 can probe. (b) Move the reconciliation part of component 15 to P1. (c) Add a 'server' component in P1: the process loop for rollups, retention, backups, the integrity check, run-file ingestion and epochs. (d) State that CLI commands read the store files directly and the API serves the dashboard and MCP, and give sessions a file path in P2 (see the control-channel finding). (e) P7 names its ingest route, and if P7 moves after P2, the route moves with it.",
+   "cost": "About 15 lines across docs 13 and 15; no code",
+   "needs_decision": true,
+   "decision_question": "Do CLI commands read the store files directly, with the API serving only the dashboard and MCP, or do they go through the API, which would pull a minimal API into P2? Recommendation: direct file reads. Reading breaks no one-writer rule, and it keeps P2 and P3 independent of P4.",
+   "disposition": "fix now",
+   "refutation_attempt": "Checked whether the baseline already covers the early needs. aggregate() exists (attribution/rules.py:196), but its test compares the processes' sum with itself (tests/test_baseline.py:269-271), not with capacity. store.rollup is 'Pure functions with no files. The writers for the minute and history files are still to build' (docs/14:318). Since 17:269 puts retention and backups in P1, the server process is needed then.",
+   "related_prior_findings": "R05, R07"
+  },
+  {
+   "title": "No channel carries a command from one program to another: reload, stop, session markers, a session's interval and the launcher's registration have none, and Windows has no signal to send",
+   "lens": "G. Buildability",
+   "severity": "high",
+   "status": "verified",
+   "evidence": "docs/05:3 and docs/17:56 say the programs share 'nothing but files on disk' and 'None of the three imports another', and the collector has no API. The following need a channel: `config reload` (13:64; 17:187 'Hot reload on submeter config reload and on file change'); `daemon stop` (13:58); 'A session may override the sampling interval for its own duration' (17:190, with the example `session start bench --interval 250ms` at 08:74), which the collector must learn; the launcher 'registers the group with the collector' (05:44), while 'The collector finds live groups from the run files' (17:68) and the launcher writes its run file 'when the command ends' (17:66); and the overhead guard's 'raise a finding' (17:191), although findings live in the server's history file (06:15) and the collector writes only raw files (17:52). https://docs.python.org/3/library/os.html (os.kill): 'Windows: The signal.CTRL_C_EVENT and signal.CTRL_BREAK_EVENT signals are special signals which can only be sent to console processes which share a common console window, e.g., some subprocesses. Any other value for sig will cause the process to be unconditionally killed by the TerminateProcess API'.",
+   "impact": "On Windows, `daemon stop` and `config reload` can only kill the collector, so every stop loses up to 5 s and leaves an unmerged WAL. A session's interval override, live-group registration and the overhead-guard finding have no path, and parallel builders would each invent a different mechanism.",
+   "proposed_change": "docs/05-data-flow.md and docs/06-storage.md should name files as the only channel and list them. For example, under state/control/: `reload`, touched by `config reload` (programs also poll the settings files' mtime each tick); `stop-<program>`, which the program removes on exit; `sessions/<id>.start.json` and `<id>.stop.json`, each with one writer, whoever starts or stops the session; and `runs/<id>.json`, written at launch with state 'live' and replaced by atomic rename with the final totals. The collector reads them each tick. Anything the collector reports (overhead guard, provider status) is an `event` row in its raw file, which the server turns into a finding or an epoch.",
+   "cost": "A table of about 5 rows in docs 06 and a paragraph in docs 05",
+   "needs_decision": true,
+   "decision_question": "Should commands reach the programs through files polled each tick, or through a loopback control endpoint on the collector (a second port and token)? Recommendation: files. They need no new listener, behave the same on both OSes, survive restarts, and keep the collector replaceable by a Rust binary.",
+   "disposition": "fix now",
+   "refutation_attempt": "Searched docs/ for reload, signal, stop, control, pipe and IPC. Only 13:64 and 17:187 mention reload, and neither names a mechanism. The API's one write, POST /sessions (13:82), lives in the server, which may not write the collector's files. CTRL_BREAK_EVENT needs a shared console, which a collector started at sign-in would not have.",
+   "related_prior_findings": "R15, R32"
+  },
+  {
+   "title": "subprocess.Popen cannot start a command inside a Job Object without a race, and the documented alternative, starting it suspended, collides with the wording of fixed rule 1",
+   "lens": "G. Buildability",
+   "severity": "medium",
+   "status": "verified",
+   "evidence": "Microsoft (https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects): 'After a process is associated with a job, by default any child processes it creates using CreateProcess are also associated with the job.' Children created before the association are therefore outside the job. In CPython 3.14.5's subprocess.py (this machine's stdlib, Windows branch), line 1553 is `hp, ht, pid, tid = _winapi.CreateProcess(...)` and lines 1574-1576 are `self._handle = Handle(hp)`, `self.pid = pid`, `_winapi.CloseHandle(ht)`. The thread handle is closed and tid is discarded, so a CREATE_SUSPENDED child cannot be resumed through Popen. https://docs.python.org/3/library/subprocess.html, STARTUPINFO.lpAttributeList: 'Supported attributes: handle_list' only, so PROC_THREAD_ATTRIBUTE_JOB_LIST cannot be passed. psutil's route is .venv psutil/_pswindows.py:956-957, `def resume(self): cext.proc_suspend_or_resume(self.pid, False)`. Fixed rule 1 (AGENTS.md) reads 'no priority, affinity, suspend, kill or memory cap'. On Linux the same docs mark preexec_fn 'NOT SAFE to use in the presence of threads'. docs/17:62-69 say what the launcher does, not how.",
+   "impact": "The obvious Popen-then-AssignProcessToJobObject leaves a window in which the command's first children escape the job, undercounting the tagged total, which is the design's exact path, and the self-referential P2 gate would not notice. The alternative, CREATE_SUSPENDED followed by psutil.resume() or NtResumeProcess, is suspend and resume code that a reviewer enforcing rule 1 should reject.",
+   "proposed_change": "Add to docs/17-build-prompt.md after line 62, and to component 13 in docs/13: 'The launcher places itself in the new Job Object or cgroup before it starts the command, so every descendant is born inside the group; its own small cost is charged to the run. It never creates the command suspended.' The alternative is CreateProcessW through ctypes with PROC_THREAD_ATTRIBUTE_JOB_LIST.",
+   "cost": "Two sentences",
+   "needs_decision": false,
+   "disposition": "fix now",
+   "refutation_attempt": "Looked for a start sequence in docs 05, 09, 13 and 17 and in docs/reference: there is none. Checked whether Popen exposes the thread id: it keeps only pid and _handle. The race is narrow, because a new process needs milliseconds before it can spawn, so the undercount would be occasional. That is why this is medium rather than critical. The conflict with rule 1's wording is certain.",
+   "related_prior_findings": "R15, R09"
+  },
+  {
+   "title": "The named stack needs at least four runtime dependencies beyond the three AGENTS.md allows, and none is approved",
+   "lens": "G. Buildability",
+   "severity": "medium",
+   "status": "verified",
+   "evidence": "AGENTS.md:46: 'No new dependency without my approval. There are three at runtime: pydantic, psutil and typer.' pyproject.toml lists exactly those three. uv.lock locks no fastapi, uvicorn, starlette, websockets, httpx, pyarrow, mcp, tzdata or pywin32. The brief names more: docs/17:38 'FastAPI for the local API, with a WebSocket for live data'; 17:39 uPlot; Parquet at 17:142 and 13:63; MCP at 13:35; 'desktop delivery' at 13:32; NVML at 17:87-88. https://uvicorn.dev/installation/ lists the minimal install as h11 and click, and says 'When `websockets` is installed, Uvicorn will use it by default for WebSocket handling.' https://fastapi.tiangolo.com/tutorial/testing/: 'To use TestClient, first install httpx.' https://fastapi.tiangolo.com/how-to/custom-docs-ui-assets/: 'By default, those files are served from a CDN.' https://docs.python.org/3/library/zoneinfo.html: 'Some systems, including notably Windows systems, do not have an IANA database available ... it is recommended to declare a dependency on tzdata.' (Lens C's local_days probe: tzdata not installed.) The MCP spec (https://modelcontextprotocol.io/specification/2025-06-18/basic/transports) says stdio 'Messages are delimited by newlines', so a hand-written server is feasible.",
+   "impact": "Without approvals a builder must either break AGENTS.md:46 or stall at P4 and P6. FastAPI's default /docs page makes the browser fetch scripts from a third-party CDN, against fixed rule 3, unless it is disabled.",
+   "proposed_change": "Record an approval list in docs/review/02-rulings.md, then commit pyproject.toml and uv.lock once, before wave 1. (1) HTTP and WebSocket: fastapi, uvicorn and websockets (or wsproto), with httpx in dev, and FastAPI(docs_url=None, redoc_url=None, openapi_url=None). The alternative is stdlib ThreadingHTTPServer with GET /live polled each second, about 300 lines and no WebSocket. (2) Parquet: pyarrow, or drop Parquet from version 1 and export JSON and CSV (recommended). (3) MCP: the official SDK, or a hand-written stdio JSON-RPC server with three read-only tools of about 150 lines (recommended). (4) Windows APIs (NtQuerySystemInformation, Job Objects, PDH, CreateProcessW, the token-file ACL) and NVML: ctypes only, no package. (5) Desktop notifications: a PowerShell subprocess on Windows and notify-send on Linux, reported unavailable when missing, or dashboard only. (6) tzdata with a sys_platform == 'win32' marker, plus tzlocal or a ui.time_zone setting to name the local zone. (7) Hot reload by polling mtime, with no watchfiles. (8) uPlot vendored with its MIT licence text beside it. (9) The CI actions: actions/checkout and astral-sh/setup-uv. (10) No browser-automation dependency: test the API, and have the owner check the dashboard.",
+   "cost": "One decision list, and one pyproject and lock commit",
+   "needs_decision": true,
+   "decision_question": "Approve the FastAPI bundle (fastapi, uvicorn, websockets; httpx for tests) with the docs UI disabled, or use a stdlib server with polling? Drop Parquet from version 1? Hand-write the MCP stdio server? Add tzdata for Windows? Recommendation: approve the FastAPI bundle, defer Parquet, hand-write MCP, add tzdata, use ctypes for all Windows calls, and vendor uPlot.",
+   "disposition": "fix now",
+   "refutation_attempt": "Checked whether the brief settles precedence. docs/README.md:72-75 ranks only the three fixed rules above the topic files and puts 17 last, and the dependency rule is a standing AGENTS.md rule, so 17's stack and AGENTS.md:46 still disagree. I did not look up the mcp SDK's dependency tree or pyarrow's wheel size (see not_checked).",
+   "related_prior_findings": "R04"
+  },
+  {
+   "title": "Builders would have to guess the interfaces between programs and readers: 12 table schemas, the run file, the final-totals writer, the WebSocket messages, the --json shape and the MCP transport",
+   "lens": "G. Buildability",
+   "severity": "medium",
+   "status": "verified",
+   "evidence": "(1) Table columns exist only for the 8 raw tables (src/submeter/store/raw.py:34-53). The minute file (meta, rollup_1m) and the history file (meta, workload, epoch, rollup_1h, exe_1h, run, session, session_summary, finding, baseline; docs/13:40-41) have no columns anywhere. Bucket (models.py:150-175) holds CPU, memory and I/O only, against the catalogue at 06:77-94. (2) Run file: docs/06:17 says 'its group, its label and its final totals', kept 'Until read', and 17:107 says 'written by the launcher with an atomic rename'. Nothing gives its fields, says when it is first written (17:68 needs it while the group is live) or says who deletes it. (3) 17:67 offers 'a small detached holder, or the collector' to save the final totals, but 17:56, 06:17 and AGENTS.md:43 make the launcher the only writer of run files. (4) 'WS /live' (13:83) has no message format, rate or handshake, and nothing says how the dashboard obtains the token (17:148). (5) 'every command accepts --json with a stable schema' (17:197) has no schema or version. The baseline shapes differ: doctor emits an object with 'version' (cli.py:68), top a bare list (cli.py:96), store status {'bytes','total'} (cli.py:138). config show and check have no --json (cli.py:109,122), against 13:22 'All commands, each with JSON output'. (6) MCP: 17:53 puts it inside the server, and config.py:198 has api.mcp_enabled, but the MCP spec's stdio transport says 'The client launches the MCP server as a subprocess', and its HTTP transport says 'Servers MUST validate the Origin header'. 15:33 'its own cost' does not say how a request identifies its run. (7) 'Settings that need a restart must say so' (17:187), but no list says which.",
+   "impact": "Parallel builders of the server's writers, the detectors, the API and the CLI would each define the shared contract differently, and the merge would expose it only at integration. The final-totals option as written breaks the one-writer rule.",
+   "proposed_change": "docs/06-storage.md should give the DDL of the 12 tables, or name it as the first P1 task with one owner before parallel work. It should also give the run file's JSON fields and lifecycle: written at launch with state 'live', replaced at the end by the launcher or its detached holder, and deleted by the server once it is ingested. docs/17:67: delete 'or the collector', or say the collector records the final totals as a raw-file event. docs/13 should give a short WS /live message schema (type, ts, workloads[], system) and the token handshake. docs/03-cli-output.md should give the JSON envelope {\"schema\": \"submeter.<command>/1\", ...}, with a snapshot test per command. Add --json to config show and check in the baseline (under 50 lines). docs/17:53: choose MCP over stdio as a separate process that reads files, and have the launcher set SUBMETER_RUN in the command's environment so 'own' is defined. docs/08: list the restart-only settings.",
+   "cost": "A paragraph per item in docs 03, 06, 08, 13 and 17; the DDL as a planned task; under 50 lines of baseline change for the JSON envelope",
+   "needs_decision": false,
+   "disposition": "fix now",
+   "refutation_attempt": "Lens C's schema_gaps probe covers the raw tables only, and its output lists 8 tables matching docs/13. Searched docs/ for 'schema', 'WebSocket', 'message', 'stdio', 'transport', 'restart' and 'run file' and found only the lines cited. The baseline docstring (cli.py:4-5) claims 'JSON with a stable shape', but no test pins a shape.",
+   "related_prior_findings": "R15, R26, R04"
+  },
+  {
+   "title": "tests/test_layers.py cannot enforce 'none of the three programs imports another', and it does not see relative imports, `from submeter import x` or importlib",
+   "lens": "G. Buildability",
+   "severity": "medium",
+   "status": "verified",
+   "evidence": "Ran `uv run python docs/review/probes/g-buildability/layer_rule_cases.py` (output in layer_rule_cases.out.txt). Results: 'collector imports the raw store, absolute: layer test FAILS' (the control case); 'collector imports the raw store, relative: layer test passes; module exit 0, loaded from the copy: True'; 'core imports the store package by name: layer test passes'; 'core imports cli through importlib: layer test passes'; 'new package server, not in LAYER: layer test ERROR KeyError 'server''; with server and launcher at layer 3, 'launcher imports the collector: layer test passes' and 'server imports the collector: layer test passes'. The delivered cli.py imports 'submeter.collector.sampler' and 'submeter.providers.psutil_provider', and cli.py will host `submeter run`, the launcher (17:54). imports_of() (tests/test_layers.py:21-31) keeps only names starting with 'submeter.'. The rule's stated purpose (17:56) is to 'replace it with a Rust binary later without touching anything else'.",
+   "impact": "Nothing protects the three-program boundary that keeps the collector replaceable. A relative import passes the downward rule while breaking it, so parallel builders get no failing test for either mistake.",
+   "proposed_change": "In tests/test_layers.py: resolve relative imports (ImportFrom.level > 0) against the module's package; expand `from submeter import a, b` into submeter.a and submeter.b; fail on importlib.import_module with a 'submeter...' literal; add a PROGRAMS set with a test that no program package imports another. AGENTS.md:37 (owner approval needed) and docs/13 should name the program packages.",
+   "cost": "About 25 lines in tests/test_layers.py; one sentence each in AGENTS.md and docs/13",
+   "needs_decision": true,
+   "decision_question": "Which packages are the three programs? Recommendation: thin entry packages submeter.programs.collector, .server and .launcher at layer 3, importing libraries only. `daemon start` and `run` start them as processes rather than importing them, and `top` reads the collector's raw file instead of sampling in-process.",
+   "disposition": "fix now",
+   "refutation_attempt": "Lenses E (e-baseline/tooling_cases.out.txt case 4) and F (f-consistency/layer_rule.out.txt) showed that legitimate same-layer edges fail. This probe shows the opposite: forms that pass when they should fail, and imports between programs that pass. Reran the absolute form as a control, and it fails as designed. The baseline today uses only absolute imports, so nothing is broken yet.",
+   "related_prior_findings": ""
+  },
+  {
+   "title": "Every component edits the same few files: core/models.py, core/config.py, cli.py, tests/test_baseline.py, the LAYER table, and pyproject.toml with uv.lock",
+   "lens": "G. Buildability",
+   "severity": "medium",
+   "status": "verified",
+   "evidence": "Ran `uv run python docs/review/probes/g-buildability/shared_files.py` (output in shared_files.out.txt). Results: 'Record subclasses in core/models.py: 10'; 'setting groups in the one Settings class in core/config.py: 10'; 'command groups in docs/13: 13; commands in cli.py today: 5' in one Typer app; 'tests/test_baseline.py: 19 tests; modules it imports: 13'; 'named packages missing from LAYER: ['alerts', 'launcher', 'mcp', 'report', 'server', 'web']', and a missing package raises KeyError (layer_rule_cases.out.txt). AGENTS.md:38 says 'Subclass `Record` in `core/models.py`', and AGENTS.md:37 says 'Add a new package to its LAYER table'. config.py:197 sets a fixed default port of 8787. prompts/01 stage 3 requires 'No file has two writers in one wave'.",
+   "impact": "Either every wave waits on the owner of each shared file, or merges conflict, which the stage-3 prompt says to treat as a planning defect. Server tests that bind the default port collide with one another and with the owner's own running Submeter.",
+   "proposed_change": "For docs/PLAN.md, one owner makes a restructuring commit before wave 1, with no change in behaviour: (1) add all six packages to LAYER with their layers; (2) new records go in their own core modules, with AGENTS.md:38 reworded to 'Subclass Record from core/models.py' (owner approval needed); (3) one settings module per group under core/, composed in a single file that the config owner holds; (4) cli.py becomes a package with one module per command group, and the registration lines belong to the CLI owner; (5) tests/test_baseline.py is frozen, and new tests go in tests/test_<component>.py; (6) dependency approvals land in one commit; (7) tests bind port 0 and use unique job, scope and task names.",
+   "cost": "A section in PLAN.md and a restructuring commit of about 50 moved lines",
+   "needs_decision": false,
+   "disposition": "plan",
+   "refutation_attempt": "prompts/01 stage 2 item 4 already names pyproject.toml, uv.lock, core/models.py, core/config.py, cli.py, AGENTS.md and docs/STATUS.md as shared files with one named owner. It does not name tests/test_baseline.py or the LAYER table, and a single owner of models.py still serialises every wave that adds a record, so the finding stands for the restructuring, not the ownership rule.",
+   "related_prior_findings": ""
+  },
+  {
+   "title": "The load generator, fixture recorder, synthetic multi-day stores and CI are outside the 25 components with no phase, and the plan's completeness check counts only the 25",
+   "lens": "G. Buildability",
+   "severity": "medium",
+   "status": "verified",
+   "evidence": "docs/13:44-50 ('Alongside the code') lists CI, recorded fixtures and a load generator without phases or component numbers. R19's fix (docs/16:171) is 'A load generator ships with the tests', yet shared_files.out.txt shows 'folders under tests/ (fixtures, load generator): none' and '.github folder present: False'. prompts/01-execution-prompt.md:99 checks only that 'each of the 25 components is in a task or cut by a ruling'. Gates that need these tools: P1 soak (15:13), P2 500 children (15:17), the P3 slow leak, which needs at least 7 days of hourly data (17:155), and the P4 30-day range (15:25). No listed tool writes multi-day stores.",
+   "impact": "The plan can pass its own completeness check with no task for the tools the P1 to P4 gates depend on. The load generator must also serve as the accuracy reference (see the first finding), which R19's description does not ask of it.",
+   "proposed_change": "docs/13 should number them as components 26 to 29, each with a phase: 26 the CI workflow (P0); 27 the load generator (P0), with short-lived children, a leak at a set rate and a CPU burn, where each worker writes its own CPU time and peak memory to a result file; 28 a provider recorder with an anonymiser (P1); 29 a synthetic store generator that writes raw, minute and history files for a stated period (P1). prompts/01:99 should read 'each of the 29 components'.",
+   "cost": "Four table rows and one number in prompts/01",
+   "needs_decision": false,
+   "disposition": "fix now",
+   "refutation_attempt": "Searched docs/ and prompts/ for 'load generator', 'fixture' and 'synthetic'. The only hits are 13:46-47, 16:171, 17:256 and prompts/01:85, and none gives a phase, a component number or a reporting duty.",
+   "related_prior_findings": "R19, R10"
+  },
+  {
+   "title": "Recorded fixtures from the owner's work computer would be pushed to a public repository, and only command lines must be redacted",
+   "lens": "G. Buildability",
+   "severity": "medium",
+   "status": "verified",
+   "evidence": "AGENTS.md:41: 'A command line is redacted before it is stored, logged, put in a finding or written into a test fixture.' No rule covers executable names, working folders (models.py:76-78 exe, cmdline, cwd), user names in paths, the host name or the process list. docs/13:46 asks for 'Recorded fixtures for every provider and detector'. The build runs on the work computer (prompts/01:3), and CLAUDE.md says to push freely. Scrub mode keeps the executable and non-secret arguments (docs/14, privacy.redact). This review's own rules require writing the home directory as ~ and omitting user and host names, because the repository is public.",
+   "impact": "A recorded snapshot of a managed work computer, including its security products, internal tools, user and host names and folder paths, would become public on the first push. That would be the build sending machine data off the machine, which fixed rule 3 forbids the product to do.",
+   "proposed_change": "Add after AGENTS.md:41 (owner approval needed): 'A recorded fixture is anonymised before it is written: user name, host name and home folder replaced, executable names outside an allow-list replaced with stable placeholders, command lines in exe_only form, working folders dropped. A test fails if any fixture contains the current user or host name.' Component 28 (see the previous finding) does the anonymising.",
+   "cost": "Two sentences and a test of about 20 lines",
+   "needs_decision": false,
+   "disposition": "fix now",
+   "refutation_attempt": "The d-privacy probes test redaction of secrets in command lines, not what a fixture contains. The repository's visibility was taken from the review brief, not queried (see not_checked).",
+   "related_prior_findings": "R04"
+  },
+  {
+   "title": "`daemon install` as a Windows scheduled task at logon may need administrator rights or a stored password, and CI cannot test it",
+   "lens": "G. Buildability",
+   "severity": "high",
+   "status": "suspected",
+   "evidence": "docs/17:199: 'installing a Windows scheduled task at logon'. https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/schtasks-create says 'ONLOGON - Specifies that the task runs whenever a user (any user) logs on.' and 'Schtasks always prompts for a password unless you provide one, even when you schedule a task on the local computer using the current user account.' The same page also says 'Only Administrators can schedule tasks, regardless of the value of the /ru parameter.', but in the System-account section, so its scope is unclear. Hosted runners are a service with no user session (Canonical quote in the CI finding).",
+   "impact": "If creating the task needs elevation, `daemon install` breaks fixed rule 2 on a work computer without administrator rights. If it needs the user's password, installing is interactive and stores a credential. Neither can be caught in CI.",
+   "proposed_change": "docs/17:199 and docs/13:58: 'On Windows, `daemon install` registers the collector and server to start at sign-in through a per-user mechanism that needs no administrator rights and no stored password: a value under HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run, or a shortcut in the user's Startup folder. A logon task is used only if the phase 0 probe shows a standard user can create one for themselves.'",
+   "cost": "One sentence",
+   "needs_decision": false,
+   "disposition": "fix now",
+   "refutation_attempt": "The administrators sentence sits under the System-account heading, so it may not apply to a task for the current user. I could not run schtasks here (Linux), so the finding stays suspected.",
+   "would_confirm": "As a standard user on the work computer: `schtasks /create /tn SubmeterProbe /tr \"cmd /c exit 0\" /sc onlogon /it /f`, then `echo %ERRORLEVEL%` and `schtasks /query /tn SubmeterProbe /v`, then `schtasks /delete /tn SubmeterProbe /f`. Repeat through the Task Scheduler COM API with a logon trigger whose UserId is the current user and whose LogonType is InteractiveToken.",
+   "related_prior_findings": "R30"
+  },
+  {
+   "title": "Everything measured in this review comes from Linux; the plan needs measurements from the Windows machine before its estimates can be trusted",
+   "lens": "G. Buildability",
+   "severity": "medium",
+   "status": "verified",
+   "evidence": "docs/review/ground/platform-check.txt line 1: 'Linux-7.0.0-43-generic-x86_64-with-glibc2.39 | Python 3.14.5 | psutil 7.2.2'. The snapshot cost comes from psutil and /proc on Linux (probes/measure/snapshot_cost.out.txt; working notes: psutil median 111.2 ms for 447 processes, /proc stat-only 11.2 ms). Here 298 of 452 processes are restricted. prompts/01:3 assumes the session runs on the Windows 11 work computer. Windows CI runners are administrators (see the CI finding).",
+   "impact": "Several decisions rest on numbers no one has taken on the target: the Rust-or-Python switch (docs/11:19-21), the overhead budget, the Restricted share and every Windows claim in docs/09. Findings verified on Linux about /proc and cgroups hold for the Linux half only.",
+   "proposed_change": "Before docs/PLAN.md is written, run these on the owner's Windows machine as the signed-in standard user and save the output to docs/review/ground-windows/: the four checks and platform_check.py; a bulk-snapshot prototype timed over 20 runs, with the process count; a Job Object created and nested under the session's own job, with its accounting read after the children exit; the Restricted count and its CPU share over 10 minutes; the Python version uv resolves; and a line-ending check on one commit. PLAN.md marks every figure that came from Linux.",
+   "cost": "Probes for one session on the owner's machine; a paragraph in PLAN.md",
+   "needs_decision": false,
+   "disposition": "plan",
+   "refutation_attempt": "docs/reference/windows-priorities.md already lists most of these checks, so the checks are not new. The finding is that this review's Linux numbers must not stand in for them, and that CI cannot supply them because its runners are elevated.",
+   "related_prior_findings": "R02, R17"
+  }
+ ],
+ "measurements": "Layer probe (layer_rule_cases.out.txt): absolute collector->store.raw FAILS (control); relative form passes and imports at run time (exit 0); 'from submeter import store' in core passes; importlib of submeter.cli passes; new package without LAYER entry: KeyError; with server and launcher at layer 3, both may import the collector (pass). Delivered cli.py imports collector.sampler and providers.psutil_provider. Shared files (shared_files.out.txt): 25 components name 14 top-level packages, 6 of them missing from LAYER (alerts, launcher, mcp, report, server, web); 10 Record subclasses in core/models.py; 10 setting groups in one Settings class; 13 command groups in docs/13 against 5 commands in cli.py; tests/test_baseline.py has 19 tests over 13 modules; 3 runtime dependencies; 1 console script; no .github, no .python-version, no folders under tests/. Components per phase (docs/13): P0 3, P1 9, P2 4, P3 3, P4 3, P5 1, P6 2, P7 0. Longest path inside .venv in Windows layout: 90 characters; longest tracked path: 41 characters. uv.lock carries win_amd64 wheels for pydantic-core, mypy and librt (cp312 to cp314), psutil and ast-serialize (abi3 or free-threaded). No timing was taken.",
+ "nothing_found": [
+  "uv.lock is universal and carries win_amd64 wheels for pydantic-core, mypy and librt (cp312 to cp314) and for psutil and ast-serialize (abi3 or cp314t), so the lock itself does not block `uv sync` on Windows",
+  "Path length: the longest file inside .venv is 90 characters in the Windows layout and the longest tracked path is 41, so with today's dependencies a worktree prefix of up to about 170 characters stays under 260",
+  "Parallel pytest runs on one machine: _pytest/pathlib.py:46 LOCK_TIMEOUT of 3 days and lock files on live temp folders keep concurrent builders from deleting each other's tmp_path folders",
+  "Job Object nesting and accounting of exited processes are documented for Windows 8 and later (Microsoft Job Objects and AssignProcessToJobObject pages), so the design's premise holds on paper; what remains is the start sequence (finding above)",
+  "Python version pinning and ruff formatting Markdown are real but already covered by lens E (e-baseline/tooling_cases.out.txt, version_gate.out.txt); not repeated",
+  "Same-layer import edges failing the layer test are already covered by lenses E and F; not repeated"
+ ],
+ "not_checked": [
+  {
+   "what": "Behaviour of GitHub-hosted runners: systemd user session on ubuntu-24.04, process count, Job Object nesting inside the runner's own job, timing noise",
+   "why": "The repository has no CI, and I may not push or change state",
+   "how_to_check": "Use the workflow steps in the CI finding's would_confirm, on both runners"
+  },
+  {
+   "what": "Whether a standard user can create a logon-triggered scheduled task for themselves, and toast notifications without a package",
+   "why": "This machine runs Linux",
+   "how_to_check": "Use the schtasks commands in the daemon-install finding, and a PowerShell ToastNotificationManager call, run as a standard user"
+  },
+  {
+   "what": "Whether Windows PDH Process counters and NtQuerySystemInformation share one source (the Windows half of the P1 gate)",
+   "why": "This machine runs Linux",
+   "how_to_check": "On Windows, run a burner for 60 s and compare GetProcessTimes deltas with typeperf \"\\Process(name)\\% Processor Time\" averaged over the same window"
+  },
+  {
+   "what": "Repository visibility (public)",
+   "why": "Not queried, to avoid sending the repository's name to a web service; taken from the review brief",
+   "how_to_check": "Run `gh repo view --json visibility` from the owner's session"
+  },
+  {
+   "what": "The mcp SDK's dependency tree and pyarrow's wheel size",
+   "why": "Not looked up; the recommendation (hand-write MCP, defer Parquet) does not depend on them",
+   "how_to_check": "Run `uv pip compile` with each package in a scratch folder, or read their PyPI pages"
+  },
+  {
+   "what": "Re-checking docs/reference/claude-code-notes.md against current Claude Code documentation (worktree.baseRef, isolation, agent teams)",
+   "why": "Outside this lens's evidence budget; the notes are dated 20 November 2026",
+   "how_to_check": "Fetch code.claude.com/docs/en/worktrees.md and sub-agents.md and compare them with the notes"
+  }
+ ],
+ "probe_files": [
+  "/code/submeter-pc-monitor/submeter-pc-monitor-extract/docs/review/probes/g-buildability/layer_rule_cases.py",
+  "/code/submeter-pc-monitor/submeter-pc-monitor-extract/docs/review/probes/g-buildability/layer_rule_cases.out.txt",
+  "/code/submeter-pc-monitor/submeter-pc-monitor-extract/docs/review/probes/g-buildability/shared_files.py",
+  "/code/submeter-pc-monitor/submeter-pc-monitor-extract/docs/review/probes/g-buildability/shared_files.out.txt"
+ ]
+}

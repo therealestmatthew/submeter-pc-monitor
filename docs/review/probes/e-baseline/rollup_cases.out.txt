@@ -1,0 +1,15 @@
+1. Two busy hours with a one-hour sleep between them, 2 cores in use while awake
+   minute bucket at +90 min: covered_s=3601 of width 60, cpu_s=0, p50 cores=0.005, well_covered=True
+   three hours merged: covered_s=10800 (awake for 7200), cpu_s=14398, mean cores over covered time=1.33, p25=0.007, p50=1.951 (the workload used 2.00 cores whenever it was observed)
+   minute buckets: 121, with covered_s over their width: 1
+2. Values below and above the histogram scales
+   steady memory 1 MiB: p50=8.0 MiB, p95=15.2 MiB
+   steady memory 15 MiB: p50=8.0 MiB, p95=15.2 MiB
+   steady memory 300 GiB: p50=256 GiB, p95=256 GiB
+   steady cores 0.002: p50=0.0050, p95=0.0095
+   steady cores 300: p50=256, p95=256
+3. percentile(q=100) with float weights (sum() is compensated, the loop is not)
+   2000 minute buckets of values between 0.5 and 4 cores: 469 report a maximum of 256 cores; in 378 the running total is below sum(counts)
+   control, q=99.0: 4.11 cores
+   control, q=99.9: 4.14 cores
+   control, q=99.999: 4.14 cores

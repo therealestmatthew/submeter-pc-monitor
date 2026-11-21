@@ -1,0 +1,16 @@
+$ uv run python docs/review/probes/verify-8/settings_holes.py
+1. alert rules (docs/08:130: any other metric 'is refused when settings load')
+   'cpu_cores' on 'agent:*': accepted (1 keys set)
+   'cpu_coress' on 'agent:*': accepted (1 keys set)
+   'commit_fraction' on 'browser': accepted (1 keys set)
+2. verdict threshold with a misspelt name (docs/14:173 'Unknown keys are errors')
+   cpu_tyme = 0.85: accepted (1 keys set)
+3. retention values and what expired_raw lists at 00:00:10 UTC
+   raw = 48h: accepted (1 keys set); expired_raw -> []
+   raw = -5: accepted (1 keys set); expired_raw -> ['2026-11-20.db']
+   raw = nan: accepted (1 keys set); expired_raw -> []
+   raw = 0: accepted (1 keys set); expired_raw -> ['2026-11-20.db']
+4. the CLI with a settings file that does not exist
+   config check MISSING: exit 1, exception FileNotFoundError
+   config show MISSING: exit 0, exception none
+exit=0

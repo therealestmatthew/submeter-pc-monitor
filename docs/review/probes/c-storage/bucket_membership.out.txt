@@ -1,0 +1,22 @@
+interval 1 s, first tick 0.37 s after the minute:
+  A window query, roll_up, keep the asked bucket cpu  3540.0 of 3600.0 (-1.67%), covered_s per minute 59 to 59
+  B window query, roll_up, upsert every bucket cpu   118.0 of 3600.0 (-96.72%), covered_s per minute 1 to 59
+  C window query, one accumulator per bucket   cpu  3600.0 of 3600.0 (+0.00%), covered_s per minute 60 to 60
+    the 09:01 window alone gives a bucket at 09:00:00.00 with 1 samples, covered_s 1
+    the 09:01 window alone gives a bucket at 09:01:00.00 with 59 samples, covered_s 59
+interval 1 s, first tick 0.63 s after the minute:
+  A window query, roll_up, keep the asked bucket cpu  3600.0 of 3600.0 (+0.00%), covered_s per minute 60 to 60
+  B window query, roll_up, upsert every bucket cpu  3600.0 of 3600.0 (+0.00%), covered_s per minute 60 to 60
+  C window query, one accumulator per bucket   cpu  3600.0 of 3600.0 (+0.00%), covered_s per minute 60 to 60
+interval 5 s, first tick 1.2 s after the minute:
+  A window query, roll_up, keep the asked bucket cpu  3300.0 of 3600.0 (-8.33%), covered_s per minute 55 to 55
+  B window query, roll_up, upsert every bucket cpu   350.0 of 3600.0 (-90.28%), covered_s per minute 5 to 55
+  C window query, one accumulator per bucket   cpu  3600.0 of 3600.0 (+0.00%), covered_s per minute 60 to 60
+interval 10 s, first tick 3.3 s after the minute:
+  A window query, roll_up, keep the asked bucket cpu  3000.0 of 3600.0 (-16.67%), covered_s per minute 50 to 50
+  B window query, roll_up, upsert every bucket cpu   640.0 of 3600.0 (-82.22%), covered_s per minute 10 to 50
+  C window query, one accumulator per bucket   cpu  3600.0 of 3600.0 (+0.00%), covered_s per minute 60 to 60
+three samples around midnight UTC, written through RawStore:
+  file 2026-11-20: sample ending 23:59:59.37 -> roll_up bucket 23:59:00.00; inside the 23:59 window query: True
+  file 2026-11-21: sample ending day+1 00:00:00.00 -> roll_up bucket 23:59:00.00; inside the 23:59 window query: True
+  file 2026-11-21: sample ending day+1 00:00:00.37 -> roll_up bucket 23:59:00.00; inside the 23:59 window query: False

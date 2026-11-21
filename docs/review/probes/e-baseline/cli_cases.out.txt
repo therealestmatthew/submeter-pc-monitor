@@ -1,0 +1,12 @@
+1. top with a short and a long --seconds (the option allows up to 60)
+   top --seconds 2: exit code 0, interval_s=2.2, CPU-seconds summed over all workloads=3.510, keys=['cpu_s', 'interval_s', 'io_read_bytes', 'io_write_bytes', 'memory_bytes', 'processes', 'source', 'started', 'taken_at', 'workload']
+   top --seconds 31: exit code 0, interval_s=31.1, CPU-seconds summed over all workloads=0.000, keys=['cpu_s', 'interval_s', 'io_read_bytes', 'io_write_bytes', 'memory_bytes', 'processes', 'source', 'started', 'taken_at', 'workload']
+2. Files named on the command line that do not exist or cannot be read
+   top --rules MISSING: exit code 0; first line: workload              source       cores      memory  procs
+   config show --file MISSING: exit code 0; first line: alerts.channels                             ['dashboard', 'desktop']  default
+   config check MISSING: exit code 1, uncaught FileNotFoundError; first line: (no output)
+   top --rules with an unknown key: exit code 1, uncaught ValidationError; first line: (no output)
+   config check on a UTF-16 file: exit code 1, uncaught UnicodeDecodeError; first line: (no output)
+3. Controls: errors that are reported as the brief says
+   config check with a port out of range: exit code 2; first line: error: api.port: Input should be greater than or equal to 1024
+   config show --profile nosuch: exit code 2; first line: error: profile 'nosuch' not found (available: none defined)

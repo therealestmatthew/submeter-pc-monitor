@@ -1,0 +1,9 @@
+$ uv run python docs/review/probes/d-privacy/no_network.py
+self-check, one socket made on purpose is counted: True
+submeter doctor --json: exit 0, sockets 0
+submeter top --seconds: exit 0, sockets 0
+submeter config show: exit 0, sockets 0
+submeter config check: exit 0, sockets 0
+submeter store status: exit 0, sockets 0
+imports of network or process-starting modules in src/submeter: none
+exit=0

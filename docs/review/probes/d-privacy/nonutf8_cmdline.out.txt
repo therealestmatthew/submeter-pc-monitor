@@ -1,0 +1,11 @@
+$ uv run python docs/review/probes/d-privacy/nonutf8_cmdline.py
+psutil gives the child's last argument as: 'caf\udce9-FAKE'
+with the child running:
+  tick 1: FAILED with UnicodeEncodeError; workload rows in the file so far: 0
+  tick 2: FAILED with UnicodeEncodeError; workload rows in the file so far: 0
+  tick 3: FAILED with UnicodeEncodeError; workload rows in the file so far: 0
+control, the same child left out of each batch:
+  tick 1: written; workload rows in the file so far: 3
+  tick 2: written; workload rows in the file so far: 6
+  tick 3: written; workload rows in the file so far: 9
+exit=0

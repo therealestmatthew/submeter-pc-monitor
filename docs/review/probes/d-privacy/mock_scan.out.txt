@@ -1,0 +1,12 @@
+$ uv run python docs/review/probes/d-privacy/mock_scan.py
+1. fetched when the page opens
+  line 7: https://fonts.googleapis.com
+  line 8: https://fonts.gstatic.com
+  line 9: https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans
+  (plus 21 ordinary links to other sites, which need a click)
+2. HTML built from strings in the mock's script
+  13 lines assign innerHTML or call insertAdjacentHTML
+  workload name concatenated in unescaped, at lines: [5418, 5423, 5428, 5508]
+  text passed through esc() first, at lines: [5442, 5472]
+  the process tree is set with textContent, at line: [5471]
+exit=0

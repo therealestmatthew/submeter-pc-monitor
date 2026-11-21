@@ -1,0 +1,48 @@
+$ uv run python docs/review/probes/a-linux/proc_readability.py
+root: False; /proc mount options: rw,nosuid,nodev,noexec,relatime
+kernel.yama.ptrace_scope = 1
+
+processes by owner: {'other user': 134, 'kernel thread': 162, 'own user': 157}
+distinct other owners: 18 (root among them: True)
+
+own user
+  stat          {'readable': 157}
+  statm         {'readable': 157}
+  status        {'readable': 157}
+  cmdline       {'readable': 156, 'empty': 1}
+  io            {'denied': 4, 'readable': 153}
+  smaps_rollup  {'denied': 3, 'readable': 153, 'gone': 1}
+  cwd           {'denied': 3, 'readable': 153, 'gone': 1}
+  exe           {'denied': 3, 'readable': 153, 'gone': 1}
+  fd            {'readable': 155, 'denied': 2}
+other user
+  stat          {'readable': 134}
+  statm         {'readable': 134}
+  status        {'readable': 134}
+  cmdline       {'readable': 134}
+  io            {'denied': 134}
+  smaps_rollup  {'denied': 134}
+  cwd           {'denied': 134}
+  exe           {'denied': 134}
+  fd            {'denied': 134}
+kernel thread
+  stat          {'readable': 162}
+  statm         {'readable': 162}
+  status        {'readable': 162}
+  cmdline       {'empty': 162}
+  io            {'denied': 162}
+  smaps_rollup  {'gone': 162}
+  cwd           {'denied': 162}
+  exe           {'denied': 162}
+  fd            {'denied': 162}
+
+other users' processes whose command line shows arguments: 67
+own-user processes whose io file is denied: 4, of which 2 have files owned by root (the process gave up being dumpable) and the rest are refused by another check (a namespace or a security module)
+
+baseline provider: 452 processes, 299 restricted
+  restricted by owner: {'other user': 134, 'kernel thread': 162, 'own user': 3}
+  restricted with command line read: 299 | with I/O unread: 299 | with CPU time and memory read: 200
+  share of all process CPU time since boot held by restricted: 50%
+  with no rules, workloads are: {'restricted': 299, 'unattributed': 153}
+  capability line: partial, 299 of 452 processes not fully readable
+exit=0

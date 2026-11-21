@@ -1,0 +1,19 @@
+$ uv run python docs/review/probes/verify-5/config_and_baseline.py
+M6. usual range
+   Baseline settings: ['learning_period', 'sensitivity', 'window']
+   idle workload, 20 minutes at 0.000 cores and one at 0.001: (0.0, 0.0, 0.0)
+   day 8, docs/07 sentence (floor on the deviation): 3.242
+      to 3.598; usual_range(floor=0.03): 3.300 to 3.540
+      docs/07 table prints 3.25 to 3.60
+
+M9. verdict thresholds and frequency
+   verdict.thresholds.cpu_tyme = 0.85 accepted: {'cpu_tyme': 0.85}
+   verdict.thresholds.anything = 0.85 accepted: {'anything': 0.85}
+   verdict.thresold (misspelt group) refused, so unknown keys are refused elsewhere
+   max 4.80 GHz, base 1.80 GHz = 37.5% of max
+   80% of max is 3.84 GHz; current 1.30 to 1.32 GHz
+
+M13. the submeter workload
+   pid 100: submeter (submeter itself)
+   pid 200: unattributed (no rule matched)
+exit=0

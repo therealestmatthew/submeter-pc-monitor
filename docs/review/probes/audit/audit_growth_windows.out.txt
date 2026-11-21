@@ -1,0 +1,19 @@
+$ uv run python docs/review/probes/audit/audit_growth_windows.py
+Part 1. docs/07 warm-up starting at the first bucket, checks 2h00..4h00
+   noise +/-20 MB, sliding 2 h window: 11 of 60 runs flagged; flags by check time (count) 2h15:4, 2h20:4, 2h25:6, 2h30:6, 2h35:2
+   noise +/-20 MB, growing window    :  0 of 60 runs flagged; flags by check time (count) none
+   noise +/-40 MB, sliding 2 h window: 34 of 60 runs flagged; flags by check time (count) 2h00:6, 2h05:3, 2h10:6, 2h15:7, 2h20:12, 2h25:10, 2h30:10, 2h35:9, 2h40:4
+   noise +/-40 MB, growing window    : 18 of 60 runs flagged; flags by check time (count) 2h00:6, 2h05:1, 2h10:1, 2h15:2, 2h20:2, 2h25:2, 2h30:1, 2h35:1, 2h40:1, 2h45:1, 2h50:2, 2h55:4, 3h00:6, 3h05:4, 3h10:5, 3h15:2, 3h35:1, 3h40:2
+Part 2. same warm-up, 30 min old when the series begins
+   noise +/-20 MB, sliding 2 h window: 15 of 60 runs flagged; flags by check time (count) 2h00:15, 2h05:1
+   noise +/-20 MB, growing window    : 22 of 60 runs flagged; flags by check time (count) 2h00:15, 2h05:8, 2h10:5, 2h15:1
+   noise +/-40 MB, sliding 2 h window: 28 of 60 runs flagged; flags by check time (count) 2h00:18, 2h05:18, 2h10:2
+   noise +/-40 MB, growing window    : 38 of 60 runs flagged; flags by check time (count) 2h00:18, 2h05:17, 2h10:17, 2h15:9, 2h20:6, 2h25:1, 2h30:1
+Part 3. linear leak, first allowed check (121 minute buckets), 200 seeds
+   50 MiB/h  noise +/-5 MB: 45%  noise +/-40 MB: 44%
+   75 MiB/h  noise +/-5 MB: 100%  noise +/-40 MB: 100%
+Part 4. 75 MiB/h leak, 121 minute buckets: tail (last third) slope against min_slope
+   noise +/-5 MB: tail slope spread 2.5 MiB/h; estimate clears 50 MiB/h in 100%, lower bound clears it in 100%
+   noise +/-20 MB: tail slope spread 10.0 MiB/h; estimate clears 50 MiB/h in 100%, lower bound clears it in 83%
+   noise +/-40 MB: tail slope spread 20.0 MiB/h; estimate clears 50 MiB/h in 92%, lower bound clears it in 38%
+exit=0

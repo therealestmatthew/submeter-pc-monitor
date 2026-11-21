@@ -1,0 +1,58 @@
+$ uv run python docs/review/probes/verify-7/privacy_recheck.py
+P1 scrub on common credential forms (secret survives = LEAK)
+  LEAK curl bearer header                 -> curl -H Authorization: Bearer FAKEtok0123456789abcdef https://x.test
+  LEAK mysql attached -p                  -> mysql -uroot -pFAKEpw-7x db
+  LEAK curl -u user:pass                  -> curl -u alice:FAKEpw-7x https://x.test
+  LEAK bash -c wrapper                    -> bash -c tool --api-key FAKEtok0123456789abcdef
+  LEAK docker --env=NAME=value            -> docker run --env=API_TOKEN=FAKEpw-7x img
+  LEAK conn string                        -> app Server=db;User Id=sa;Password=FAKEpw-7x;
+  hid  control: --password value          -> mysql --password [redacted]
+  hid  control: -e NAME=value             -> docker run -e API_TOKEN=[redacted] img
+  hid  control: url user:pw@              -> git clone https://alice:[redacted]@x.test/r
+  hid  exe_only, same bearer case         -> curl
+P2 one-string titles on this machine (counts only)
+  readable non-empty command lines: 290
+  NUL split gives one string with spaces (a direct /proc reader): 64
+  psutil argv[0] contains a space, so exe_only stores it whole: 12
+  exe_only on a one-item argv: ('postgres: alice appdb 10.0.0.5(5432) idle',)
+P4 redact_patterns
+  Settings accepts the pattern '(': ('(',)
+  redact_cmdline with '(' raises PatternError: missing ), unterminated subpattern at position 0
+  RawFile parameters: ['path', 'cpu_points', 'memory_step', 'redaction']
+  RawStore parameters: ['files', 'keyframe_interval_s', 'cpu_points', 'memory_step', 'redaction']
+P5 paths around the store
+  repr(ProcessCounters) contains the secret: True
+  str(ValidationError) contains the secret: True
+  redact_text on a log line keeps the secret: True
+P6 harmless arguments that scrub hides
+  script path, no extension          -> python [redacted]
+  --passes                           -> optimizer --passes [redacted] model.onnx
+  --tokenizer                        -> trainer --tokenizer [redacted]
+  git -C path                        -> git -C [redacted] status
+  session id                         -> claude --resume [redacted]
+  control: --max-tokens              -> tool --max-tokens 4096
+P14 workload names
+  accepted: 'system'
+  accepted: 'submeter'
+  accepted: ''
+  accepted: '<img src=x onerror=1>'
+  accepted: '../../x'
+  aggregate rows: [('system', 1), ('unattributed', 1)]
+P3 non-UTF-8 argument
+  psutil returns the last argument as 'caf\udce9-FAKE'
+  scrub    bad item is last arg: ticks ['UnicodeEncodeError', 'UnicodeEncodeError', 'UnicodeEncodeError']; system_raw rows 0
+  exe_only bad item is last arg: ticks ['ok', 'ok', 'ok']; system_raw rows 3
+  exe_only, bad character in exe: UnicodeEncodeError
+P7 modes under umask 0022
+  dir  0o755 home/data
+  dir  0o755 home/data/raw
+  dir  0o755 home/state
+  file 0o644 home/data/raw/2026-11-20.db
+  file 0o644 home/data/raw/2026-11-20.db-shm
+  file 0o644 home/data/raw/2026-11-20.db-wal
+  file 0o600 home/state/collector.lock
+  file 0o644 home/state/collector.pid
+P13 pid file after the holder dies without release()
+  holder() returns a pid: True; that pid is alive now: False
+  lock can be taken again: True
+exit=0

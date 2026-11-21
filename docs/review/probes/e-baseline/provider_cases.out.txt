@@ -1,0 +1,22 @@
+1. One call fails with AccessDenied; the rest answer (42 CPU-s, 64 MiB, 7 threads)
+   nothing fails  started=1000 cpu_s=42 memory_MiB=64 threads=7 exe='tool' io=4096 cmdline=yes restricted=False
+   create_time    started=0 cpu_s=0 memory_MiB=0 threads=0 exe='' io=None cmdline=no restricted=True
+   cpu_times      started=1000 cpu_s=0 memory_MiB=0 threads=0 exe='tool' io=4096 cmdline=yes restricted=True
+   memory_info    started=1000 cpu_s=0 memory_MiB=0 threads=0 exe='tool' io=4096 cmdline=yes restricted=True
+   num_threads    started=1000 cpu_s=0 memory_MiB=0 threads=0 exe='tool' io=4096 cmdline=yes restricted=True
+   cmdline        started=1000 cpu_s=42 memory_MiB=64 threads=7 exe='tool' io=4096 cmdline=no restricted=True
+   io_counters    started=1000 cpu_s=42 memory_MiB=64 threads=7 exe='tool' io=None cmdline=yes restricted=True
+   ppid           started=0 cpu_s=0 memory_MiB=0 threads=0 exe='' io=None cmdline=no restricted=True
+   name           started=0 cpu_s=0 memory_MiB=0 threads=0 exe='' io=None cmdline=no restricted=True
+   io_counters raises RuntimeError: _read lets it out (/proc/4242/io file was empty)
+   io_counters raises OSError: _read lets it out ([Errno 31] device failure)
+2. This machine, as the signed-in user
+   457 processes, 299 restricted; of the restricted: 299 lack I/O counters, 0 lack a command line, 0 lack a start time, 97 have zero CPU and zero memory, 187 have CPU time above zero
+   CPU-seconds held by restricted processes: 77662
+3. A child that has exited and not yet been collected by its parent
+   psutil still reads its CPU time (0.35 s); present in the provider's snapshot: False
+4. Start times after the wall clock is set back one hour (simulated, see docstring)
+   this process, same provider: key unchanged=True; a new psutil.Process for it differs by -3600 s
+   its child, born after the step, has a start time -3599 s from its parent's, and is attributed to 'unattributed' (no rule matched); the parent is 'probe'
+5. The system busy sum on Linux, per core, over two seconds
+   fields: user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice; every core's fields (guest taken out) add up to the 2.00 s elapsed within 0.05 s; provider busy sum 3.41 s

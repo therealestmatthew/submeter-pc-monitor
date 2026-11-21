@@ -1,0 +1,11 @@
+A. raw file after 1800 ticks, 3.49 MB: meta 1 rows at 4096 B, command 1 rows at 8192 B, process 300 rows at 68 B, workload_raw 14400 rows at 57 B, process_raw 55080 rows at 47 B, system_raw 1800 rows at 30 B
+   the brief's 8.12 M rows per 48 h at these sizes: 0.39 GB, 48 B a row (brief: 0.73 GB at 90 B). Rows the brief does not count, 172,800 system rows and 86,400 keyframe rows: 9 MB more
+B. load and frequency per core, 16 cores, which the raw schema has no table for: one row per core is 31 B a row, 2.76 M rows and 85 MB per 48 h; one packed row per tick is 132 B, 23 MB per 48 h
+C. 2160 minute buckets built by roll_up; 12.0 of 132 histogram bins are filled on average; one bucket as JSON is 891 B
+   dense 8-byte floats, WITHOUT ROWID as raw.py   4684 B a bucket; 9 series: 1.82 to 2.25 GB for 30 to 37 days; 26 series: 6.49 GB; 200 series: 49.91 GB
+   dense 8-byte floats, rowid table               1403 B a bucket; 9 series: 0.55 to 0.67 GB for 30 to 37 days; 26 series: 1.94 GB; 200 series: 14.95 GB
+   dense 4-byte floats, WITHOUT ROWID              717 B a bucket; 9 series: 0.28 to 0.34 GB for 30 to 37 days; 26 series: 0.99 GB; 200 series: 7.64 GB
+   dense 8-byte floats through zlib                182 B a bucket; 9 series: 0.07 to 0.09 GB for 30 to 37 days; 26 series: 0.25 GB; 200 series: 1.94 GB
+   filled bins only                                184 B a bucket; 9 series: 0.07 to 0.09 GB for 30 to 37 days; 26 series: 0.25 GB; 200 series: 1.96 GB
+   filled bins only, plus 18 catalogue fields      311 B a bucket; 9 series: 0.12 to 0.15 GB for 30 to 37 days; 26 series: 0.43 GB; 200 series: 3.31 GB
+   brief: 250 B a bucket, 9 series, 0.1 GB. The machine's bucket also needs min, max and mean of load and frequency per core in the minute tier: 16 cores x 6 values x 4 B = 384 B more on that one series

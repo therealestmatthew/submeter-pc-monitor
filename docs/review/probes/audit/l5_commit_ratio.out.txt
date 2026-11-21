@@ -1,0 +1,10 @@
+$ python3 docs/review/probes/audit/l5_commit_ratio.py
+vm.overcommit_memory 0; vm.overcommit_ratio 50%
+MemTotal 15.0 GiB, SwapTotal 4.0 GiB
+CommitLimit 11.5 GiB = swap + ratio x RAM
+Committed_AS 30.3 GiB
+commit_fraction = Committed_AS / CommitLimit = 2.63
+memory in use = 1 - MemAvailable / MemTotal = 0.54
+built-in rule 'commit_fraction above 0.90' would fire: True
+Committed_AS / (MemTotal + SwapTotal) = 1.59 (the denominator Windows uses for its commit limit: RAM plus page file)
+exit=0

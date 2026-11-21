@@ -1,0 +1,19 @@
+$ uv run python docs/review/probes/d-privacy/error_values.py
+command line given as one string:
+  str(error) contains the secret: True
+  a piece of the secret (its last five characters): True
+  shown: Input should be a valid tuple [type=tuple_type, input_value='tool.exe --api-key FAKEsecret-9q', input_type=str]
+a list with one unreadable item:
+  str(error) contains the secret: False
+  a piece of the secret (its last five characters): False
+  shown: Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]
+a good command line, memory missing:
+  str(error) contains the secret: False
+  a piece of the secret (its last five characters): True
+  shown: Field required [type=missing, input_value={'key': ProcessKey(pid=1,...cret-9q'), 'cpu_s': 0.0}, input_type=dict]
+with hide_input_in_errors=True on the record:
+  str(error) contains the secret: False
+  shown: Input should be a valid tuple [type=tuple_type]
+  error.errors() still holds the input: True
+  error.errors(include_input=False) holds it: False
+exit=0

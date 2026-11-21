@@ -1,0 +1,9 @@
+1. Retention(raw='60d', minute='30d') accepted: raw 60 d, minute 30 d
+2. window age, span -> tier chosen; is the window start inside that tier's retention?
+   45 d back,   12 h -> minute step 60 s; covered: False
+   45 d back,    1 h -> minute step 60 s; covered: False
+   45 d back,  0.5 h -> raw    step 1 s; covered: True
+   35 d back,   48 h -> hour   step 3600 s; covered: True
+   10 d back,   12 h -> minute step 60 s; covered: True
+   59 d back,   30 h -> minute step 60 s; covered: False
+3. expired_raw(self, now: 'float', retention_s: 'float') -> 'list[Path]'

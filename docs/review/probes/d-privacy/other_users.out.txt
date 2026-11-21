@@ -1,0 +1,7 @@
+$ uv run python docs/review/probes/d-privacy/other_users.py
+processes in one snapshot: 451
+owned by another user (kernel threads included): 290
+of those, handed to the store with arguments in the command line: 104
+  belonging to root: 55; distinct other owners: 12
+  marked restricted by the provider: 104
+exit=0

@@ -1,0 +1,46 @@
+$ uv run python docs/review/probes/f-consistency/doc_vs_code.py
+1. examples/submeter.toml identical to the docs/08 sample: True
+1. examples/rules.toml identical to the docs/08 sample: True
+   examples/submeter.toml loads: True
+   examples/rules.toml rules: 5
+2. docs/08 sampling table: default and range, checked by loading values
+   active_interval        doc 1s     code 1.0    same=True ends ['ok', 'ok']
+   idle_interval          doc 5s     code 5.0    same=True ends ['ok', 'ok']
+   cold_interval          doc 10s    code 10.0   same=True ends ['ok', 'ok']
+   idle_after             doc 60s    code 60.0   same=True ends ['ok', 'ok']
+   hot_cpu_threshold      doc 0.5%   code 0.005  same=True ends ['ok', 'ok']
+   uss_interval           doc 30s    code 30.0   same=True ends ['ok', 'ok']
+   uss_top_n              doc 25     code 25     same=True ends ['ok', 'ok']
+   gpu_interval           doc 2s     code 2.0    same=True ends ['ok', 'ok']
+   thermal_interval       doc 5s     code 5.0    same=True ends ['ok', 'ok']
+   network_interval       doc 5s     code 5.0    same=True ends ['ok', 'ok']
+   on_battery_multiplier  doc 2      code 2.0    same=True ends ['ok', 'ok']
+   overhead_limit: idle 0.01, active 0.03
+   retention.raw 48h                        True
+   retention.minute 30d                     True
+   retention.executables 1y                 True
+   disk_budget 2GB                          True
+   change_threshold 0.5 pt, 8MB             True
+   keyframe_interval 10m                    True
+   backups.keep 3                           True
+   verdict.window 5m                        True
+   verdict.thresholds 'see verdict table'   {}
+   alerts.rules '3 built in'                0
+   alerts.cooldown 15m                      True
+   attribution.unattributed_alert 10%       True
+   privacy.redact_patterns 'built-in list'  ()
+   api.port 8787, mcp false                 True
+   ui GiB, 1h                               True
+3. a child (git) of a process claimed by a rule, by include_children and the global setting
+   include_children=False inherit_from_parent=True  -> git is builds
+   include_children=False inherit_from_parent=False -> git is unattributed
+   include_children=True  inherit_from_parent=True  -> git is builds
+   include_children=True  inherit_from_parent=False -> git is builds
+4. a parent and child that report the same start time
+   child -> agent
+5. accounting sources from aggregate(), with a kernel-tagged workload named
+   agent:x      source=kernel   cpu_s=1.0 io_read=0
+   restricted   source=partial  cpu_s=1.0 io_read=0
+   a 'system' row is produced: False
+   any row labelled 'counters': False
+exit=0

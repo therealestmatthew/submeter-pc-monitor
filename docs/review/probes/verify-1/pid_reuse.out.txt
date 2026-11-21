@@ -1,0 +1,4 @@
+a pid psutil believes was reused after snapshot 0
+   snapshot 1: pid missing from the snapshot
+   snapshot 2: pid missing from the snapshot
+   snapshot 3: present, first_seen True, born 4.9 s before this snapshot, credited 0.00 CPU-s

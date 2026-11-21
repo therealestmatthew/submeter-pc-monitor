@@ -1,0 +1,34 @@
+$ uv run pytest -v
+============================= test session starts ==============================
+platform linux -- Python 3.14.5, pytest-9.2.0, pluggy-1.7.0 -- /code/submeter-pc-monitor/submeter-pc-monitor-extract/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /code/submeter-pc-monitor/submeter-pc-monitor-extract
+configfile: pyproject.toml
+testpaths: tests
+plugins: asyncio-1.5.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collecting ... collected 20 items
+
+tests/test_baseline.py::test_units_round_trip PASSED                     [  5%]
+tests/test_baseline.py::test_config_layers_and_sources PASSED            [ 10%]
+tests/test_baseline.py::test_config_refuses_bad_values PASSED            [ 15%]
+tests/test_baseline.py::test_histogram_merges_exactly_and_bounds_error PASSED [ 20%]
+tests/test_baseline.py::test_redaction_hides_secrets_and_keeps_the_rest PASSED [ 25%]
+tests/test_baseline.py::test_sampler_deltas_new_processes_and_pid_reuse PASSED [ 30%]
+tests/test_baseline.py::test_sampler_records_a_gap_instead_of_a_spike PASSED [ 35%]
+tests/test_baseline.py::test_attribution_order_inheritance_and_reconciliation PASSED [ 40%]
+tests/test_baseline.py::test_rules_file_loads_and_rejects_empty_rules PASSED [ 45%]
+tests/test_baseline.py::test_a_rule_can_match_on_the_parent_program PASSED [ 50%]
+tests/test_baseline.py::test_file_map_names_expiry_and_lock PASSED       [ 55%]
+tests/test_baseline.py::test_the_windows_lock_makes_the_calls_windows_expects PASSED [ 60%]
+tests/test_baseline.py::test_raw_file_keeps_sums_exact_and_secrets_out PASSED [ 65%]
+tests/test_baseline.py::test_raw_store_rolls_over_at_utc_midnight_and_marks_gaps PASSED [ 70%]
+tests/test_baseline.py::test_rollups_reproduce_totals_and_percentiles PASSED [ 75%]
+tests/test_baseline.py::test_tier_choice_follows_retention_and_point_budget PASSED [ 80%]
+tests/test_baseline.py::test_growth_flags_a_leak_and_clears_a_warm_up PASSED [ 85%]
+tests/test_baseline.py::test_usual_range_and_daily_minimums PASSED       [ 90%]
+tests/test_baseline.py::test_cli_runs_end_to_end PASSED                  [ 95%]
+tests/test_layers.py::test_no_module_imports_from_a_higher_layer PASSED  [100%]
+
+============================== 20 passed in 1.48s ==============================
+exit=0

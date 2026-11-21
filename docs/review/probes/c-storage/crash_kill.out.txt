@@ -1,0 +1,15 @@
+300 processes a tick, 1.140 CPU-s a tick in total
+trial  1: integrity ok; last tick acknowledged 102, last stored 102, acknowledged ticks missing 0; workload cpu a tick 1.140; CPU held back in memory and lost with the process 47.27 s; side files before reopening: ['-shm 32768 B', '-wal 3341352 B']
+trial  2: integrity ok; last tick acknowledged 161, last stored 161, acknowledged ticks missing 0; workload cpu a tick 1.140; CPU held back in memory and lost with the process 26.68 s; side files before reopening: ['-shm 32768 B', '-wal 1915832 B']
+trial  3: integrity ok; last tick acknowledged 283, last stored 283, acknowledged ticks missing 0; workload cpu a tick 1.140; CPU held back in memory and lost with the process 56.16 s; side files before reopening: ['-shm 32768 B', '-wal 4004672 B']
+trial  4: integrity ok; last tick acknowledged 316, last stored 316, acknowledged ticks missing 0; workload cpu a tick 1.140; CPU held back in memory and lost with the process 14.51 s; side files before reopening: ['-shm 32768 B', '-wal 1091832 B']
+trial  5: integrity ok; last tick acknowledged 355, last stored 355, acknowledged ticks missing 0; workload cpu a tick 1.140; CPU held back in memory and lost with the process 17.32 s; side files before reopening: ['-shm 32768 B', '-wal 1240152 B']
+trial  6: integrity ok; last tick acknowledged 400, last stored 400, acknowledged ticks missing 0; workload cpu a tick 1.140; CPU held back in memory and lost with the process 20.12 s; side files before reopening: ['-shm 32768 B', '-wal 1487352 B']
+trial  7: integrity ok; last tick acknowledged 514, last stored 514, acknowledged ticks missing 0; workload cpu a tick 1.140; CPU held back in memory and lost with the process 52.42 s; side files before reopening: ['-shm 32768 B', '-wal 3798672 B']
+trial  8: integrity ok; last tick acknowledged 549, last stored 549, acknowledged ticks missing 0; workload cpu a tick 1.140; CPU held back in memory and lost with the process 15.44 s; side files before reopening: ['-shm 32768 B', '-wal 1198952 B']
+trial  9: integrity ok; last tick acknowledged 699, last stored 699, acknowledged ticks missing 0; workload cpu a tick 1.140; CPU held back in memory and lost with the process 46.33 s; side files before reopening: ['-shm 32768 B', '-wal 4148872 B']
+trial 10: integrity ok; last tick acknowledged 774, last stored 774, acknowledged ticks missing 0; workload cpu a tick 1.140; CPU held back in memory and lost with the process 34.16 s; side files before reopening: ['-shm 32768 B', '-wal 2480272 B']
+trial 11: integrity ok; last tick acknowledged 804, last stored 804, acknowledged ticks missing 0; workload cpu a tick 1.140; CPU held back in memory and lost with the process 13.10 s; side files before reopening: ['-shm 32768 B', '-wal 1071232 B']
+trial 12: integrity ok; last tick acknowledged 847, last stored 847, acknowledged ticks missing 0; workload cpu a tick 1.140; CPU held back in memory and lost with the process 19.19 s; side files before reopening: ['-shm 32768 B', '-wal 1384352 B']
+after a clean open and close: ['2026-11-20.db']
+process rows are short of the workload rows by 362.70 CPU-s over 12 kills

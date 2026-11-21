@@ -1,0 +1,27 @@
+$ uv run python docs/review/probes/f-consistency/counts.py
+same  13: 25 components: 25
+same  13: twelve components carry a baseline tag: 12
+same  13: 18 tables (distinct names): 18
+DIFF      tables counted per file (meta in each): 20
+same  13: 13 commands: 13
+same  13: 13 API routes: 13
+same  README: twelve terms: 12
+same  16: passes 14, 8, 15: {'First': 14, 'Second': 8, 'Third': 15}
+same  16: 34 fixed, 3 accepted: {'fixed': 34, 'accepted limit': 3}
+same  01: 8 phases: 8
+same  14: 15 modules: 15
+same  14: 2,356 lines in the modules: 2356
+same  14: 7 empty __init__.py files: 7
+same  14: mypy checks 25 files (src and tests): 25
+same  14 and README: 20 tests: 20
+same  02: 4.96 cores, 31% of 16: (4.96, 31)
+same  02: 20.8 GB, 65% of 32: (20.8, 65)
+same  02: 26 + 2 + 2 + 1 + 69 = 100: [26, 2, 2, 1, 69]
+same  03 cost: total 8.03: 8.03
+same  03 cost: 16 cores x 48 min = 12.80, 62.7%: (12.8, 62.7)
+DIFF  03 why: 'cpu time 91% of capacity' against reconciled busy (100 - idle 7): 93
+same  03 store status: total 1.19 GB: 1.192
+same  06 disk table: total 'about 1.6 GB': (1.25, 1.6500000000000001)
+DIFF  03 and 06: '2 programs' keep logs, against 01/05/13 'three programs': (['2', '2'], ['3 programs', 'Three programs', 'Three programs'])
+DIFF  15 and 17: 'both programs' run as the signed-in user: ['15-phases-and-decisions.md:46', '17-build-prompt.md:148', '17-build-prompt.md:264']
+exit=0

@@ -1,0 +1,35 @@
+$ uv run python docs/review/probes/a-linux/cgroup_scope.py
+1. where this login's processes live
+  user.slice                               owner root      cgroup.procs root      passes down cpu memory pids
+  user-N.slice                             owner root      cgroup.procs root      passes down cpu memory pids
+  user@N.service                           owner this user cgroup.procs this user passes down cpu memory pids
+  app.slice                                owner this user cgroup.procs this user passes down memory pids
+  app-org.gnome.Terminal.slice             owner this user cgroup.procs this user passes down memory pids
+  vte-spawn-N.scope                        owner this user cgroup.procs this user passes down nothing
+  the scope this shell is in: Delegate=no
+  user@.service says: ['Delegate=pids memory cpu']
+  outside the delegated subtree: session-29.scope, owner root, holding
+    3 of this user's processes: ['Xorg', 'gdm-x-session', 'gnome-session-b']
+
+2. a transient scope with Delegate=yes, asked of the user's own systemd
+  slice: app.slice
+  owned by this user: True
+  controllers in the scope: cpu memory pids
+  processes in the scope at start: 1
+  passing memory down while this process is in it: refused (Device or resource busy)
+  moving this process into a sub-group: allowed
+  passing cpu, memory and pids down after that: allowed
+  payload files: ['cpu.stat', 'memory.current', 'memory.peak', 'pids.current', 'pids.peak']
+  payload CPU seconds, kernel: 0.646515
+  payload CPU seconds, wait4: 0.646941
+  payload still populated: 0
+  payload memory.peak MB, read after its last process ended: 2.7
+  exit code passed through systemd-run: 7 (the holder exited with 7)
+
+3. after the scope's last process ended
+  scope directory, with the sub-groups made inside it, still there: False
+  what systemd still knows about it: ['CPUUsageNSec=[not', 'set]', 'LoadState=not-found']
+
+4. the same request from a login with no session bus (as under su, sudo -u or cron)
+  exit code 1: Failed to connect to bus: No medium found
+exit=0

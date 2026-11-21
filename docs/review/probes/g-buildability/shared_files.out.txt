@@ -1,0 +1,16 @@
+$ uv run python docs/review/probes/g-buildability/shared_files.py
+1. components in docs/13: 25; top-level packages they name: ['alerts', 'analysis', 'attribution', 'cli', 'collector', 'core', 'launcher', 'mcp', 'privacy', 'providers', 'report', 'server', 'store', 'web']
+   LAYER keys: ['analysis', 'attribution', 'cli', 'collector', 'core', 'privacy', 'providers', 'store']
+   named packages missing from LAYER: ['alerts', 'launcher', 'mcp', 'report', 'server', 'web']
+2. Record subclasses in core/models.py: 10
+   setting groups in the one Settings class in core/config.py: 10 ['sampling', 'storage', 'analysis', 'verdict', 'alerts', 'attribution', 'privacy', 'providers', 'api', 'ui']
+3. command groups in docs/13: 13; commands in cli.py today: 5
+   every new command is added to the single module cli.py (one Typer app)
+4. tests/test_baseline.py: 19 tests; modules it imports:
+   13: ['submeter.analysis.growth', 'submeter.attribution.rules', 'submeter.cli', 'submeter.collector.sampler', 'submeter.core', 'submeter.core.config', 'submeter.core.models', 'submeter.core.units', 'submeter.privacy.redact', 'submeter.store.files', 'submeter.store.query', 'submeter.store.raw', 'submeter.store.rollup']
+5. runtime dependencies in pyproject.toml: ['pydantic>=2.7', 'psutil>=6.0', 'typer>=0.12']
+   console scripts: {'submeter': 'submeter.cli:app'}
+   .github folder present: False
+   .python-version present: False
+   folders under tests/ (fixtures, load generator): none
+exit=0

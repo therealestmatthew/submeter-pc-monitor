@@ -1,0 +1,5 @@
+1. reading a day with no file returned 0 rows and left: 2026-01-01.db 40960 B
+2. RawFile opened while the collector holds the write lock: refused: database is locked
+3. killed writer's files (copied while it is still open): 2026-11-19.db 4096 B, 2026-11-19.db-shm 32768 B, 2026-11-19.db-wal 1075352 B
+   RawFile read 120 rows and on close the .db went from 4096 B to 49152 B; left: 2026-11-19.db 49152 B
+4. expired_raw returns ['2026-11-10.db']; deleting those leaves ['2026-11-10.db-shm', '2026-11-10.db-wal'], which disk_use counts under raw: 1081344 B after the .db is gone

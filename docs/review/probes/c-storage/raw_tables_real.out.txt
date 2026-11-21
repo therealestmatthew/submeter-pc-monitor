@@ -1,0 +1,6 @@
+120 ticks, file 274432 B; pages by table: {'command': 57344, 'event': 4096, 'gap': 4096, 'meta': 4096, 'process': 36864, 'process_raw': 53248, 'sqlite_autoindex_command_1': 69632, 'sqlite_schema': 4096, 'system_raw': 12288, 'workload_raw': 28672}
+rows by table: {'meta': 1, 'event': 0, 'command': 280, 'process': 485, 'workload_raw': 360, 'process_raw': 1107, 'system_raw': 120, 'gap': 0}; redacted command text 45064 characters, stored twice
+sample rows: 1587 in 94208 B = 59 B a row; the whole file over the same rows = 173 B a row; 66% of the file is not sample rows
+  process_raw: 1107 rows, 48 B a row
+  workload_raw: 360 rows, 80 B a row
+  system_raw: 120 rows, 102 B a row

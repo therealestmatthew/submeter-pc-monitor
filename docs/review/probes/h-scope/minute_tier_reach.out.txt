@@ -1,0 +1,27 @@
+$ uv run python docs/review/probes/h-scope/minute_tier_reach.py
+raw interval 1 s, max 2000 points per answer
+  span                ends now     ended 3 d ago    ended 20 d ago
+  10 min                raw/1s        minute/60s        minute/60s
+  1 h               minute/60s        minute/60s        minute/60s
+  6 h               minute/60s        minute/60s        minute/60s
+  24 h              minute/60s        minute/60s        minute/60s
+  2 d               hour/3600s        hour/3600s        hour/3600s
+  7 d               hour/3600s        hour/3600s        hour/3600s
+  30 d              hour/3600s        hour/3600s        hour/3600s
+  windows answered by the minute tier: 11 of 21
+  minute tier is chosen for spans over 33.3333 min and up to 33.3 h
+raw interval 2 s, max 2000 points per answer
+  span                ends now     ended 3 d ago    ended 20 d ago
+  10 min                raw/2s        minute/60s        minute/60s
+  1 h                   raw/2s        minute/60s        minute/60s
+  6 h               minute/60s        minute/60s        minute/60s
+  24 h              minute/60s        minute/60s        minute/60s
+  2 d               hour/3600s        hour/3600s        hour/3600s
+  7 d               hour/3600s        hour/3600s        hour/3600s
+  30 d              hour/3600s        hour/3600s        hour/3600s
+  windows answered by the minute tier: 10 of 21
+  minute tier is chosen for spans over 66.6667 min and up to 33.3 h
+documented readers of the minute tier (docs/06:59-67): leak check, 2 to 48 h back,
+which lies inside raw retention; baseline, 14 d back. Every other check reads raw,
+hourly buckets or stored totals.
+exit=0

@@ -1,0 +1,15 @@
+part 1: allowed settings against the 30 s gap threshold (Sampler default)
+  idle_interval 45s                            accepted;    45 s between samples: 20 of 20 batches are gaps, CPU kept 0 of 450 s
+  idle_interval 20s, on_battery_multiplier 2   accepted;    40 s between samples: 20 of 20 batches are gaps, CPU kept 0 of 400 s
+  cold_interval 60s                            accepted;    60 s between samples: 20 of 20 batches are gaps, CPU kept 0 of 600 s
+  idle_interval 60s, on_battery_multiplier 10  accepted;   600 s between samples: 20 of 20 batches are gaps, CPU kept 0 of 6000 s
+  defaults on battery: idle 5s x 2             accepted;    10 s between samples: 0 of 20 batches are gaps, CPU kept 100 of 100 s
+part 2a: hot-only snapshots, the cold set present every 10th second
+  cpu 300.0 of 372.0 s; p50 0.49, p95 0.52, highest sample 0.50 cores (true: 0.62 throughout); processes counted as started 2400, reported exited 2400
+part 2b: every snapshot complete, cold counters refreshed every 10th second
+  cpu 372.0 of 372.0 s; p50 0.49, p95 1.73, highest sample 1.70 cores (true: 0.62 throughout); processes counted as started 0, reported exited 0
+part 3: samples as long as a minute bucket or longer, gap threshold lifted
+    10 s samples: 61 minute buckets exist in the hour, covered_s 10 to 60 of 60, well covered 60; a sample is written up to 4 s after its bucket ended (a bucket is final after 30 s)
+    60 s samples: 60 minute buckets exist in the hour, covered_s 60 to 60 of 60, well covered 60; a sample is written up to 29 s after its bucket ended (a bucket is final after 30 s)
+   120 s samples: 30 minute buckets exist in the hour, covered_s 120 to 120 of 60, well covered 30; a sample is written up to 59 s after its bucket ended (a bucket is final after 30 s)
+   600 s samples: 6 minute buckets exist in the hour, covered_s 600 to 600 of 60, well covered 6; a sample is written up to 299 s after its bucket ended (a bucket is final after 30 s)

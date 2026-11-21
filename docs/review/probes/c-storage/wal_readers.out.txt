@@ -1,0 +1,8 @@
+1. log pages per tick: median 6, first tick (opening keyframe) 30; the log reached 3.9 MiB and was reset after 149 ticks. At a 1 s interval that is one log sync every 2.5 minutes
+2. read-only connection in a second process: 40 polls, 0 errors, counts rising throughout: True
+3. log size 4.0 MiB before; 110.1 MiB after an unfinished cursor was held across 4000 ticks (27 KiB a tick); 64.0 MiB 1500 ticks after the cursor closed (journal_size_limit is 64 MiB)
+4. writer closed with a reader still connected; side files: -wal 0 B, -shm 229376 B
+   the read-only reader then closed, the last connection: -wal 0 B, -shm 229376 B
+   after a read-write connection read the file and closed: -wal gone, -shm gone
+5. synchronous=normal: 20 fsync or fdatasync calls in 601 ticks and one clean close; 10 of them on the log, so the log was synced about every 60 ticks
+5. synchronous=full: 621 fsync or fdatasync calls in 601 ticks and one clean close; 611 of them on the log, so the log was synced about every 1 ticks

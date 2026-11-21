@@ -1,0 +1,9 @@
+$ uv run python docs/review/probes/f-consistency/layer_rule.py
+LAYER from tests/test_layers.py: {'core': 0, 'privacy': 1, 'providers': 1, 'store': 2, 'collector': 2, 'attribution': 2, 'analysis': 2, 'cli': 3}
+  collector imports store       FAILS   docs/14 store.raw: imported by 'the collector loop', phase 1
+  collector imports attribution FAILS   docs/05: sampler -> attribution inside the collector
+attribution imports store       FAILS   docs/17 'five layers': attribution feeds the store
+   analysis imports store       FAILS   docs/05: analysis 'reads windows from the store'
+      store imports collector   FAILS   the reverse, in case the loop lives in store
+   analysis imports core        passes  for contrast: a downward edge
+exit=0

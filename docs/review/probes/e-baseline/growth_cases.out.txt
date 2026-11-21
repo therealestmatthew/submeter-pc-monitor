@@ -1,0 +1,8 @@
+defaults: min_duration 2 h, min_slope 50 MB/h
+an 80 MB/h leak with no noise, 120 minute buckets (two hours of data): flagged=False, reason='not enough data yet', duration_s=7140
+leak 50 MB/h, noise +/-0 MB, 20 runs of 6 h: 20 flagged within 125 min, 20 flagged at all (first flag after 120 to 120 min), 0 never
+leak 50 MB/h, noise +/-2 MB, 20 runs of 6 h: 9 flagged within 125 min, 19 flagged at all (first flag after 120 to 346 min), 1 never (growth is below the threshold)
+leak 50 MB/h, noise +/-20 MB, 20 runs of 6 h: 9 flagged within 125 min, 19 flagged at all (first flag after 120 to 346 min), 1 never (growth is below the threshold)
+leak 47.6837 MB/h, noise +/-0 MB, 20 runs of 6 h: 0 flagged within 125 min, 0 flagged at all (never), 20 never (growth is below the threshold)
+leak 55 MB/h, noise +/-20 MB, 20 runs of 6 h: 20 flagged within 125 min, 20 flagged at all (first flag after 120 to 120 min), 0 never
+leak 75 MB/h, noise +/-20 MB, 20 runs of 6 h: 20 flagged within 125 min, 20 flagged at all (first flag after 120 to 120 min), 0 never

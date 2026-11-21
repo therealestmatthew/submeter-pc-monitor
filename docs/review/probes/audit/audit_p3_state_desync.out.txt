@@ -1,0 +1,6 @@
+$ uv run python docs/review/probes/audit/audit_p3_state_desync.py
+tick 1: UnicodeEncodeError
+tick 2: ok (B has exited)
+A: process rows 0, process_raw rows 1
+CPU stored for A over two ticks: 0.5 s of 1.0 s read
+exit=0

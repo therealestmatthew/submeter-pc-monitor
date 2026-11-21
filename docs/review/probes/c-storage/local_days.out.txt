@@ -1,0 +1,4 @@
+1. New York, asked on 20 November (UTC-5): of 336 hourly buckets from 25 October to 7 November, 8 fall in a different local day under the fixed offset, all before the change on 1 November. Days that are not 24 hours long, counting whole buckets inside the window: {'2026-10-24': 4, '2026-11-01': 25, '2026-11-07': 19}
+   a nightly low at 00:00 to 01:00 local time is present in every true local day; with the fixed offset these days have no low at all: ['2026-11-01']
+2. Kolkata (UTC+5.5): 3 of 72 hourly buckets hold parts of two local days, one every day: the bucket that starts at 23:30 local time ends at 00:30 the next day. A daily total or minimum taken from the hourly tier is therefore off by up to 30 minutes of data at each end. 15 zone names in this machine's database are not a whole number of hours from UTC today
+3. zoneinfo keys found here: 498; the tzdata package is installed: False. docs.python.org says Windows has no such database without that package

@@ -1,0 +1,15 @@
+$ uv run pytest
+============================= test session starts ==============================
+platform linux -- Python 3.14.5, pytest-9.2.0, pluggy-1.7.0
+rootdir: /code/submeter-pc-monitor/submeter-pc-monitor-extract
+configfile: pyproject.toml
+testpaths: tests
+plugins: asyncio-1.5.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 20 items
+
+tests/test_baseline.py ...................                               [ 95%]
+tests/test_layers.py .                                                   [100%]
+
+============================== 20 passed in 5.02s ==============================
+exit=0

@@ -1,0 +1,3 @@
+refused lock: acquire() returned False after 1 attempt(s); 
+returned within 100 ms (no waiting): True
+pid file left by an exited holder: holder() returns that pid: True; a process with that pid exists now: False; lock free: True

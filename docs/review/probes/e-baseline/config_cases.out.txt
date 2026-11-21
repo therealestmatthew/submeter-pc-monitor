@@ -1,0 +1,39 @@
+1. parse_rate, in MB per hour (the rule: write it like '50MB/h')
+   '50MB/h' -> 50.00 MB/h
+   '50MB/2h' -> 4.17 MB/h
+   '100MB/2h' -> 8.33 MB/h
+   '1GB/24h' -> 8.26 MB/h
+   '1GB/d' -> 42.67 MB/h
+   '50MB/30m' -> 23.08 MB/h
+2. Profiles
+   bad values in a profile, no profile selected: accepted (1 keys set)
+   the same file, profile selected: refused: sampling.active_interval: 20s is outside the allowed range, 250ms to 10s; sampling.colour: Extra inputs are not permitted
+   profile = 5, no profile selected: accepted (0 keys set)
+   profile = 5, profile selected: CRASH TypeError: argument of type 'int' is not a container or iterable
+   profile.laptop = 5, profile selected: CRASH AttributeError: 'int' object has no attribute 'items'
+   SUBMETER_PROFILE=laptop in the environment: accepted (1 keys set)
+3. Alert rules and free-form tables
+   metric 'cpu_cores' on workload 'agent:*': accepted (1 keys set)
+   metric 'cpu_coress' on workload 'agent:*': accepted (1 keys set)
+   metric 'commit_fraction' on workload 'browser': accepted (1 keys set)
+   metric 'overhead_fraction' on workload 'machine': accepted (1 keys set)
+   verdict.thresholds.cpu_tyme = 0.85: accepted (1 keys set)
+4. Bare, negative and not-a-number values
+   [sampling] active_interval = -1: refused: sampling.active_interval: -1s is outside the allowed range, 250ms to 10s
+   [sampling] active_interval = nan: refused: sampling.active_interval: nans is outside the allowed range, 250ms to 10s
+   [storage.retention] raw = -5: accepted (1 keys set)
+   [storage.retention] raw = nan: accepted (1 keys set)
+   [storage] disk_budget = -1: accepted (1 keys set)
+   [analysis.leak] min_slope = -1: accepted (1 keys set)
+   [analysis.leak] min_duration = nan: accepted (1 keys set)
+   [alerts] cooldown = -60: accepted (1 keys set)
+   [attribution] unattributed_alert = 10: accepted (1 keys set)
+   [attribution] unattributed_alert = "250%": accepted (1 keys set)
+   [sampling] hot_cpu_threshold = 0.5: refused: sampling.hot_cpu_threshold: 50.00% is outside the allowed range, 0.1% to 5%
+   [api] port = 80: refused: api.port: Input should be greater than or equal to 1024
+5. Settings files a Windows computer produces, and paths that are not files
+   a path that does not exist: CRASH FileNotFoundError: [Errno 2] No such file or directory: 'TMP'
+   a folder: CRASH IsADirectoryError: [Errno 21] Is a directory: 'TMP'
+   UTF-8 with a byte-order mark: refused: TMP: Invalid statement (at line 1, column 1)
+   UTF-16 (Windows PowerShell 5.1 redirection): CRASH UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+   CRLF line endings: accepted (1 keys set)

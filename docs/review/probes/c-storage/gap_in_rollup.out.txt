@@ -1,0 +1,11 @@
+truth: observed 1200 s, CPU 2400 s, 2.00 cores whenever observed
+gap batches from the sampler: 1, interval_s 3601
+gap table: 09:10:00.00 to 10:10:01.00, 'not observed'
+workload_raw columns: ['ts', 'workload', 'source', 'interval_s', 'cpu_s', 'memory_bytes', 'io_read_bytes', 'io_write_bytes', 'processes', 'started'] (no gap flag)
+workload_raw row at 10:10:01.00: interval_s 3601, cpu_s 0.0, memory 50 MiB  <- the gap, stored as an ordinary sample
+system_raw: SUM(interval_s) 4801 s, capacity 19204 core-s, busy 2400 s -> busy share 12.5% (true while observed: 50.0%)
+minute bucket 09:40:00.00: covered_s 3601 of 60, samples 1, cpu_s 0, seconds in the lowest cores bin (under 0.01 cores) 3601
+hour buckets built by roll_up(width_s=3600):
+  09:00:00.00: covered_s 4201, cpu_s 1200, cpu_s/covered_s 0.29 cores, p50 0.006, p95 2.08, well_covered True
+  10:00:00.00: covered_s 600, cpu_s 1200, cpu_s/covered_s 2.00 cores, p50 2.030, p95 2.18, well_covered False
+the 09:00 hour was observed for 600 s. Without the gap row it is not well covered.

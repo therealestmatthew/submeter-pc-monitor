@@ -1,0 +1,5 @@
+1. Sampler across a restricted-then-readable flip, 1 s apart
+   cpu stand-in: interval 1 s, first_seen False, credited 5000 CPU-s on a 4-core machine
+   start-time stand-in: exited 1, first_seen True, credited 0 CPU-s
+2. AccessDenied per psutil call, every process on this machine, as this user
+   453 processes: create_time 0, cpu_times 0, memory_info 0, num_threads 0, io_counters 298, cmdline 0

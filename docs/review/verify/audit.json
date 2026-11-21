@@ -1,0 +1,550 @@
+{
+ "audits": [
+  {
+   "verdicts": [
+    {
+     "cluster": "G1",
+     "R": "R38",
+     "verdict": "keep",
+     "new_severity": "critical",
+     "reason": "Re-read sampler.py:39 (gap_after_s=30.0), :55 (gap test), :67 and :78-79 (CPU and busy zeroed in a gap), cli.py:79 (top accepts --seconds up to 60) and :87 (default Sampler()), and config.py:46-51 and :92 (idle up to 60 s, cold up to 60 s, battery multiplier up to 10). Re-ran verify-1/gap_rule.py parts 1, 2 and 4 (logic only), and the output matched the stored file: '29 s: gap=False ... credited 14.5' against '31 s: gap=True, process used 15.5 CPU-s, credited 0.0; machine busy recorded 0.0'. Shipped baseline code shows a wrong number today: `submeter top --seconds 31..60` prints 0.00 cores for every workload. docs/14:244 states the fixed 30 s rule as designed behaviour, and docs/17:269 tells the builder to put the collector loop 'around the existing sampler', so a builder is not steered away from the rule. Critical holds on the top defect alone.",
+     "correction": "(1) The fix reverses behaviour that a test pins and a document states: tests/test_baseline.py:226-233 asserts that a gap batch has cpu_s == 0.0 and cpu_busy_s == 0.0, and docs/14:244 says 'deltas are zero'. Both must change with it, so the change is a reversal of a pinned behaviour, not just a new threshold. (2) The fix cannot ship apart from G2's. When a gap sample keeps its CPU, roll_up's midpoint rule (rollup.py:110) puts it in a bucket in the middle of the suspend. Under G2's add() rule, docs/review/probes/audit/g1g2_fix_compose.out.txt shows that bucket then either 'close() returned None: the 4.0 CPU-s G1 kept are lost' or 'close() raised ZeroDivisionError'. The fix should place a gap sample's sums in the bucket that holds taken_at, and should never split a gap sample across suspended buckets. (3) G1's proportional split for samples of 60-600 s conflicts with G2's 'reject a non-gap sample whose interval_s exceeds width_s'. idle_interval = 60s alone gives a 60.05 s interval (same probe, part 2). Choose the split, or cap the effective cadence below the minute width.",
+     "merge_into": ""
+    },
+    {
+     "cluster": "G2",
+     "R": "R39",
+     "verdict": "keep",
+     "new_severity": "critical",
+     "reason": "Re-ran verify-1/gap_rule.py part 4 through the real Sampler, aggregate, RawFile and roll_up: 'minute bucket at +2400 s: covered_s 3601 of 60, cpu_s 0, well_covered True' and 'hour bucket at +0 s: covered_s 4201, cpu_s 1200, mean cores 0.29, well_covered True' (truth 2.00 cores over 600 s). The code agrees: sampler.py:59 sets interval_s=max(elapsed, wall) for a gap, rules.py:221 copies it, WorkloadSample (models.py:135-147) has no gap field, and rollup.py:53,60,68-71 add the interval to coverage, the memory weight, active time and both histograms. This happens after every real sleep, a daily event on a Windows laptop, and the stored hourly figures that feed baselines and trends are wrong (docs/06:38 and docs/17:120 promise the opposite). It is not covered by R08 or R24, whose fixes are not present in the baseline.",
+     "correction": "The proposed rollup change is incomplete and conflicts with G1's in two places. (a) It says where a gap sample's sums do not go, but not which bucket they do go to. Under the midpoint rule (rollup.py:110) they land in a bucket in the middle of the suspend that nothing else covers. close() then returns None and loses the CPU, or divides by zero (rollup.py:90 memory_weighted / covered_s). merge() divides by the summed covered_s at :153. docs/review/probes/audit/g1g2_fix_compose.out.txt shows both. Specify that a gap sample goes to the bucket that holds taken_at, and that close() and merge() accept covered_s = 0. (b) Drop 'Reject a non-gap sample whose interval_s exceeds width_s'. Settings already accept idle_interval = 60s, which yields 60.05 s samples (same probe, part 2), and G1 proposes splitting such samples instead. Write G1's and G2's changes as one specification.",
+     "merge_into": ""
+    },
+    {
+     "cluster": "G3",
+     "R": "R46",
+     "verdict": "keep",
+     "new_severity": "high",
+     "reason": "Confirmed by reading the code. sampler.py:49 replaces _known on every tick. :65 reports every process absent from the snapshot as exited. :84-87 credits nothing to an old process seen again. :99 together with rules.py:211 counts it as started. The hot_keys docstring (:105, 'Processes worth sampling at the active interval') describes reading A, partial snapshots. The verify-1/hot_cold.out.txt figures follow from those lines: 'cold credited 0.00 of 5.40; exits reported 27, starts reported 27' under A, and a 1.80-core one-tick rate against a true 0.18 under B. docs/05:45, docs/17:71, docs/08:61,63 and R02 never say what a cold read skips. Under reading A the P1 gate 'figures are within 5% of kernel counters' (docs/15:13) fails, which meets high. It is not critical, because no shipped path builds a cold set yet.",
+     "correction": "G3's option (a) and H3 (batch-9) rewrite the same rows (docs/05:45, docs/17:71, docs/08:61,63, the hot_keys docstring) in incompatible ways. G3 (a) keeps cold_interval and redefines it as the cadence for costly extras. H3 deletes cold_interval, hot_cpu_threshold and hot_keys. Adopting both recommendations would give conflicting document edits, so present them to the owner as one decision. H3's 1 s to 2 s default change is a separate question.",
+     "merge_into": ""
+    },
+    {
+     "cluster": "R1",
+     "R": "R40",
+     "verdict": "keep",
+     "new_severity": "critical",
+     "reason": "Re-ran verify-2/reap_counters.py through the unmodified provider and sampler. The child was credited 0.27 s while alive, this process's cutime+cstime rose by 0.28 s at reaping, and the run printed 'CPU if the child-time increase is added as the brief says: 0.55 s for 0.27 s used'. docs/17:71 gives the recovery rule with no subtraction, and the naive reading, crediting the increase, double counts every child that polling saw. A builder would not obviously avoid that. The a-linux tree probe shows the subtraction makes the result exact. The defect is in the specification only (models.py:71-84 has no child-time field), but following it as written gives wrong stored CPU on Linux, so critical stands. Absorb R2: same mechanism and same fix.",
+     "correction": "The subtraction must be tied to the reaping, not to the child's last sighting. The baseline drops zombies (psutil_provider.py:102-103; see G8), so a child that has exited but is not yet reaped vanishes from the snapshot one or more ticks before its parent's child time rises. 'Subtract for every seen child that ended since the last tick' then lands in the wrong interval. The clamp swallows it there, and the next tick double counts. State that a zombie stays in the snapshot until its /proc entry is gone (G8's fix is a prerequisite), and that a pending subtraction is carried to whichever process's child time rises: the last-seen parent, or the subreaper if that parent has ended. The limits sentence overlaps R15, which edits docs/10:10 and docs/17:221.",
+     "merge_into": ""
+    },
+    {
+     "cluster": "R2",
+     "R": "R41",
+     "verdict": "merge",
+     "new_severity": "critical",
+     "reason": "The defect is real and in the baseline today. The re-run of verify-2/reap_counters.py printed 'this process's /proc/self/io rose at reaping by write_bytes 4.0 MiB' and 'I/O a workload holding both is charged: 8.0 MiB for 4.0 MiB written', and psutil_provider.py:77-78, sampler.py:82-83 and rules.py:208-209 take and sum the plain delta. It is the same kernel mechanism as R1: on reaping, the parent's signal struct absorbs the child's CPU (cutime/cstime) and its I/O accounting (/proc/PID/io). The fix is the same: subtract the last-seen counters of each seen child from its reaper's increase. It goes in the same docs/17:71 sentence (R2's own text says 'next to R1's sentence') and the same P1 procfs task (build list 05). One finding with one subtraction rule for CPU and I/O avoids two separately worded rules for one mechanism.",
+     "correction": "The merged finding must keep R2's distinct facts: the I/O double count happens in the shipped psutil baseline now, not only in the planned /proc reader, and docs/09:12's Linux Disk I/O cell needs the 'includes reaped children' caveat. The same reap-timing correction given under R1 applies to the I/O subtraction.",
+     "merge_into": "R1"
+    },
+    {
+     "cluster": "R3",
+     "R": "R47",
+     "verdict": "keep",
+     "new_severity": "high",
+     "reason": "grep finds rules.py:36 SYSTEM defined and never assigned anywhere in src/ or tests/. tests/test_baseline.py:268-271 checks only conservation (the sum over workloads equals the sum over processes), and verify-2/attribution_checks.out.txt shows that check holding while 'the missing 2.00 has no term in the baseline'. The gates (docs/15:13 P1 'totals reconcile within 2%', docs/15 P3, docs/17:269) require the invariant. docs/10:10 accepts a 70% polled undercount of short-lived children on Windows, the product's main use case (docs/17:60), so with System taken from counters the gate fails under real spawn loads. With System as the remainder, docs/03:43's 'Reconciled ... = 100%' hides the gap. Either way a gate or the attribution display fails, so high fits.",
+     "correction": "The record overstates the gap: 'neither docs/12 nor docs/17 defines System' is not quite true. docs/17:96 names it 'System (kernel, interrupts)', and docs/02:137-143 describes it as 'Kernel time, interrupts, deferred calls and non-process memory' from 'counters' (docs/02:44,140). What is missing is the concrete counters and any code that produces it. The proposed definition, 'kernel threads plus the interrupt and DPC counters', must also say that those rows leave the processes term, or they count twice. On Linux, kernel threads (children of pid 2) are processes the poller already reads. On Windows the same applies to pid 4 and the rows R5 lists. B9's System item duplicates this finding's core and should defer to it.",
+     "merge_into": ""
+    },
+    {
+     "cluster": "R5",
+     "R": "R42",
+     "verdict": "keep",
+     "new_severity": "critical",
+     "reason": "Read .venv psutil 7.2.2 _pswindows.py myself. :636 'pids = cext.pids' (EnumProcesses includes 0). :736-737 name() returns 'System Idle Process' without a handle. :938-948 cpu_times() falls back to _proc_info() user_time and kernel_time on a permission error. :910-922 create_time falls back the same way. :763-781 cmdline needs a handle in both branches, so it raises AccessDenied, psutil_provider.py:68-71 sets restricted, and rules.py:156 sends the process to Restricted. grep of docs/, docs/reference/, scripts/, src/ and tests/ for 'idle process', 'pid 0' and 'system idle' finds nothing that excludes it. On Windows, the first platform, the shipped `top` would show roughly the machine's idle cores as Restricted CPU. A shown number is wrong and the reconciliation fails, so critical stands. It was not run on Windows. The code path is verified, and the exact size needs the windows-priorities section 3 run.",
+     "correction": "",
+     "merge_into": ""
+    },
+    {
+     "cluster": "R7",
+     "R": "R43",
+     "verdict": "downgrade",
+     "new_severity": "high",
+     "reason": "The probes are sound: memory_sum.out.txt gives 'chrome 17 processes ... x1.95' and 'all 155 own processes ... x1.70', and psutil_provider.py:63 with rules.py:207 sums RSS on Linux. But the 1.4-5x figure comes from the baseline `top` summing the growth unit, which docs/14:225 documents as RSS on Linux, the second platform. The brief already specifies a different unit for totals (docs/17:81 'Workload totals use USS (or PSS on Linux)', docs/06:83), so a builder following it does not ship RSS sums. On Windows, private bytes add up across processes without double counting (as the verifier noted). What remains is a real design gap: no rule gives the total for members outside uss_top_n, and the model holds one field for two units. smaps_cost says the 25 largest processes hold 87% of PSS, so the gap mostly hits workloads made of small processes, whose RSS overstates most. That makes job 1's per-workload memory wrong under real conditions on Linux, which is high. No fixed rule is broken, and the brief as written does not produce the multiple-fold error, so it is not critical.",
+     "correction": "The 'wrong number' part is a baseline placeholder that the brief already replaces. The finding's lasting content is the decision about members outside uss_top_n and the two-field model (overlaps B5, models cannot express the docs/06 catalogue).",
+     "merge_into": ""
+    },
+    {
+     "cluster": "R8",
+     "R": "R44",
+     "verdict": "keep",
+     "new_severity": "critical",
+     "reason": "Confirmed by reading the code. rules.py:208-209 'io_read_bytes or 0'. rules.py:216 labels every non-Restricted workload POLLED. models.py:144-145 has int fields. raw.py:43-44 has NOT NULL I/O columns. rollup.py:56-57 sums them. verify-2/attribution_checks.out.txt: 'workload docker: source=polled io_read=4096 io_write=8192 (dockerd's I/O was None)'. AGENTS.md:44 and docs/09:5 say unavailable is never shown as zero, and models.py:5 calls these classes the contract later providers build on, so the zero spreads. On Linux, other users' /proc/PID/io is unreadable, so Restricted shows 0 B of I/O and rule-matched daemon workloads show a partial sum labelled as complete. A shown number is wrong on a supported platform, so critical stands. On Windows, psutil's fallback (_pswindows.py:1022-1037) reads I/O for denied processes, so this is Linux-only today.",
+     "correction": "The proposed provider change, 'set restricted only when CPU or memory is unreadable', would change who lands in Restricted on both platforms. On Windows, psutil's fallbacks make CPU and memory readable for nearly every process (_pswindows.py:789-811, 938-948), and on Linux /proc/PID/stat and statm are world-readable. Restricted would empty, and other users' processes would move to Unattributed, against docs/02:147-148 ('14 processes owned by other users') and the windows-priorities.md section 3 'how much is restricted' check. Keep restricted tied to unreadable attribution inputs (command line or owner), and record each field's availability separately through the Optional fields and missing-member count R8 already proposes. W6's change of threads to int | None is the same contract change and should be done with it.",
+     "merge_into": ""
+    }
+   ],
+   "duplicates": [
+    {
+     "clusters": "R1, R2",
+     "reason": "Same kernel mechanism: on reaping, the parent's accounting absorbs the child's cutime/cstime and /proc/PID/io. Same subtraction fix, in the same docs/17:71 sentence and the same P1 procfs task. R2's own proposal is placed 'next to R1's sentence'.",
+     "keep": "R1"
+    },
+    {
+     "clusters": "G3, H3",
+     "reason": "Same root (what a cold-set read means on the existing sampler) and the same decision. G3's option (a) and H3's scope cut edit docs/05:45, docs/17:71, docs/08:61,63 and hot_keys in incompatible ways: G3 redefines cold_interval and H3 deletes it. Present them as one decision. H3's 2 s default is a separate question.",
+     "keep": "G3"
+    },
+    {
+     "clusters": "R3, B9 (System bucket item only)",
+     "reason": "B9's 'System: define System from counters and report the remainder separately' is R3's option (a) in one line. R3 holds the evidence and the decision. B9's other six items are unaffected.",
+     "keep": "R3"
+    }
+   ]
+  },
+  {
+   "verdicts": [
+    {
+     "cluster": "R9",
+     "R": "R48",
+     "verdict": "keep",
+     "new_severity": "high",
+     "reason": "The defect is in the built baseline, not only in a design choice. rules.py:130-163 rebuilds every attribution from the current batch alone, with no state carried between batches. Inheritance needs the parent to be in by_pid (rules.py:137,144). Once the shell exits, the server's parent is missing or stale, so _direct returns None and the server falls to Unattributed (rules.py:155-157). verify-2/attribution_checks.out.txt shows both cases: '{20: agent, 22: unattributed}'. a-linux/cgroup_totals.out.txt section 4 shows the real Linux reparenting: 'its parent is now pid 1: False, named systemd'. An orphan therefore inherits whatever workload systemd --user is given, which can be a wrong workload as well as Unattributed. No document rules on this: docs/17:77,94 and docs/14:259 give only the order and the start-time check, and R09 and R15 cover other cases. 'High' fits the definition exactly: the attribution job fails under real conditions. Detached dev servers, `nohup ... &` and Windows `start` launchers whose parent exits at once are all common. It is not critical, because tagged runs are decided by group membership. raw.py:132-133,158-169 confirm the second half: the process row records the workload it had when first seen.",
+     "correction": "The proposed fix needs one more trigger. Under 'rules are retried only when exe or cmdline changes', a rules.toml reload (an epoch event, docs/17:130) would never reach live processes that inherited their workload. Add 'or when the rules file or inherit_from_parent changes'. Also add the case where an orphan is adopted by a subreaper that matches another rule (systemd --user, per cgroup_totals 4), so the test covers wrong-workload as well as unattributed."
+    },
+    {
+     "cluster": "W1",
+     "R": "R49",
+     "verdict": "downgrade",
+     "new_severity": "medium",
+     "reason": "The false statement is real. docs/17:62 says the kernel totals are authoritative for memory, and docs/05:52 and 09:9 ('Full') say the same. The Microsoft quotes in the record list no current-memory member in any documented class, and my search found no documented class either. However, the brief already gives the answer that works: docs/17:81 says 'Workload totals use USS', and docs/10:18 says workload memory 'can lag by up to the USS interval'. A builder who looks for job memory finds none, and docs/17:277 plus AGENTS.md ('Say so and ask') send them to USS. No gate depends on memory: the P2 gate at 17:270 and 15:17 is about CPU charge, survival, re-attach and return. No job fails either, because tagged memory is still delivered from USS. The wrong number appears only if a builder labels PeakJobMemoryUsed (peak commit) as current memory, which the verifier itself calls steered against. The 17:127 'mean memory' promise for a run the collector never saw is a document promise that cannot be met. Under the strict definitions that is misleading or costly later, so medium.",
+     "correction": "W1's text for docs/05:52 ('the kernel totals CPU and I/O') directly conflicts with L3's ('CPU and memory, and on Windows I/O and processes started'). L4 (memory.current includes file cache) rewrites the same sentence again. Applied one commit per finding, the second edit undoes the first. Write one rewrite per platform for 17:62, 05:52 and the 09:9 row. CPU: kernel, both systems, including exited processes. I/O and processes started: kernel on Windows (BASIC_AND_IO_ACCOUNTING, TotalProcesses); unavailable from the kernel on Linux, with L3's decision. Memory: current memory is the sum of USS/PSS over live members on both systems. The kernel peak is kept only under its own label: peak commit on Windows, charged memory including file cache on Linux (L4)."
+    },
+    {
+     "cluster": "W2",
+     "R": "R50",
+     "verdict": "keep",
+     "new_severity": "high",
+     "reason": "Confirmed. docs/17:67 still offers 'a small detached holder, or the collector. Choose one and test it.' R15's fix (16-review-log.md:147) chose a detached helper, so R15 does not resolve the choice the brief leaves open. With the collector as the only handle holder, two things fail. First, the 17:66 promise ('accounted for even if the collector was not running'): when the command returns while the collector is down and background processes remain, nothing holds the job. Second, a collector restart after the launcher has returned: the name is gone, so the gate's 're-attaches to live groups' fails. Unlike L2, this failure can pass the gate test. A restart test run while the launcher is still alive succeeds, because the launcher holds a handle. The failure then shows up in real use as lost run totals. High is right: the brief offers an option that fails a stated phase-2 requirement.",
+     "correction": "Two fixes to the proposed text. First, 'The launcher, the holder and the collector run in the same logon session' cites the AssignProcessToJobObject rule, which governs processes inside the job. The holder is not inside the job, so that quote does not support the clause. If the clause stays, rest it on the job name being visible to the collector (namespace scope, unverified here), which W7's InteractiveToken task keeps true. Second, AGENTS.md says each run file has one writer, the launcher. Say that the holder is the launcher's own detached part and writes the final totals by atomic rename only after the launcher's last write. Otherwise the run file has two writers (see also B7)."
+    },
+    {
+     "cluster": "W5",
+     "R": "R51",
+     "verdict": "keep",
+     "new_severity": "high",
+     "reason": "The mechanism is documented: nested-job accounting is aggregated in every parent (quotes in the record). The brief expects nesting, at docs/17:62 '(nested jobs)' and docs/03:53 'nested jobs available'. It still has no rule for which group a process belongs to, and no subtraction rule; I grepped docs/ for nested, innermost and parent run. Per docs/17:68, the collector reads group totals each tick, so an outer tagged run reports its inner runs' CPU as well, and cost and diff count it twice. A reasonable builder would not fix this unprompted, because docs/17:62 calls the group totals authoritative. It is plausible for this owner: a shell alias or agent workflow that wraps nested `claude`/build invocations in `submeter run` triggers it. It stays high, not critical, because a deliberate nesting of two Submeter runs is required.",
+     "correction": "The SUBMETER_RUN_ID environment variable can be lost (sudo, env -i, sandboxed agent shells), and then the double count returns silently. Say that the inner launcher confirms membership on Windows with IsProcessInJob against the outer job opened by name, and records 'parent unknown' when the variable is missing. Also align with L2's Linux layout: a nested run made as a sibling under the outer payload is included in payload's cpu.stat. So the subtraction rule must apply on Linux too, or the outer run reads payload/main only."
+    },
+    {
+     "cluster": "W7",
+     "R": "R52",
+     "verdict": "keep",
+     "new_severity": "high",
+     "reason": "docs/17:199, 13:48-49 and 17:256 name a scheduled task with no settings. A task created with Register-ScheduledTask, schtasks or the UI without explicit settings takes the quoted defaults: no start on battery, stop when unplugged, a 72 h limit and priority 7. docs/08:71 (on_battery_multiplier) shows the collector is meant to run on battery. The builder works on a Windows machine that may be on mains power, and the CI soak lasts 30 minutes, so neither would show the gaps. The trends job loses data on a work laptop whenever it is unplugged or has been up for 72 h, and the live-diagnosis job loses its collector exactly when the user is on battery. That is a job failing under real conditions, so high. The rule-2 part (whether a standard user can register a logon task) stays suspected, as the record says. The HKCU Run fallback covers it.",
+     "correction": ""
+    },
+    {
+     "cluster": "L1",
+     "R": "R45",
+     "verdict": "keep",
+     "new_severity": "critical",
+     "reason": "I re-checked this in the local systemd 255 man page (man systemd.resource-control). Under Delegate=: 'If true, delegation is turned on, and all supported controllers are enabled for the unit' and 'any controllers that are delegated will be enabled for the parent and sibling units of the unit with delegation'. Under 'Enabling and disabling controllers': 'Units for which a controller is enabled may be subject to resource control even if they don't have any explicit configuration.' The probe output (a-linux/cgroup_side_effects.out.txt) agrees: app.slice passes down cpu while a Delegate=yes scope lives, and a process's share moves from 20% to 50%. I did not re-run it, because it burns CPU and changes cgroup state. The brief sends the builder to 'cgroup v2 delegation' docs (17:42). Delegation is needed for any holder/payload layout that keeps counters after the payload empties, which is L2's own design. And Delegate=yes is the default form. So the natural build breaks fixed rule 1. Enabling cpu on 22 sibling groups changes their CPU distribution, and it exposes cpu.weight and cpu.max on them: literally 'a setting that enables' a priority change or cap (AGENTS.md rule 1). A broken fixed rule is critical by definition.",
+     "correction": "The impact line 'changes the tagged run's own CPU share, i.e. the figure being measured' describes an observer effect, not a wrong number; cpu.stat still measures what was used. The rule-1 breach alone carries critical. The man page confirms that the fix works where the parent passes nothing down: 'Assigning the empty string will enable delegation, but reset the list of controllers'. So say 'Delegate= with the parent's pass-down list, or an empty list'. On systemd 254 or later, DelegateSubgroup= can also place the payload without moving processes by hand."
+    },
+    {
+     "cluster": "L2",
+     "R": "R53",
+     "verdict": "downgrade",
+     "new_severity": "medium",
+     "reason": "The gap is real: there is no placement rule, and R15 (16-review-log.md:145) wrongly says 'A cgroup is removed once it is empty'. a-linux/cgroup_totals.out.txt section 2 shows a mkdir group still present with populated 0. The high rating, though, rests on the P2 gate failing, and the probes do not show that. The brief already points at the right documentation (17:42 names cgroup v2 delegation, and systemd.io gives the supervisor/payload layout). The wrong designs a builder might choose either fail the gate visibly and get reworked, or pass it. A plain scope is removed when empty, so 'final totals survive its exit' fails in the builder's own test. A mkdir group under the shell's own cgroup passes the CPU gate: cgroup_totals A and 1 show cpu.stat 10.677 s against wait4 10.678 s, and section 2 shows the directory and counters surviving. Its costs are memory unavailable for the run, a breach of systemd's ownership rule, and leaked directories: costly later, not a gate failure. With no user bus, tagged runs are unavailable, which AGENTS.md's general 'reported as unavailable' rule already governs. The CI-bus concern is unverified, and CI can enable linger in setup without Submeter elevating. Medium, as costly later.",
+     "correction": "Keep the R15 correction. The layout text should say what the outer run reads when a nested run sits under payload (see W5): either payload minus its tagged children, or payload/main only."
+    },
+    {
+     "cluster": "L3",
+     "R": "R54",
+     "verdict": "merge",
+     "merge_into": "W1",
+     "new_severity": "medium",
+     "reason": "The substance holds. user@.service delegates only 'pids memory cpu' (a-linux/cgroup_scope.out.txt section 1), and app.slice has only io.pressure (verify-4 readonly output), so there is no io.stat without root. pids.current counted 9 for one process with 8 threads (cgroup_totals 3), and no file counts processes started. docs/09:9's 'Full' and docs/17:62's unhedged claim are therefore false on Linux. The severity is medium for the same reason as W1. Phase 0's capability matrix (17:265) is where this is found. AGENTS.md makes the missing figures 'unavailable', not zero. No gate depends on tagged I/O or process counts. Linux is the second target. The polled-sum-labelled-kernel risk is R10's, already filed. The merge is needed because L3 and W1 (and L4) rewrite the same three sentences (17:62, 05:52, 09:9 row 1) with conflicting text. W1 would make 05:52 'CPU and I/O' and L3 would make it 'CPU and memory, and on Windows I/O and processes started'. One per-platform rewrite, which carries L3's decision on where Linux I/O comes from, avoids one commit undoing another.",
+     "correction": "In the merged text, Linux tagged memory must not be simply 'the kernel gives memory'. memory.current includes file cache and kernel memory (L4). The current figure should be PSS/USS as for every workload, with the kernel peak labelled as charged memory."
+    },
+    {
+     "cluster": "L5",
+     "R": "R55",
+     "verdict": "keep",
+     "new_severity": "high",
+     "reason": "I re-ran the check with a read-only audit probe (docs/review/probes/audit/l5_commit_ratio.py, .out.txt). It reports 'vm.overcommit_memory 0', 'commit_fraction = Committed_AS / CommitLimit = 2.63', 'memory in use = 0.54', and 'built-in rule commit_fraction above 0.90 would fire: True'. CommitLimit here is swap plus 50% of RAM (11.5 GiB) against 30.3 GiB committed. docs/08:138,148 and 17:182 define the metric and the default-on serious rule with no platform split. docs/07:97 and 09:20 split only the verdict. The metric can be computed on Linux, so the unavailable rule does not stop a builder from computing it. A serious alert that is always on and says 'memory nearly full' at 54% use fails the live-diagnosis job under ordinary conditions, so high.",
+     "correction": "The proposal changes the built-in Linux rule to PSI memory full, but docs/08:130 and 17:182 refuse any alert metric outside a fixed list, and that list has no pressure metric. As written, the new built-in rule would be refused when the settings are loaded. The fix must also add a machine metric id (for example memory_pressure_full, Linux only) to the allowed list in docs/08 and 17:182 (see B4 on validation)."
+    }
+   ],
+   "duplicates": [
+    {
+     "clusters": "W1, L3, L4",
+     "reason": "All three correct the same false sentence, 'The kernel's totals for the group are authoritative: CPU time, memory, I/O and process counts' (docs/17:62), and its echoes at docs/05:52 and docs/09:9. Their proposed replacement texts conflict: W1 drops memory from 05:52, L3 keeps memory and limits I/O to Windows, and L4 redefines Linux memory. One rewrite per platform should replace all three edits.",
+     "keep": "W1"
+    }
+   ]
+  },
+  {
+   "verdicts": [
+    {
+     "cluster": "M3",
+     "R": "R56",
+     "verdict": "downgrade",
+     "new_severity": "medium",
+     "reason": "Re-ran verify-5/leak_checks.py: output identical. My probe docs/review/probes/audit/audit_growth_windows.py, Part 3: 50 MiB/h is flagged 45% of the time at +/-5 MB and 44% at +/-40 MB, and 75 MiB/h is flagged 100% at both. So the core claim holds: the acceptance rate equals Leak.min_slope (config.py:121), and with any noise the result is a coin flip. It does not reach high. No number shown is wrong. Leaks clearly above the threshold are flagged. The P3 gate as written (docs/15:21, docs/17:271) names no rate. The 50 MB/2 h sentence is a requirement in docs/01:18 and docs/17:154, and a noise-free fixture passes it 100%. The 2-hour overshoot is 1 min 30 s (121st bucket, final 30 s after it ends). The fault is in the wording of the criterion, and it shows up as a flaky test rather than a silent product fault. That makes it misleading, which is medium.",
+     "correction": "The 'units are undefined' sub-claim is wrong. docs/14-baseline-modules.md:121 says 'Sizes are binary: 1 GB is 1024 cubed bytes' for the module that parses '50MB/h' (units.py:56, docs/14:117). The '50 MB decimal: 0%' row therefore tests a reading the brief does not use; at most, docs/12 could repeat the convention. The proposed 75 MiB/h acceptance holds under today's plateau test, but it fails if M4's suggested fix is adopted. With a tail lower bound that must clear min_slope, a 75 MiB/h leak passes only 38% of the time at +/-40 MB and 83% at +/-20 MB (audit Part 4). M3's acceptance rate and M4's test must be set together."
+    },
+    {
+     "cluster": "M4",
+     "R": "R57",
+     "verdict": "keep",
+     "reason": "Re-ran leak_checks.py: identical. My own check makes the warm-up half stronger, because it does not depend on the reviewer's sliding 2-hour window (audit_growth_windows.out.txt). With a window that grows from the start of the series, as docs/06:64 '2 to 48 h back' reads, the docs/07 warm-up is falsely flagged in 18 of 60 runs at +/-40 MB. When the warm-up is already 30 minutes old as the series begins (collector or window starting after the browser), it is falsely flagged in 22 of 60 runs at +/-20 MB with a growing window and 15 of 60 with a sliding one. Cause: growth.py:53 compares a noisy 40-point tail with 25% of the whole-window slope, so a flat tail can pass by noise. The R11 fix (docs/16:117-121, 'a leak needs sustained growth with no plateau') therefore fails under realistic per-bucket noise. A noise-free quiet fixture still passes, so the P3 gate hides it, and production raises false leak findings. That is a silent failure of the trends job: high.",
+     "correction": "The staircase sub-claim depends on the 2-hour sliding window: with a growing window it is flagged in 53 of 121 checks. It is the weaker half, and 'make the window span at least two steps' is not a usable rule because step periods have no bound. State instead that the window grows to 48 h. The suggested replacement, a tail lower confidence bound that must clear min_slope, would make true leaks hard to flag: a 75 MiB/h leak passes only 38% of the time at +/-40 MB (audit Part 4), which breaks M3's proposed acceptance. The planned task must tune M4's test and M3's acceptance rate together, for example with a longer minimum tail span or a point estimate against min_slope. Also, the lead's growth.py:157-165 citation is :45-53."
+    },
+    {
+     "cluster": "M5",
+     "R": "R58",
+     "verdict": "downgrade",
+     "new_severity": "medium",
+     "reason": "Confirmed: config.py:124-125 SlowGrowth has only 'window', docs/08:88-89 lists no slow-growth slope, and the leak_checks.py rerun is identical. But no slow-growth detector exists yet. docs/17:155 says the check 'catches leaks too slow for the check above', so reusing leak.min_slope contradicts the sentence it implements, and no builder would do it. The P3 trigger fixture would fail at once and force a threshold to be chosen. The real defect is a missing default the builder has to guess. That is costly later, not a gate that fails under real conditions: medium.",
+     "correction": "H7 recommends deferring slow growth and dropping 'a leak too slow for the hourly check' from the P3 gate. If H7 is accepted, M5 is moot, so H7 should be ruled before M5 is applied as 'fix now'. The window-as-span sub-claim depends on how the builder wires it, as the verifier already noted."
+    },
+    {
+     "cluster": "M7",
+     "R": "R59",
+     "verdict": "merge",
+     "merge_into": "S1",
+     "reason": "M7 states the same defect as S1, from the same two lines: raw.py:199 'ts > ? AND ts <= ?' and rollup.py:110 'bucket_start(taken_at - interval_s/2)'. The mechanism is the same: a sample ending in the first half-interval after a boundary is read with one bucket and rolled into the previous one. Re-ran verify-5/rollup_and_histogram.py: identical. The two fixes conflict, and S1's is the right one. M7 moves raw.py to the middle rule, which puts a sample ending just after 00:00 UTC into the previous day's 23:59 bucket while utc_day (files.py:29-30) stores it in the next day's file. v6_membership.out.txt shows this: 'sample ending +0.2 s from midnight is in file 2026-11-21; ... roll_up's middle rule in 23:59 (of 2026-11-20)'. Building that bucket would then need two files. S1's half-open end rule matches the file split.",
+     "correction": "Carry M7's evidence into S1. At 5 s idle cadence, reading one hour and rolling it up loses -0.139%, which is over the 0.1% P1 gate even for a steady load. The rollup also returns a one-sample fragment of the previous bucket, and if that is upserted ('recomputing a bucket gives the same row', docs/17:123) it replaces the real bucket."
+    },
+    {
+     "cluster": "S1",
+     "R": "R60",
+     "verdict": "keep",
+     "reason": "Re-ran verify-6/v6_membership.py: identical, -1.67% at 1 s, -8.33% at 5 s and -3.33% at 2 s per minute window when the tick phase is under half an interval. The brief leads straight into the composition that loses the data. docs/17:123 says 'Build hourly buckets from raw data ... A bucket is final 30 seconds after it ends', which invites a read of each finished window, and docs/17:269 says 'built on the existing rollup functions'. The baseline test (tests/test_baseline.py:426, 'DAY0 + second + 1') uses aligned whole-second ticks, where the end and middle rules agree, so the tests cannot see the bug. The inconsistency is in shipped code, so it cannot be rejected as a builder's choice. It is high rather than critical because the composing code is not written yet, and the P1 gate (CPU-hours within 0.1%), run on a real-clock soak, would catch it.",
+     "correction": "Absorb M7 (same defect) and its numbers: -0.139% per hour at 5 s, and the fragment-bucket upsert hazard. S1's fix, the end rule [start, end) with bucket_start(taken_at), is the one to keep because it matches utc_day. H6 (cut the minute tier) would not remove the problem: building hourly buckets from raw still loses one sample per hour."
+    },
+    {
+     "cluster": "P1",
+     "R": "R61",
+     "verdict": "downgrade",
+     "new_severity": "medium",
+     "reason": "Re-ran verify-7/privacy_recheck.py. The output is identical except for a live count (290 -> 289 readable command lines). All six common forms leak (bearer header, -pPASS, -u user:pass, bash -c, --env=NAME=value, connection string) and the controls are hidden. The cause is in redact.py:74-82: names are only checked in '-flag value' and NAME=value, and anything else is caught only by token shape or the whole-argument opaque test. The leaked secrets stay in local files and behind the token-protected loopback API. None of the three fixed rules covers that (AGENTS.md:9-11 name observe-only, no elevation, and no upload, webhook, telemetry or update check). Attribution uses the live argv (rules.py:84-86), and no phase gate depends on redaction; the P6 gate concerns MCP responses only. 'A prior critical fix fails' is not one of the severity definitions. What remains is misleading, because docs/04:43 and redact.py:6 ('errs towards hiding too much') promise the opposite: medium.",
+     "correction": "Switching the default to exe_only needs P2's fix first. exe_only returns args[0] (redact.py:64-65), which is a whole process title when a program rewrote it: privacy_recheck P2 found 12 local cases, for example 'postgres: alice appdb 10.0.0.5(5432) idle'. Without P2, the new default would still store user names and addresses. P7's 0644 files make these secrets readable by other local users on Linux; that is still on the machine, so still medium."
+    },
+    {
+     "cluster": "P3",
+     "R": "R62",
+     "verdict": "keep",
+     "reason": "Re-ran privacy_recheck.py and got identical P3 lines: 'scrub bad item is last arg: ticks UnicodeEncodeError x3; system_raw rows 0', and with exe_only a bad exe still raises UnicodeEncodeError. The code matches: one transaction per tick (raw.py:96), _register runs before self._memory is set (raw.py:132-133 against :142), so every tick retries and fails, and the gap insert (:97-101) rolls back too. One local process, on Linux any user's (L9), blinds collection for as long as it lives, with no gap recorded. All three jobs lose that period silently, which is high. It is not critical because the lost period has no rows, so coverage drops instead of showing a wrong value.",
+     "correction": "The impact is wider than the record says. My probe docs/review/probes/audit/audit_p3_state_desync.py shows that after the bad process exits, a process first seen during the failed tick has 'process rows 0, process_raw rows 1', and its CPU from that tick is lost ('0.5 s of 1.0 s read'). The reason is that _memory, _pending and _waited (raw.py:134-146) advance before the commit and are not restored on rollback. Any exception inside write(), such as a full disk or a busy database, leaves the in-memory state and the file out of step. Add to the fix: update the in-memory maps only after the transaction commits, or restore them on exception, besides sanitising text with encode('utf-8', 'backslashreplace')."
+    },
+    {
+     "cluster": "P11",
+     "R": "R63",
+     "verdict": "merge",
+     "merge_into": "B2",
+     "new_severity": "medium",
+     "reason": "The CDN fact holds; the verifier re-fetched FastAPI's 'By default, those files are served from a CDN'. But no server exists (src/submeter has no FastAPI app, and B2 found no fastapi in uv.lock), so this is a gap in the specification. A break needs a builder to keep the defaults and a user to open /docs. The request carries no Submeter data, and fixed rule 3 (AGENTS.md:11) lists upload, webhook, telemetry and update check, so no rule is broken. High needs a job or gate to fail, and none does. B2 already covers the same gap at medium: its proposed change says 'All dashboard assets ... ship in the package ... FastAPI is created with docs_url=None, redoc_url=None', and its verifier judged 'Rule 3 is not broken yet (nothing built), so medium'. Two findings proposing the same sentence at different severities should be one.",
+     "correction": "Fold P11's additions into B2: openapi_url=None, a CSP of default-src 'self' on the dashboard and a meta CSP on reports, and a test that fails on any http(s):// reference in the built front end or a report. P11's 'uv run' sub-point is a suspected issue about what the scheduled task runs, and it belongs with W7, which specifies the task but not the command."
+    }
+   ],
+   "duplicates": [
+    {
+     "clusters": "M7, S1",
+     "reason": "Same defect, from the same two lines (raw.py:199 selects by end, rollup.py:110 assigns by middle) with the same consequence. The proposed fixes conflict: M7's middle rule makes the 23:59 bucket need the next day's file, while S1's half-open end rule matches utc_day.",
+     "keep": "S1"
+    },
+    {
+     "clusters": "P11, B2",
+     "reason": "B2's second half (nothing says dashboard assets are served locally; FastAPI /docs uses a CDN) and P11 cite the same FastAPI page and propose the same docs_url=None/redoc_url=None sentence, at medium and high respectively.",
+     "keep": "B2 (fold in P11's CSP and reference test)"
+    },
+    {
+     "clusters": "R10, B9",
+     "reason": "B9's 'kernel totals versus polled sums' item is R10: rules.py:213-216 labels a polled sum 'kernel'.",
+     "keep": "R10 (drop the item from B9)"
+    },
+    {
+     "clusters": "R3, B9",
+     "reason": "B9's 'the System bucket' item (rules.py:36 SYSTEM never produced) is R3's undefined System term.",
+     "keep": "R3 (drop the item from B9)"
+    },
+    {
+     "clusters": "P8, B9",
+     "reason": "B9's 'dashboard token delivery' item is P8: the brief never says how each client carries the token.",
+     "keep": "P8 (drop the item from B9)"
+    },
+    {
+     "clusters": "G9, B11",
+     "reason": "B11's last item (windows-priorities.md:70 checks suspend with an interval that cannot produce a fail) is G9's 'the documented check for it cannot fail'.",
+     "keep": "G9 (drop the item from B11)"
+    },
+    {
+     "clusters": "B4, M9, B11",
+     "reason": "All three report that verdict.thresholds accepts any key (config.py:143; 'cpu_tyme' accepted). B11 already defers to B4.",
+     "keep": "B4 for the validator fix; M9 keeps its rule-table items only"
+    },
+    {
+     "clusters": "W8, P13",
+     "reason": "Both find that holder() returns a dead holder's pid (files.py:233-238) and propose overlapping holder() fixes. P13's (a lock probe plus create time) covers W8's.",
+     "keep": "P13 for holder() and the pid file; W8 for the Windows retry and test items"
+    },
+    {
+     "clusters": "P12, B8",
+     "reason": "Both address R05's missing ingest route, with opposite fixes: B8 would reserve an ingest route, P12 would have no route and read the guest collector's stdout through wsl.exe. H1 may cut phase 7 entirely.",
+     "keep": "P12 (drop the ingest item from B8)"
+    },
+    {
+     "clusters": "G3, H3",
+     "reason": "H3's change (read cumulative counters for every process every tick; hot and cold sets only for the costly fields) is G3's option (a), and H3's evidence is G3's probe. H3 adds only the 2 s default active interval.",
+     "keep": "G3, with H3's interval default folded into the same decision"
+    },
+    {
+     "clusters": "B12, B17",
+     "reason": "Both report that no synthetic multi-day raw, minute and history store exists for the P3 slow-leak and P4 30-day gates.",
+     "keep": "B17 for naming the generator; B12 keeps the gate-reference items"
+    },
+    {
+     "clusters": "P10, B10",
+     "reason": "B10's item 'working directories withheld from MCP (17:148; 08:125 says command lines only)' is P10's 'documents disagree on what MCP withholds'.",
+     "keep": "P10 (drop the item from B10)"
+    },
+    {
+     "clusters": "M13, B10",
+     "reason": "B10's '150 MB' item (17:230, in no topic file) is M13's 'the 150 MB memory budget exists only in docs/17'.",
+     "keep": "M13 (drop the item from B10)"
+    },
+    {
+     "clusters": "L9, R13",
+     "reason": "Both correct docs/10:16's claim that other users' command lines are unreadable (on Linux 134 of 134 are readable). R13's core is the Restricted classification, L9's is reading and storing those command lines.",
+     "keep": "L9 for the docs/10 correction; R13 keeps the classification"
+    }
+   ]
+  }
+ ],
+ "coverage": {
+  "mapping": [
+   {
+    "lead": 1,
+    "covered_by": "R47; also R40, R69, R75",
+    "note": "R47 has the undefined System/Idle buckets, the conservation-only test and the invariant failing under spawn loads (measured 13.7% and 51.6% missing). R40 and R75 cover recovery of reaped children's CPU. R69 covers using cgroup cpu.stat to name where the CPU went."
+   },
+   {
+    "lead": 2,
+    "covered_by": "R39",
+    "note": "Covers every cited line: sampler.py:59, rules.py:219-221, raw.py:97-129, and the covered_s, mean memory and both histograms in rollup.py. Proposes a gap flag on WorkloadSample."
+   },
+   {
+    "lead": 3,
+    "covered_by": "R38; R68 and R138 for the windows-priorities step 5 check",
+    "note": "R38 covers the fixed 30 s rule, the idle/cold 60 s and the x10 battery multiplier, and `top --seconds 31..60` printing zeros. R68 and R138 show that the step-5 `top --seconds 60` check cannot fail."
+   },
+   {
+    "lead": 4,
+    "covered_by": "R48"
+   },
+   {
+    "lead": 5,
+    "covered_by": "R61; R101, R103 and R136 cover related redaction points",
+    "note": "All eight forms leak in d-privacy/redact_leaks.out.txt: Bearer header, -u user:pass, -pSECRET, --env=NAME=value, /pass: (line 33), connection string (line 42), URL query token after the first parameter (line 51), token as the URL user (line 50). The E-baseline Not-checked item that calls redaction unchecked is stale (see lens_gaps)."
+   },
+   {
+    "lead": 6,
+    "covered_by": "R86; R123",
+    "note": "R86: 'one full sample' and the memory figure are undefined, and the rule points either way. R123: P0 measures cost with only psutil built, while the bulk providers come in P1."
+   },
+   {
+    "lead": 7,
+    "covered_by": "R46"
+   },
+   {
+    "lead": 8,
+    "covered_by": "R94"
+   },
+   {
+    "lead": 9,
+    "covered_by": "R60; R59"
+   },
+   {
+    "lead": 10,
+    "covered_by": "R56; R57",
+    "note": "R56: the acceptance sits on the threshold, and MiB against MB is shown. R57: a staircase leak is never flagged with a 2-hour window. The E-baseline Not-checked item calling the staircase 'not reached' is stale."
+   },
+   {
+    "lead": 11,
+    "covered_by": "R113"
+   },
+   {
+    "lead": 12,
+    "covered_by": "R142; R108; R118; R123",
+    "note": "R142's evidence: P7 has no component, route, schema or transport. R108: the ingest API conflicts with loopback only, and default WSL NAT cannot reach host loopback. R118: R05's ingest route is missing."
+   },
+   {
+    "lead": 13,
+    "covered_by": "R76 (breakaway); R50 (job name lost when last handle closes); also R77"
+   },
+   {
+    "lead": 14,
+    "covered_by": "R54 (io not delegated, no I/O totals); R53 (R15 misstates cgroup removal)"
+   },
+   {
+    "lead": 15,
+    "covered_by": "R44; R66; R74",
+    "note": "R44 covers the I/O summed as zero, the polled label and the refusal of None. R66 covers stand-in zero CPU counters. R74 covers Restricted memory shown as a number in one place and n/a in another."
+   },
+   {
+    "lead": 16,
+    "covered_by": "R104"
+   },
+   {
+    "lead": 17,
+    "covered_by": "R127; E-baseline nothing_found 'Python version' line; E-baseline and F-consistency not_checked (tests under 3.12/3.13)",
+    "note": "R127 proposes requires-python >=3.13 and records that the checkout resolves 3.14.5. A .python-version pin, which E-baseline offered as optional, was dropped from R137. That gap does not matter, because ruff and mypy target py312."
+   },
+   {
+    "lead": 18,
+    "covered_by": "R115; R89 also notes verdict.thresholds accepts any key"
+   },
+   {
+    "lead": 19,
+    "covered_by": "R123; R149; R121; R131",
+    "note": "R149 and R121 say doctor has no oracle and the VRAM check needs a GPU. R131 covers the working-day measurement. R123 covers the full-sample cost measured on psutil."
+   },
+   {
+    "lead": 20,
+    "covered_by": "R88 (5% gate against the product's own source); R122 (runner process count against 300); R121 and R59 for the soak",
+    "note": "R59 and R121 refuted the sub-claim that a 30-minute soak cannot hold an hourly bucket: a soak that straddles an hour boundary finalizes a partly covered hour, and the 0.1% check can also run on a synthetic fixture."
+   },
+   {
+    "lead": 21,
+    "covered_by": "R93"
+   },
+   {
+    "lead": 22,
+    "covered_by": "R107"
+   },
+   {
+    "lead": 23,
+    "covered_by": "R89 (85% against 86%); R138 (91% against 93%)"
+   },
+   {
+    "lead": 24,
+    "covered_by": "R65; A-linux nothing_found (ProcessKey identical across two processes while the clock is not stepped)"
+   },
+   {
+    "lead": 25,
+    "covered_by": "R72"
+   },
+   {
+    "lead": 26,
+    "covered_by": "R63; R113",
+    "note": "The brief.html web-fonts point was dropped during R63's verification, because brief.html is the design page and not the dashboard. R113 adds 'all dashboard assets, including the chart library and fonts, ship in the package'."
+   },
+   {
+    "lead": 27,
+    "covered_by": "R105; R119"
+   },
+   {
+    "lead": 28,
+    "covered_by": "R64"
+   },
+   {
+    "lead": 29,
+    "covered_by": "R100 (partial)",
+    "note": "R100 covers only the case of misordered retention settings, and its fix still reads the settings. One case is not covered: the disk budget deleting raw files the setting still counts (docs/17:141). That case is reported below as finding N29."
+   },
+   {
+    "lead": 30,
+    "covered_by": "R46",
+    "note": "Reading B of R46 is cold counters carried forward, which put 10 s of CPU into a 1 s interval (1.80 against 0.18 cores)."
+   },
+   {
+    "lead": 31,
+    "covered_by": "R78 (one whole-system query per process per snapshot); R128 (DPC/interrupt double count)"
+   },
+   {
+    "lead": 32,
+    "covered_by": "R52"
+   },
+   {
+    "lead": 33,
+    "covered_by": "R56 (MB/h binary against decimal); R97 (GB checked in its verification)",
+    "note": "R97's verification: parse_size('2GB') is 2.147e9 B, larger than the decimal figures, so no status line changes. The GB half is therefore checked and immaterial."
+   },
+   {
+    "lead": 34,
+    "covered_by": "R47 and R119 (System); R91 (idle/active); R99 (epoch change in a bucket); R117 (no deleter of the run file)"
+   },
+   {
+    "lead": 35,
+    "covered_by": "R116; R97"
+   },
+   {
+    "lead": 36,
+    "covered_by": "R84"
+   },
+   {
+    "lead": 37,
+    "covered_by": "R137"
+   },
+   {
+    "lead": 38,
+    "covered_by": "not covered",
+    "note": "The nearest items are R26 (prior), R119 (unended sessions), R147 and the H-scope nothing_found line 'Sessions: kept'. None of them addresses a session longer than raw retention. Reported below as finding N38."
+   }
+  ],
+  "new_findings": [
+   {
+    "cluster": "N38",
+    "sources": "working-notes lead 38; coverage probe docs/review/probes/coverage/session_retention.py (parts 1-4)",
+    "verdict": "confirmed with changes",
+    "title": "A session longer than raw retention cannot be summarised exactly at its end. The brief never says totals accumulate while the session runs. Raw left at the end holds 75% (48 h) or 42% (24 h floor) of a 72 h session, and its top executables cannot be rebuilt from exe_1h",
+    "lens": "C, F",
+    "severity": "medium",
+    "status": "verified",
+    "evidence": "docs/06-storage.md:74 'A session or tagged run is summarised when it ends, so its cost stays exact after its raw data is gone.' docs/04-features.md:23 says the same. docs/17-build-prompt.md:127 'When a session stops or a tagged run ends, store its exact totals per workload: CPU seconds, peak and mean memory, I/O, processes started and top executables.' No document says which tier a summary is built from, that totals accumulate during the session, or how long a session may be. Retention and budget: docs/08:80 retention.raw 48h; docs/17:141 the budget deletes raw 'never going below 24 hours'; docs/08:44 'raw retention about 38 h' and :54 'about 13 h'; docs/08:74 a session may override the interval to 250ms. files.py:121-131 expires whole day files. docs/06:75 says exe_1h keeps the top ten executables per workload per hour. docs/15:17 P2 gate: 'A session's cost reads the same before and after its raw data is deleted'. The R26 fix (docs/16:215-219) assumes the session ends before its raw data expires. No summary code exists in src/ (grep 'session|summar' finds only a cli.py docstring). Probe session_retention.out.txt, 72 h session at a steady 2.0 cores: 'retention 48h (default): expired_raw at session end -> ['2026-11-16.db'] ... raw still on disk covers 2026-11-17 00:00:00 to 2026-11-19 06:20:30: 54.3 of 72.0 h'; 'retention 24h (budget floor) ... 30.3 of 72.0 h'; 'truth: 518,400 CPU-s'; 'raw at end, retention 48h (default) 391,260 CPU-s (75.5% of truth)'; 'raw at end, retention 24h (budget floor) 218,460 CPU-s (42.1% of truth)'; 'minute buckets 518,460 CPU-s if the edge bucket is kept, 518,340 if dropped'; 'hourly buckets (minute tier cut, R147) 520,860 ... kept, 513,660 if dropped (start edge 1230 s into its bucket)'. Constructed top-executable case: 'true session top: steady with 28,800 CPU-s'; ''steady' appears in 0 of 72 hourly top-ten lists'; 'top from the exe_1h lists: burst01 with 21,600 CPU-s'.",
+    "impact": "This breaks job 1 for any session longer than raw retention. That is 48-72 h at the defaults, 24-48 h while the disk budget trims raw, and less with a 250 ms session override. The brief's wording invites a summariser that reads raw at the end. Such a summariser stores 75% or 42% of the session's CPU and I/O as 'exact' for good, and cost and diff read only that row. Sums, process starts, and peak and mean memory can be rebuilt from minute buckets to within the start-edge minute, but nothing tells the builder to do so. If R147 cuts the minute tier, the edge grows to as much as an hour (-0.9% to +0.5% here). Per-session top executables cannot be rebuilt from hourly top-ten lists at all: an executable outside one hour's top ten loses that hour. An unended session closed days later (R119) hits the same problem. The P2 gate cannot catch it, because its session ends before any raw data is deleted.",
+    "proposed_change": "docs/06-storage.md:74 and docs/17-build-prompt.md:127: 'A session's and a tagged run's totals accumulate while it runs. As each raw tick is written, or each minute bucket becomes final, the server updates an open session_summary row in history.db: it adds each workload's CPU, I/O and process starts, updates peak and time-weighted mean memory, and adds per-executable CPU and peak memory. At the end it closes the row. Nothing is recomputed from raw at the end, so a session of any length stays exact.' The open row records the last tick it includes, so that after a restart the server catches up from raw that is still on disk (bounded by R93's record of what has been rolled up). For tagged runs, CPU, I/O and process counts still come from the kernel at the end, and mean memory and top executables accumulate the same way. docs/15:17 and docs/17:270, P2 gate: add 'including a session longer than raw retention (injected clock, retention.raw of a few minutes)'.",
+    "cost": "Documents: two sentences, plus one gate clause in each of docs/15 and docs/17. Build: an accumulator in the rollup or history task, about 40 lines and 2 tests, scheduled as plan.",
+    "needs_decision": false,
+    "disposition": "fix now",
+    "verification": "Searched docs/ for how a summary is built (grep 'summar', 'session_summary', 'exact totals'). The only hits are docs/04:23, 05:77, 06:74, 16:219 and 17:127, and none gives a source tier, accumulation or a length limit. Ran the baseline's own FileMap.expired_raw on placeholder day files; the CPU figures are arithmetic on the stated design. Refutation attempts: (1) Minute buckets keep exact sums, so CPU and I/O can be rebuilt to within the edge minute. That holds, so the verdict is 'with changes' and the severity medium rather than critical. (2) Sessions longer than 48 h may be rare. But the 24 h budget floor, a 250 ms override and unended sessions all shorten the threshold, and no document limits session length. (3) The top-ten case is constructed. Still, any executable outside an hour's top ten loses that hour, so the lists cannot give exact session totals in general. R26, R93, R117, R119, R147 and the H-scope nothing_found line 'Sessions: kept' were all checked, and none states the long-session case.",
+    "prior": "R26, R93, R119, R147",
+    "would_confirm": "Already verified. Running the real roll_up over a synthetic 72 h store would only refine the edge figures."
+   },
+   {
+    "cluster": "N29",
+    "sources": "working-notes lead 29 (the part R100 does not cover); coverage probe docs/review/probes/coverage/session_retention.py part 5",
+    "verdict": "confirmed",
+    "title": "choose_tier takes raw coverage from retention.raw, not from the files on disk. While the disk budget trims raw toward its 24 h floor, a short window 24-48 h back is sent to a raw file that has already been deleted",
+    "lens": "C, E",
+    "severity": "low",
+    "status": "verified",
+    "evidence": "query.py:40-41: 'if age <= raw_retention_s: tiers, reason = [Tier.RAW, Tier.MINUTE, Tier.HOUR], \"window is inside raw retention\"'. Nothing checks the store. docs/06:72 'answered from the finest tier that covers its whole window'; docs/14:332 'whose retention still covers the start of the window'. docs/17:141 'delete the oldest raw file first, never going below 24 hours'; docs/08:44 'raw retention about 38 h'. files.py:121-131 expires whole day files. Probe part 5: '20-minute window starting 2026-11-17 20:00:00 (40 h back), retention.raw 48h'; 'choose_tier -> tier=raw step=1s'; 'reason: 'window is inside raw retention''; 'files the budget may delete at its 24 h floor: ['2026-11-17.db']'; 'the window lies in 2026-11-17.db; deleted under the floor: True'.",
+    "impact": "While the budget is trimming raw, a chart, `why` or process drill-down asks for a window of up to about 33 minutes (2000 points at the assumed 1 s) that starts 24-48 h back. It gets no rows, labelled raw at 1 s, although the minute file still holds that window. Longer windows go to the minute tier through the point budget and are not affected. R100's proposed fix still reads the settings, so it leaves this case open. The same applies to minute buckets that were not rolled up while the server was down (R93).",
+    "proposed_change": "src/submeter/store/query.py choose_tier: take where each tier's coverage starts from the store, not from the retention settings. That is the oldest raw day file left and its first tick, and the oldest minute file, or a 'covered from' value per tier that retention, the budget and roll-up keep current. Pass it in, and fold this into R100's fix. docs/14:332: 'whose data on disk still covers the start of the window'. Test: with the day file that holds the window removed, a 20-minute window 40 h back is answered from the minute tier.",
+    "cost": "About 10 lines and 1 test, done together with R100.",
+    "needs_decision": false,
+    "disposition": "fix now",
+    "verification": "Read query.py:26-54 and files.py:121-131, and ran the baseline's choose_tier and expired_raw in the coverage probe. Refutation: at default settings, expiry by whole day keeps raw for 48-72 h, so choose_tier's 48 h test is conservative and nothing fails. The defect needs the budget rule (docs/17:141) or the shrunken retention in docs/08, hence low. The budget enforcement is not built, but docs/17:141 specifies it. An earlier draft of the probe put the window 30 h back, which lies in a file the floor keeps; the probe was corrected to 40 h before its output was saved.",
+    "prior": "R100, R93, R33"
+   }
+  ],
+  "refuted": [],
+  "lens_gaps": [
+   "A, docs/09:15 and docs/10:53: the Windows claim that temperatures have no dependable source without administrator rights is not addressed by any finding, nothing_found line or not_checked item. The 'temperatur' search hits only A-linux, H-scope and R150. R150 treats temperatures only as a scope question (defer). Throttling detected from frequency is addressed by the A-windows not_checked item on Processor Information counters.",
+   "A, docs/09:11-12 (the Windows 'Own user only' rows for memory and disk I/O): the A-windows nothing_found line says psutil's memory_info (private) and io_counters fall back to the whole-system query for processes it cannot open. That means private bytes and I/O of other users' processes are readable on Windows, but nobody says the docs/09 rows are therefore wrong for Windows. docs/09:12 itself notes that Windows process I/O counters include non-file I/O, and GetProcessIoCounters covers 'all I/O operations performed by the specified process'. Nobody follows that through to the 'Disk bytes read and written' catalogue metric (docs/06) or the I/O verdict. Windows USS (how it is read, its cost, for which processes) is not addressed either.",
+   "A, the named area 'what performance counters return without elevation' (docs/09:17, :20): not_checked names only GPU Engine, GPU Process Memory, Processor Information and Processor Queue Length. Two other Windows readings are in no item: the counters the memory and I/O verdicts need (commit, page writes, PhysicalDisk queue and latency), and the battery reading behind on_battery_multiplier.",
+   "A, the named area 'what security software or policy on a work computer blocks': Defender ASR is covered (R129 and a not_checked item), but application-control policy is in no item. That means AppLocker, App Control for Business (WDAC) and Smart App Control. On managed machines these commonly block executables in user-writable folders, which is where uv-managed Python (%APPDATA%\\uv\\python), .venv\\Scripts\\python.exe and the submeter.exe console script live. So policy decides whether the collector or the logon task can run at all. How to check: Get-AppLockerPolicy -Effective -Xml; Get-CimInstance -Namespace root\\Microsoft\\Windows\\DeviceGuard -ClassName Win32_DeviceGuard (CodeIntegrityPolicyEnforcementStatus, UsermodeCodeIntegrityPolicyEnforcementStatus); then run .venv\\Scripts\\submeter.exe doctor as a standard user.",
+   "A, windows-priorities.md item 1 (the baseline checks run on Windows): no not_checked item lists the five checks on Windows or the item's named risks, which are a test's temporary folder that cannot be removed while a database file is open, and path comparisons that assume forward slashes. Only R79 names one Windows test failure (the locked byte read through a second handle). E-baseline's Windows item points only to platform_check.py, and the pytest items in not_checked concern Python 3.12/3.13, not Windows.",
+   "A, windows-priorities.md item 8 (a swarm on Windows): three points are in no item: line endings under the LF pin in .gitattributes, a virtual environment that a running process holds open, and the absence of sandboxing on native Windows. G's nothing_found covers only path length and parallel pytest temp folders. These matter mainly at stage 3, but lens A was told to work through the file in its order.",
+   "G, the named area 'phases that are too large': no finding or nothing_found line rules on phase size. G's measurements count components per phase (P0 3, P1 9, P2 4, P3 3, P4 3, P5 1, P6 2, P7 0), and R143's impact says 'P1 is the largest phase'. No item says whether P1 fits one gate or should be split. R144 and R147 shrink it only indirectly.",
+   "H, the execution prompt lists 'the baseline code' as open to challenge: no H finding or nothing_found line says whether the build should extend the baseline (docs/14:78) or replace parts of it, given R114 (the tests catch 1 of 29 deliberately broken behaviours) and R116 (the models cannot express most of the catalogue). R116's single restructuring task is the nearest item. The other open choices the prompt names are addressed: equal weight of the jobs (R148), service, dashboard and CLI (R152 and the H nothing_found line), extra telemetry (R150), Python (H nothing_found), phase order (R143, R155), and the 25 components (R155).",
+   "Not checked contradicts R68 and R138: the A-windows item 'Monotonic clock across suspend on Python 3.13+' and the C-storage item 'Whether time.monotonic counts suspended time on Windows' both tell the owner to run `submeter top --seconds 60` across a one-minute sleep. R68 and R138 show that this check cannot fail, because any interval over 30 s is a gap and prints zero CPU. These items should use an interval under 30 s across the sleep and read the gap flag, as R138 proposes.",
+   "Not checked has stale items: E-baseline 'Plateau test on a staircase leak (lead 10)... Not reached' is verified in R57, and E-baseline 'Redaction gaps in privacy/redact.py... lead 5 covers it' is verified in R61. Both should be removed from Not checked or point to those findings."
+  ]
+ }
+}

@@ -1,0 +1,21 @@
+$ uv run python docs/review/probes/d-privacy/over_redaction.py
+1. harmless arguments in scrub mode
+  HIDDEN which container                  containerd-shim-runc-v2 -namespace moby -id [redacted]
+  HIDDEN which agent session              claude --resume [redacted]
+  HIDDEN which script (no extension)      python [redacted]
+  HIDDEN which checkout                   git -C [redacted] status
+  HIDDEN which module path                node --require [redacted]
+  HIDDEN value after --passes             optimizer --passes [redacted] model.onnx
+  HIDDEN value after --bypass-cache       bazel build --bypass-cache [redacted]
+  HIDDEN file after --no-password-prompt  psql --no-password-prompt [redacted]
+  HIDDEN the folder in PWD=               env PWD=[redacted] make -j8
+  HIDDEN an ssh option                    ssh -o PasswordAuthentication=[redacted] build.example.test
+  kept   ctrl: script with an extension   python /home/alice/work/agents/refactor2/run_worker.py
+  kept   ctrl: Windows path               python.exe C:\src\agents\refactor2\tools\run_worker_for_ci
+  kept   ctrl: short id                   docker exec -it 3f2a9c1e5b7d sh
+2. a rule is matched against one text and written from another
+  the collector matches rules against: python /home/alice/work/agents/refactor2/run_worker --queue nightly
+  the store, and so the process tree, shows: python [redacted] --queue nightly
+  a rule written from the real text matches: True
+  a rule written from the shown text matches: False
+exit=0

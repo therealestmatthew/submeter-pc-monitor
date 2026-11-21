@@ -1,0 +1,55 @@
+$ uv run python docs/review/probes/b-measurement/model_tables.py
+1. docs/05 polling model, children living 300 ms on average
+   interval   exponential lives (the brief)   every child lives exactly 300 ms
+       5 s     6.0%                            3.0%
+       2 s    15.0%                            7.5%
+       1 s    28.9%                           15.0%
+     0.5 s    48.7%                           30.0%
+    0.25 s    67.8%                           58.3%
+   measured children (reconcile_under_spawn): mean life 82 ms, interval about 1.13 s
+   exponential model 7.3%, fixed-life model 3.6%, measured about 2.9% (16.75 CPU-s used, 18.55 missing, 2.28 missing when quiet)
+
+2. docs/08 explorer as written: 1.5 ms + 0.012 ms per process, +0.2 points
+   active  cold  procs  overhead  rows     disk                     captures  status
+    0.25s   10s   300   2.24%   27.8 M   2.50 GB ( 2.33 GiB)   68%  over the disk budget, about 38 h
+     0.5s   10s   300   1.22%   14.7 M   1.32 GB ( 1.23 GiB)   49%  active only
+       1s   10s   300   0.71%    8.1 M   0.73 GB ( 0.68 GiB)   29%  in budget
+       2s   10s   300   0.46%    4.8 M   0.44 GB ( 0.41 GiB)   15%  in budget
+       5s   10s   300   0.30%    2.9 M   0.26 GB ( 0.24 GiB)    6%  in budget
+      10s   10s   300   0.25%    2.2 M   0.20 GB ( 0.19 GiB)    3%  in budget
+       1s   10s   100   0.47%    3.6 M   0.33 GB ( 0.30 GiB)   29%  in budget
+       1s   10s  1000   1.55%   23.8 M   2.15 GB ( 2.00 GiB)   29%  over the disk budget, about 45 h
+       1s    5s   300   0.71%    9.7 M   0.87 GB ( 0.81 GiB)   29%  in budget
+       1s   60s   300   0.71%    6.8 M   0.61 GB ( 0.57 GiB)   29%  in budget
+    0.25s    5s  1000   5.60%   85.0 M   7.65 GB ( 7.13 GiB)   68%  over both, about 13 h
+   the 1 s, 10 s, 1000 row is 2,146,176,000 bytes: over 2 GB counted in decimal, under the 2GB setting as core/units.py reads it (2,147,483,648 bytes)
+
+3. per-process cost: assumed 0.012 ms, measured
+   psutil provider, snapshot()                              0.2488 ms = 20.7 times the assumption; 300 processes  74.6 ms
+   direct /proc, stat only                                  0.0250 ms =  2.1 times the assumption; 300 processes   7.5 ms
+   direct /proc, stat + statm + io                          0.0517 ms =  4.3 times the assumption; 300 processes  15.5 ms
+   baseline tick: snapshot + deltas + attribution + totals  0.2817 ms = 23.5 times the assumption; 300 processes  84.5 ms
+   platform_check, psutil snapshot                          0.2529 ms = 21.1 times the assumption; 300 processes  75.9 ms
+   collector_footprint: 141.7 ms CPU per tick with the raw store, so the store adds about 15.9 ms per tick = 1.6 points at 1 s (assumed: 0.2 points for the store and the API)
+   explorer redone with measured costs, every process read every tick, 300 processes:
+   snapshot only (stat+statm+io)                 15.5 ms  0.25s  6.20% (over)  1s  1.55% (ok)  5s  0.31% (ok)
+   whole tick (+ deltas, attribution, totals)    25.4 ms  0.25s 10.15% (over)  1s  2.54% (ok)  5s  0.51% (ok)
+   whole tick + raw store                        36.0 ms  0.25s 14.41% (over)  1s  3.60% (over)  5s  0.72% (ok)
+   whole tick + raw store, psutil fallback       95.1 ms  0.25s 38.06% (over)  1s  9.51% (over)  5s  1.90% (over)
+   (limits used: 3% at 0.25 s and 1 s, 1% at the 5 s idle interval)
+   the same whole tick when only a hot set is handled each tick (cold every 10 s):
+    10% of 300 processes hot: 0.25s  1.76%  1s  0.68%  5s  0.40%
+    30% of 300 processes hot: 0.25s  4.57%  1s  1.33%  5s  0.47%
+
+4. switching rule in docs/11: more than 10 ms for 300 processes, or more than 80 MB
+   psutil provider, snapshot()                               74.6 ms -> switch
+   direct /proc, stat only                                    7.5 ms -> stay
+   direct /proc, stat + statm + io                           15.5 ms -> switch
+   baseline tick: snapshot + deltas + attribution + totals   84.5 ms -> switch
+   platform_check, psutil snapshot                           75.9 ms -> switch
+   collector memory, resident                                  39 MB -> stay
+   collector memory, unique                                    35 MB -> stay
+   collector memory, proportional                              36 MB -> stay
+   10 ms per sample is 1.0% of a core at 1 s and 0.2% at 5 s; the budget itself allows
+   30 ms per tick at 1 s (3%) and 50 ms per tick at 5 s (1%)
+exit=0

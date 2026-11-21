@@ -1,0 +1,15 @@
+1. one process's io_counters() raises; does the whole snapshot survive?
+   RuntimeError: snapshot() raised RuntimeError
+   ValueError: snapshot() raised ValueError
+   OSError: snapshot() raised OSError
+2. a zombie child
+   status zombie
+   create_time: ok (float)
+   cpu_times: ok (pcputimes)
+   memory_info: ok (pmem)
+   num_threads: ok (int)
+   cmdline: ZombieProcess
+   io_counters: AccessDenied
+   ppid: ok
+   name: ok
+   in PsutilProvider().snapshot(): False

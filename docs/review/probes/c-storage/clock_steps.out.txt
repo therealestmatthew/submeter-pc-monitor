@@ -1,0 +1,13 @@
+1. stepped forwards 3600 s: 120 batches written, true CPU 120 s
+  2026-11-20.db: 120 workload rows, CPU 119 s, SUM(interval_s) 3720 s, gap rows 1
+2. stepped backwards 30 s, whole-second ticks: 120 batches written, true CPU 120 s
+  2026-11-20.db: 90 workload rows, CPU 90 s, SUM(interval_s) 90 s, gap rows 0
+2b. stepped backwards 30.25 s: 120 batches written, true CPU 120 s
+  2026-11-20.db: 120 workload rows, CPU 120 s, SUM(interval_s) 120 s, gap rows 0
+  the minute 12:00:00.00 holds 90 covered seconds and 90 CPU-s; event rows that mark the step: 0
+3. stepped backwards 50 s across UTC midnight: 120 batches written, true CPU 120 s
+  2026-11-20.db: 39 workload rows, CPU 39 s, SUM(interval_s) 39 s, gap rows 0
+  2026-11-21.db: 31 workload rows, CPU 31 s, SUM(interval_s) 31 s, gap rows 0
+  files written, in order: 2026-11-20.db x39, 2026-11-21.db x20, 2026-11-20.db x30, 2026-11-21.db x31
+4. stepped backwards 3600 s at tick 900, keyframes due every 600 s: keyframes at ticks [1, 601, 4801]; the longest wait between two is 4200 s
+5. a process born 0.6 s before the first sample after a step back used 0.5 CPU-s; the sampler credits it 0.0 s (gap flag False)

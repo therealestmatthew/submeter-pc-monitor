@@ -1,0 +1,74 @@
+$ uv run python docs/review/probes/b-measurement/growth_acceptance.py
+threshold 52,428,800 bytes an hour; 50 decimal MB is 50,000,000
+
+1. how soon: a clean 100 MiB/h leak in minute buckets
+   120 buckets, span 119 min: not enough data yet
+   121 buckets, span 120 min: FLAGGED
+   bucket 121 starts at 2 h 00 min, ends at 2 h 01 min and is final 30 s later
+
+2. exactly on the threshold, no noise, 121 buckets
+   50 MiB/h         FLAGGED
+   50 MB/h decimal  growth is below the threshold
+
+3. share of 300 noisy 2-hour windows flagged (uniform noise on each minute bucket)
+   leak rate          noise 5 MB   noise 30 MB   noise 100 MB
+   50 MB decimal           0%          15%          28%
+   50 MiB                 45%          44%          38%
+   55 MiB                100%          97%          61%
+   60 MiB                100%         100%          77%
+   75 MiB                100%         100%          91%
+   100 MiB               100%         100%          94%
+
+4. a steady leak watched for 12 h, noise 30 MB: how often the finding is up
+   50 MiB/h
+      sliding: flagged in  57 of 121 checks (first at 2.00 h), levelled off in 0
+      growing: flagged in  91 of 121 checks (first at 2.00 h), levelled off in 0
+   55 MiB/h
+      sliding: flagged in 117 of 121 checks (first at 2.00 h), levelled off in 0
+      growing: flagged in 121 of 121 checks (first at 2.00 h), levelled off in 0
+   60 MiB/h
+      sliding: flagged in 121 of 121 checks (first at 2.00 h), levelled off in 0
+      growing: flagged in 121 of 121 checks (first at 2.00 h), levelled off in 0
+   75 MiB/h
+      sliding: flagged in 121 of 121 checks (first at 2.00 h), levelled off in 0
+      growing: flagged in 121 of 121 checks (first at 2.00 h), levelled off in 0
+
+5. a leak that starts after 6 flat hours, noise 30 MB: delay from its start
+    60 MiB/h: sliding window 1.42 h, growing window not in 10 h
+   100 MiB/h: sliding window 1.00 h, growing window 6.00 h
+   200 MiB/h: sliding window 0.75 h, growing window 3.67 h
+   380 MiB/h: sliding window 0.58 h, growing window 2.92 h
+   rate climbing from 0 to 200 MiB/h over 4 h, sliding window: first flag at 2.0 h
+
+6. staircase leaks, sliding window, 12 h, noise 5 MB
+   + 32 MiB every  15 min (128 MiB/h): flagged in 121 of 121 checks (first at 2.00 h), levelled off in 0
+   + 64 MiB every  45 min ( 85 MiB/h): flagged in  64 of 121 checks (first at 2.00 h), levelled off in 57
+   +128 MiB every  60 min (128 MiB/h): flagged in  40 of 121 checks (first at 2.17 h), levelled off in 81
+   +256 MiB every 120 min (128 MiB/h): flagged in   0 of 121 checks (never), levelled off in 29
+
+7. sawtooth from garbage collection, sliding window, 12 h, noise 5 MB
+   no leak, 200 MiB freed every 30 min         flagged in   0 of 121 checks (never), levelled off in 0
+   no leak, 600 MiB freed every 3 h            flagged in 107 of 121 checks (first at 2.00 h), levelled off in 5
+   no leak, 400 MiB freed every 6 h            flagged in 109 of 121 checks (first at 2.00 h), levelled off in 3
+   100 MiB/h leak, 500 MiB freed every 30 min  flagged in 121 of 121 checks (first at 2.00 h), levelled off in 0
+
+8. a cache warming up by 0.9 GiB with time constant tau, 12 h, noise 30 MB
+   tau 0.35 h, sliding window: flagged in   0 of 121 checks (never), levelled off in 7
+   tau 0.35 h, growing window: flagged in   2 of 121 checks (first at 3.08 h), levelled off in 18
+   tau  1.0 h, sliding window: flagged in  25 of 121 checks (first at 2.00 h), levelled off in 1
+   tau  1.0 h, growing window: flagged in  22 of 121 checks (first at 2.00 h), levelled off in 39
+   tau  2.0 h, sliding window: flagged in  41 of 121 checks (first at 2.00 h), levelled off in 0
+   tau  2.0 h, growing window: flagged in  69 of 121 checks (first at 2.00 h), levelled off in 31
+   tau  4.0 h, sliding window: flagged in  65 of 121 checks (first at 2.00 h), levelled off in 0
+   tau  4.0 h, growing window: flagged in 121 of 121 checks (first at 2.00 h), levelled off in 0
+
+9. the brief's own warm-up (tau 0.35 h): runs of 12 h with at least one false flag
+   noise   5 MB: sliding 0 of 60 runs, growing 0 of 12 runs
+   noise  30 MB: sliding 21 of 60 runs, growing 5 of 12 runs
+   noise  40 MB: sliding 34 of 60 runs, growing 6 of 12 runs
+
+10. no leak at all, a noisy total (children coming and going), sliding window, 24 h
+   noise   100 MB: 0 of 20 days with a false flag; one day: flagged in   0 of 265 checks (never), levelled off in 0
+   noise   300 MB: 20 of 20 days with a false flag; one day: flagged in   2 of 265 checks (first at 19.08 h), levelled off in 3
+   noise  1000 MB: 20 of 20 days with a false flag; one day: flagged in  55 of 265 checks (first at 3.58 h), levelled off in 37
+exit=0

@@ -1,0 +1,7 @@
+$ uv run python docs/review/probes/a-linux/restricted_split.py
+class          processes  io denied  CPU time since start  share
+own user             156          5             90,516 s  54.3%
+other user           133        133             70,416 s  42.2%
+kernel thread        158        158              5,907 s   3.5%
+kernel threads found by PF_KTHREAD, not by name or parent: 158
+exit=0

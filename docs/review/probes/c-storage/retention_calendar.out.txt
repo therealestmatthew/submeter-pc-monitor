@@ -1,0 +1,15 @@
+1. 4383 days checked: 0 map to a week file that does not hold them; names sort in time order: True; years with a week 53: ['2026', '2032']
+   2026-12-27 -> 2026-W52.db
+   2026-12-28 -> 2026-W53.db
+   2027-01-03 -> 2026-W53.db
+   2027-01-04 -> 2027-W01.db
+   2024-12-30 -> 2025-W01.db
+2. raw: 3 to 3 files on disk, spanning 48 to 71 hours (setting: 48). minute: 5 to 6 files, spanning 30 to 37 days (setting: 30)
+3. raw hours left after the budget deletes the oldest whole-day files, by time of day:
+   at  0.01 h UTC: 3 files hold 48.0 h; delete one -> 24.0 h; delete two -> 0.0 h, which is under the 24-hour floor
+   at  9.00 h UTC: 3 files hold 57.0 h; delete one -> 33.0 h; delete two -> 9.0 h, which is under the 24-hour floor
+   at 23.99 h UTC: 3 files hold 72.0 h; delete one -> 48.0 h; delete two -> 24.0 h, which is under the 24-hour floor
+   docs/08 for 2.50 GB of raw data: 'raw retention about 38 h'. Whole-day files can give 48 to 72 h or 24 to 48 h, and the floor forbids less
+   docs/08 for 2.15 GB of raw data: 'raw retention about 45 h'. Whole-day files can give 48 to 72 h or 24 to 48 h, and the floor forbids less
+   docs/08 for 7.65 GB of raw data: 'raw retention about 13 h'. Whole-day files can give 48 to 72 h or 24 to 48 h, and the floor forbids less
+4. server back at 09:00 on the 15th after five days away: expired_raw offers ['2026-11-10.db', '2026-11-11.db', '2026-11-12.db'] for deletion. FileMap members that record what has been rolled up: none. Raw files on disk while it was away: 6, with nothing deleting them

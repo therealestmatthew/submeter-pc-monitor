@@ -1,0 +1,10 @@
+$ uv run python docs/review/probes/measure/collector_footprint.py 120 1
+python 3.14.5 on linux; load average (1.80908203125, 1.29443359375, 1.16259765625)
+ran 120 ticks at 1 s over 120 s with 447 processes
+memory of this process: resident 39 MB, unique 35 MB, proportional 36 MB (switching rule: 80 MB)
+CPU used by this process: 17.0 s over 120 s, 14.1% of one core (limits: 3% active, 1% idle)
+rows by table: {'process_raw': 2070, 'workload_raw': 360, 'system_raw': 120, 'process': 462, 'command': 262, 'gap': 0}
+process rows: 446 in the opening keyframe, then 12.6 per tick (2.8% of processes); workload rows 3.0 per tick
+file size 0.29 MB after close, page size 4096; 120 bytes per sample row overall (brief assumes 90)
+projected for 48 h at this rate: 3.0 M rows, 0.36 GB (brief: 8.1 M rows and 0.73 GB for 300 processes)
+exit=0

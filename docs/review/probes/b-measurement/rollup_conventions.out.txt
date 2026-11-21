@@ -1,0 +1,9 @@
+$ uv run python docs/review/probes/b-measurement/rollup_conventions.py
+gate: CPU-hours from the hourly tier match the raw sum within 0.1%
+   active 1 s (default)     hour tier against end-time window:  6 of 22 hours differ by more than 0.1%, worst  0.452%; against merged minutes: worst 7e-12%; minute buckets empty 0, over 1.5 widths 0
+   idle 5 s (default)       hour tier against end-time window:  4 of 22 hours differ by more than 0.1%, worst  0.788%; against merged minutes: worst 6e-14%; minute buckets empty 0, over 1.5 widths 0
+   idle 5 s on battery x2   hour tier against end-time window:  4 of 22 hours differ by more than 0.1%, worst  3.186%; against merged minutes: worst 5e-14%; minute buckets empty 0, over 1.5 widths 0
+   idle or cold 30 s        hour tier against end-time window:  6 of 22 hours differ by more than 0.1%, worst  6.924%; against merged minutes: worst 3e-13%; minute buckets empty 0, over 1.5 widths 0
+   idle or cold 60 s        hour tier against end-time window: 22 of 22 hours differ by more than 0.1%, worst 18.698%; against merged minutes: worst 2e-13%; minute buckets empty 11, over 1.5 widths 0
+a 30-minute soak covers at most 50% of one hour bucket, or parts of two; a bucket is final 30 s after its hour ends, and one under half covered is left out of trends
+exit=0

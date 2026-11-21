@@ -1,0 +1,12 @@
+1. A process that changes program (exec) and workload after it is first seen
+   process table joined to process_raw (exe, command, workload, cpu_s): [('sh', 'sh run-node', 'unattributed', 9.1)]
+   workload_raw totals: [('builds', 9.0), ('unattributed', 0.1)]; the process really used 9.10 CPU-s
+2. The collector is killed between keyframes (no close)
+   processes used 648.0 CPU-s over 540 s; process_raw holds 1.2 in 300 rows; workload_raw holds 648.0
+3. Columns the raw schema has for one process and for one workload
+   process: pid, started, parent_pid?, exe, command_id?, workload, first_seen   (? marks a column that may be NULL)
+   process_raw: ts, pid, started, cpu_s, memory_bytes, threads, keyframe   (? marks a column that may be NULL)
+   workload_raw: ts, workload, source, interval_s, cpu_s, memory_bytes, io_read_bytes, io_write_bytes, processes, started   (? marks a column that may be NULL)
+   system_raw: ts, interval_s, logical_cores, cpu_busy_s, memory_available_bytes   (? marks a column that may be NULL)
+4. Controls: CPU pending at exit, at midnight and at a keyframe is written
+   used 1.699 CPU-s, stored 1.699; keyframes (s from midnight): [('2026-11-19.db', [-699, -99]), ('2026-11-20.db', [0, 600])]

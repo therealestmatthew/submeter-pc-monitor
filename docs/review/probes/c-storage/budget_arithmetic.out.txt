@@ -1,0 +1,15 @@
+1. docs/08 results table. The setting "2GB" parses to 2,147,483,648 bytes (2.147 GB)
+   250 ms 10 s  300: doc 2.2% 27.8 M 2.50 GB 68% | recomputed 2.2% 27.8 M 2.50 GB 68% match | 2.33 GiB, over the parsed budget | doc status: Over the disk budget, raw retention about 38 h
+   500 ms 10 s  300: doc 1.2% 14.7 M 1.32 GB 49% | recomputed 1.2% 14.7 M 1.32 GB 49% match | 1.23 GiB, under the parsed budget | doc status: Active only
+      1 s 10 s  300: doc 0.7% 8.1 M 0.73 GB 29% | recomputed 0.7% 8.1 M 0.73 GB 29% match | 0.68 GiB, under the parsed budget | doc status: In budget
+      2 s 10 s  300: doc 0.5% 4.8 M 0.44 GB 15% | recomputed 0.5% 4.8 M 0.44 GB 15% match | 0.41 GiB, under the parsed budget | doc status: In budget
+      5 s 10 s  300: doc 0.3% 2.9 M 0.26 GB 6% | recomputed 0.3% 2.9 M 0.26 GB 6% match | 0.24 GiB, under the parsed budget | doc status: In budget
+     10 s 10 s  300: doc 0.3% 2.2 M 0.20 GB 3% | recomputed 0.3% 2.2 M 0.20 GB 3% match | 0.19 GiB, under the parsed budget | doc status: In budget
+      1 s 10 s  100: doc 0.5% 3.6 M 0.33 GB 29% | recomputed 0.5% 3.6 M 0.33 GB 29% match | 0.30 GiB, under the parsed budget | doc status: In budget
+      1 s 10 s 1000: doc 1.6% 23.8 M 2.15 GB 29% | recomputed 1.6% 23.8 M 2.15 GB 29% match | 2.00 GiB, under the parsed budget | doc status: Over the disk budget, raw retention about 45 h
+      1 s  5 s  300: doc 0.7% 9.7 M 0.87 GB 29% | recomputed 0.7% 9.7 M 0.87 GB 29% match | 0.81 GiB, under the parsed budget | doc status: In budget
+      1 s 60 s  300: doc 0.7% 6.8 M 0.61 GB 29% | recomputed 0.7% 6.8 M 0.61 GB 29% match | 0.57 GiB, under the parsed budget | doc status: In budget
+   250 ms  5 s 1000: doc 5.6% 85.0 M 7.65 GB 68% | recomputed 5.6% 85.0 M 7.65 GB 68% match | 7.13 GiB, over the parsed budget | doc status: Over both budgets, raw retention about 13 h
+2. docs/06 table. raw: 8.12 M rows x 90 B = 0.73 GB per 48 h and 1.10 GB at 72 h (doc: 0.7 to 1.1). minute: 9 x 1,440 x 250 B = 3.24 MB a day, 0.10 to 0.12 GB for 30 to 37 days (doc: 0.1). hourly buckets alone: 20 MB a year (doc: history 0.1 GB a year with executables). logs: 2 x 5 x 5 MB = 0.05 GB (doc: 0.05). total with 0.1 history and 0.3 backups: 1.28 to 1.65 GB (doc: about 1.6)
+3. docs/05 volumes per day. workload rows: 8 x 86,400 = 0.69 M (doc: 0.7 M). raw rows: 4.06 M with the workload rows, 3.37 M without (doc: 3 to 4 M). minute rows: 9 x 1,440 = 12,960 (doc: 13 K). hourly rows: 9 x 24 = 216 buckets, leaving about 1,784 of the doc's 2 K for executables, 9.3 per workload and hour
+4. docs/03 sample. 11 sizes add up to 1192 MB. Shown: 1.19 GB of 2 GB. Decimal: 1.19 GB. The baseline's format_size prints '1.16 GB' for that many MiB and '1.11 GB' for that many MB, and parse_size('2GB') is 2.147 decimal GB. If the sample was taken at 09:00 UTC on the 20th: raw 11-18 expires in 15 h (shown: 15 h), minute W43 in 4.6 d (shown: 5 d), and today's raw file is 57% of yesterday's size 38% of the way through the day

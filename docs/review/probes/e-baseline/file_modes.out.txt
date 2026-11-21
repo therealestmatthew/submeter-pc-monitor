@@ -1,0 +1,8 @@
+umask 002
+   data folder          drwxrwxr-x
+   raw folder           drwxrwxr-x
+   raw file             -rw-r--r--
+   raw write-ahead log  -rw-r--r--
+   state folder         drwxrwxr-x
+   lock file            -rw-------
+   pid file             -rw-rw-r--

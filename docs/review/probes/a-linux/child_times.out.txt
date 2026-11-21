@@ -1,0 +1,16 @@
+$ uv run python docs/review/probes/a-linux/child_times.py
+the child's work costs 0.96 s of CPU time
+counters are in ticks of 10 ms
+
+1. what reaches the parent's counter
+  child waited for: parent's counter shows 1.14 s
+  grandchild, waited for by a shell in between: parent's counter shows 0.98 s
+  grandchild orphaned, its parent exits at once: parent's counter shows 0.00 s; adopted by 'systemd' (pid 1: False), whose own counter rose by 1.02 s
+  child ended while the parent ignores SIGCHLD: parent's counter shows 0.00 s
+
+2. a parent polled every 0.5 s while it runs 76 short children and 4 long ones
+  truth, from wait4 inside the parent: 13.23 s for 80 children
+  polling alone, each child up to its last sighting: 6.63 s
+  polling plus the parent's counter: 19.85 s (+50%)
+  the same, less the last sighting of each child that ended: 13.22 s
+exit=0

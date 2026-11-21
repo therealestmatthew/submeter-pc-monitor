@@ -1,0 +1,13 @@
+$ uv run python docs/review/probes/verify-2/linux_reads.py
+running as root: False
+R12 exe readable: 154; name() equals the executable's file name: 130; differs: 24; exe unreadable: 298
+    name() 'pipewire-pulse' vs executable 'pipewire'
+    name() 'gjs' vs executable 'gjs-console'
+    name() 'apport-gtk' vs executable 'python3.12'
+    name() 'dart:firmware-n' vs executable 'firmware-notifier'
+    name() 'update-manager' vs executable 'python3.12'
+    name() 'WebExtensions' vs executable 'thunderbird-bin'
+R13 baseline snapshot: 451 processes, 297 restricted; all kernel threads: 160
+    of the restricted: {'user process': 137, 'I/O missing': 297, 'command line missing': 0, 'CPU above zero': 185, 'kernel thread': 160}
+R4 cgroups: 235; cpu.stat readable with usage_usec: 235
+exit=0

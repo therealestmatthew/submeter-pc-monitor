@@ -1,0 +1,3 @@
+hot and cold sets through Sampler.ingest(), 30 one-second ticks
+   A: hot credited 27.00 of 27.00 CPU-s; cold credited 0.00 of 5.40; exits reported 27, starts reported 27 (truth 0 and 0); cold set's highest one-tick rate 0.00 cores (truth 0.18)
+   B: hot credited 27.00 of 27.00 CPU-s; cold credited 5.40 of 5.40; exits reported 0, starts reported 0 (truth 0 and 0); cold set's highest one-tick rate 1.80 cores (truth 0.18)

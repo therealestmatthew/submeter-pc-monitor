@@ -1,0 +1,18 @@
+$ uv run python docs/review/probes/b-measurement/reconcile_terms.py 30
+8 logical cores; load average 1.86; one tick is 10 ms
+hot threshold 0.5% of a core over 1 s is 0.5 tick, so the smallest use that can be seen in one second is 1% of a core; over 250 ms it is 4%
+nanosecond run time per process (schedstat) present: True
+
+over 30.5 s: capacity 244.0 CPU-s, idle and waiting 190.0
+  machine busy (per-core counters)          53.96 CPU-s = 22.12% of capacity, 100.0% of busy
+  credited to processes by 1 s polling      48.98 CPU-s = 20.07% of capacity,  90.8% of busy
+    of which kernel threads                  0.53 CPU-s =  0.22% of capacity,   1.0% of busy
+    of which first sightings                 0.48 CPU-s =  0.20% of capacity,   0.9% of busy
+  interrupt time the counters report         0.29 CPU-s =  0.12% of capacity,   0.5% of busy
+  stolen by a hypervisor                     0.00 CPU-s =  0.00% of capacity,   0.0% of busy
+  busy time that no process accounts for     4.98 CPU-s =  2.04% of capacity,   9.2% of busy
+  parents' child-time counters rose by       6.76 CPU-s =  2.77% of capacity,  12.5% of busy (gross)
+
+System as a remainder (busy less processes) would show 2.04% of capacity, and the invariant is exact by definition.
+System from counters (interrupts, plus kernel threads) would show 0.34%, leaving 1.92% of capacity for the 2% tolerance to absorb.
+exit=0

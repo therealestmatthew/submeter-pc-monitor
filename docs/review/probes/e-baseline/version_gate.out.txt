@@ -1,0 +1,11 @@
+uv's interpreter: 3.14.5; system 3.12 present: True
+late_name.py
+   ruff check : exit 1: Found 1 error.
+   mypy       : exit 0: Success: no issues found in 1 source file
+   python 3.14: exit 0: 1
+   python 3.12: exit 1: NameError: name 'Item' is not defined. Did you mean: 'iter'?
+bare_except.py
+   ruff check : exit 1: Found 1 error.
+   mypy       : exit 1: Found 1 error in 1 file (checked 1 source file)
+   python 3.14: exit 0: 0
+   python 3.12: exit 1: SyntaxError: multiple exception types must be parenthesized

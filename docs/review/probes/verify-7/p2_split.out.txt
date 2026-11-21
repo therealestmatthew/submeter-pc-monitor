@@ -1,0 +1,8 @@
+$ uv run python docs/review/probes/verify-7/p2_split.py
+processes whose NUL split is one string with spaces: 64
+  of those, psutil.cmdline() returns more than one item: 64
+  psutil item 0 is the whole title and the rest are empty (NUL padding): 12
+  exe_only stores the whole title, NUL-only reader: 64
+  exe_only stores the whole title, psutil (baseline provider): 12
+exe_only on a hand-made one-item argv: ('postgres: alice appdb 10.0.0.5(5432) idle',)
+exit=0

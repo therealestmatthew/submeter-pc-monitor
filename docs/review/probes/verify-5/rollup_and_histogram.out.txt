@@ -1,0 +1,25 @@
+$ uv run python docs/review/probes/verify-5/rollup_and_histogram.py
+M7. one bucket read with the raw reader's rule, then rolled up (steady 1 core)
+   width  cadence  phase  buckets back  bucket cpu_s  whole-day roll_up  raw read  gap
+    3600      1 s  0.3x             2          3599               3600      3600  -0.028%
+    3600      1 s  0.7x             1          3600               3600      3600  +0.000%
+    3600      5 s  0.3x             2          3595               3600      3600  -0.139%
+    3600      5 s  0.7x             1          3600               3600      3600  +0.000%
+    3600     10 s  0.3x             2          3590               3600      3600  -0.278%
+    3600     10 s  0.7x             1          3600               3600      3600  +0.000%
+    3600     60 s  0.3x             2          3540               3600      3600  -1.667%
+    3600     60 s  0.7x             1          3600               3600      3600  +0.000%
+      60      1 s  0.3x             2            59                 60        60  -1.667%
+      60      1 s  0.7x             1            60                 60        60  +0.000%
+      60      5 s  0.3x             2            55                 60        60  -8.333%
+      60      5 s  0.7x             1            60                 60        60  +0.000%
+      60     10 s  0.3x             2            50                 60        60  -16.667%
+      60     10 s  0.7x             1            60                 60        60  +0.000%
+
+M11. histogram.percentile(q=100) on minute buckets with float interval weights
+   1000 buckets of 60 samples between 0.5 and 4 cores, weights 0.995 to 1.005 s
+   q=100 returned 256 cores (top of scale) in 276
+   naive running total below sum(counts) in 240
+   control, integer weights of exactly 1.0 s: q=100 gives 4.14 cores
+   fsum vs plain loop on 0.1 x 10: 1.0, (0.9999999999999999, 1.0)
+exit=0

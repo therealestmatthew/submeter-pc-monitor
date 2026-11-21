@@ -1,0 +1,7 @@
+$ uv run python docs/review/probes/d-privacy/unsplit_cmdlines.py
+processes with a readable command line: 299
+of those, one string with spaces when split on NUL only: 64
+programs: .postgres-wrapp x31, chrome x17, Web x3, avahi-daemon x2, next-server x2, nginx x2, Isolated x2, gdm-session-wor x1
+returned whole and unchanged by redact_cmdline in scrub mode: 64
+returned whole and unchanged in exe_only mode: 64
+exit=0

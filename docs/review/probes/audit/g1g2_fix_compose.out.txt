@@ -1,0 +1,7 @@
+gap sample: taken_at +4201 s, interval 3601 s, cpu_s 4.0
+roll_up's midpoint rule puts it in the minute bucket at +2400 s (the resume is in the bucket at +4200 s)
+  memory gauges left alone   close() returned None: the 4.0 CPU-s G1 kept are lost
+  memory gauges set          close() raised ZeroDivisionError: division by zero
+part 2: G2's reject rule against intervals the settings accept
+  idle_interval 60 s x 1: a tick 50 ms late covers 60.05 s > minute width 60 s: True (rejected under G2's rule)
+  idle_interval 60 s x 10: a tick 50 ms late covers 600.05 s > minute width 60 s: True (rejected under G2's rule)

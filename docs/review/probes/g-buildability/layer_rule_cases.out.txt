@@ -1,0 +1,15 @@
+$ uv run python docs/review/probes/g-buildability/layer_rule_cases.py
+1. forms of import, layer table as delivered
+   baseline as delivered: layer test passes
+   collector imports the raw store, absolute: layer test FAILS (loop.py imports submeter.store.raw)
+   collector imports the raw store, relative: layer test passes; module exit 0, loaded from the copy: True
+   core imports the store package by name: layer test passes
+   core imports cli through importlib: layer test passes
+   new package server, not in LAYER: layer test ERROR KeyError 'server'
+2. the three programs as packages, with server and launcher added at layer 3
+   launcher imports the collector: layer test passes
+   server imports the collector: layer test passes
+3. what the delivered cli.py imports, as the layer test reads it
+   submeter.attribution.rules, submeter.collector.sampler, submeter.core.config, submeter.core.units, submeter.providers.base, submeter.providers.psutil_provider, submeter.store.files
+   LAYER keys: core, privacy, providers, store, collector, attribution, analysis, cli
+exit=0

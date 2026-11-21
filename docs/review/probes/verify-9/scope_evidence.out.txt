@@ -1,0 +1,24 @@
+$ uv run python docs/review/probes/verify-9/scope_evidence.py
+1. docs/08 sampling rows 60-72: 13; other rows 80-108: 29
+   rows named as cut by other findings and present: 13 of 13
+2. whole tick + raw store, share of one core (limits 3% active, 1% idle)
+   direct /proc      36.0 ms  1s 3.60%  2s 1.80%  5s 0.72%  10s 0.36%
+   psutil fallback   95.1 ms  1s 9.51%  2s 4.75%  5s 1.90%  10s 0.95%
+   direct /proc scaled to 452 processes: 54.2 ms -> 2s 2.71%,
+     5s 1.08%, 10s 0.54%  (452 is this review machine)
+   shortest in-budget interval, direct /proc: active 1.20 s, idle 3.60 s
+   shortest in-budget interval, psutil fallback: active 3.17 s, idle 9.51 s
+3. docs/13 commands: 13: daemon, run, top, why, cost, diff, session, report, export, config, rules, store, doctor
+   a command that lists findings: False
+   docs/13 'POST /sessions the only write': True
+   docs/01:7 Workload table, `submeter cost`
+   docs/01:12 Verdict strip, `submeter why`
+   docs/01:17 History view, findings feed, `submeter diff`
+4. docs/05 has 80 lines; H3 cites docs/05:84
+   docs/05 lines naming the hot set: [12, 45]
+   docs/01:11 is ''; docs/01:12 starts '- **Where you see it:** Verdict strip, `'
+5. docs/brief.html (5740 lines) repeats: Parquet 3, cold_interval 6, hot set 4, Minute files 2, guest collector 6, MCP 16, quiet_hours 3, hot-reloads 1, WS /live 1, profile 27
+   docs/README.md calls it the brief itself: True
+6. docs/07 GPU-bound row: | GPU-bound | One engine type above 90% | NVML utilisation above 90% | VRAM is full, which is reported separately |
+   docs/06 catalogue: | VRAM | Gauge, bytes | Max, mean | GPU verdict. Leak checks only once validated |
+exit=0

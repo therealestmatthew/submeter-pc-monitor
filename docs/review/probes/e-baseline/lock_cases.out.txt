@@ -1,0 +1,5 @@
+while held: holder() is the child: True
+pid file holds a pid and nothing else: True
+after the holder is killed: holder() still returns its pid: True; a process with that pid exists: False
+the lock itself is free again: True
+after a clean release the pid file is gone: True

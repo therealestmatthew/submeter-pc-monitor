@@ -1,0 +1,14 @@
+$ uv run python docs/review/probes/a-linux/cgroup_leaving.py
+1. moving a process between two groups under a common ancestor
+  ancestor's cgroup.procs not writable by this user: refused (Permission denied)
+  ancestor's cgroup.procs writable by this user:     allowed
+  session scopes of this user that are owned by root: 1; their common ancestor with the delegated subtree has cgroup.procs owned by uid 0
+
+2. commands started inside a tagged group, and where they run
+  a plain child:                         still inside the group: .../tagged
+  through systemd-run --user --scope:    OUTSIDE the group: .../run-r58b6d2dNc7bc29ef1a8e3dN.scope
+  through the launcher of a snap (firefox): OUTSIDE the group: .../snap.firefox.firefox-N.scope
+  the tagged group afterwards: populated 0, CPU charged 0.229 s
+
+every probe cgroup removed: True
+exit=0

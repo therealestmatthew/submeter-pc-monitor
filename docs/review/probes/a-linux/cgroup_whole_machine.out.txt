@@ -1,0 +1,29 @@
+$ uv run python docs/review/probes/a-linux/cgroup_whole_machine.py
+1. 235 cgroups on this machine, 224 of them leaves
+  delegated to this user: 74 cgroups
+    cpu.stat        present in  74, readable in  74
+    memory.current  present in  74, readable in  74
+    memory.peak     present in  74, readable in  74
+    io.stat         present in   0, readable in   0
+    pids.current    present in  74, readable in  74
+    cgroup.procs    present in  74, readable in  74
+  elsewhere: 161 cgroups
+    cpu.stat        present in 161, readable in 161
+    memory.current  present in 159, readable in 159
+    memory.peak     present in 159, readable in 159
+    io.stat         present in 158, readable in 158
+    pids.current    present in 159, readable in 159
+    cgroup.procs    present in 161, readable in 161
+  directly below this user's app.slice: {'service': 12, 'scope': 6, 'slice': 2, 'socket': 2}
+
+2. 8 s with one spawner of short-lived children (78 of them)
+  machine busy, /proc/stat:                  12.86 CPU-s
+    of which interrupts (irq + softirq):      0.10
+  root cgroup cpu.stat:                      12.85  (the same counters)
+  sum of cpu.stat over the top-level cgroups: 12.81  (every task, exited or not)
+  every process polled from /proc at 1 s:     5.18  (40% of that)
+    not seen by polling:                      7.63
+  cpu.stat of the cgroup that held the spawner, whole run:  6.54
+    its children, from wait4 as they ended:                 6.48
+  probe cgroup removed: True
+exit=0

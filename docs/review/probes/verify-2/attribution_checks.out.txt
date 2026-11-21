@@ -1,0 +1,12 @@
+$ uv run python docs/review/probes/verify-2/attribution_checks.py
+  R8 workload docker: source=polled io_read=4096 io_write=8192 (dockerd's I/O was None)
+  R9 while the shell lives: {20: 'agent', 21: 'agent', 22: 'agent'}
+  R9 after the shell exits, reparented to pid 1: {20: 'agent', 22: 'unattributed'}
+  R9 after the shell exits, parent pid left stale: {20: 'agent', 22: 'unattributed'}
+  R10 source=kernel cpu_s=0.40; aggregate() has these parameters: ('batch', 'assignment', 'kernel_workloads')
+  R11 include_children=False, inherit_from_parent=True: child cc -> builds
+  R11 include_children=False, inherit_from_parent=False: child cc -> unattributed
+  R11 include_children=True, inherit_from_parent=False: child cc -> builds
+  R3 the test's check: sum over workloads 1.00 == sum over processes 1.00 -> holds
+  R3 the brief's invariant: workloads 1.00 + idle 1.00 = 2.00 of capacity 4.00; the missing 2.00 has no term in the baseline (no code assigns System)
+exit=0

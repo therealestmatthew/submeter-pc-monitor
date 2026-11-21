@@ -1,0 +1,13 @@
+$ uv run python docs/review/probes/verify-2/reap_counters.py
+1. child seen alive by the baseline sampler, then reaped by this process
+  child last seen: own CPU 0.27 s, write_bytes 4.0 MiB
+  this process's cutime+cstime rose at reaping by 0.27 s
+  this process's /proc/self/io rose at reaping by write_bytes 4.0 MiB, wchar 4.0 MiB
+  baseline sampler, interval 1: child cpu 0.27 s, io 4.0 MiB
+  baseline sampler, interval 2: this process io 4.0 MiB (child gone)
+  I/O a workload holding both is charged: 8.0 MiB for 4.0 MiB written
+  CPU if the child-time increase is added as the brief says: 0.54 s for 0.27 s used
+
+2. a grandchild orphaned by its launcher
+  grandchild last seen with 0.15 s own CPU; this process's child-time rose by 0.07 s (the launcher only)
+exit=0

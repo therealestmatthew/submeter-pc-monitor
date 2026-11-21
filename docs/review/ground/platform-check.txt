@@ -1,0 +1,13 @@
+$ uv run python scripts/platform_check.py
+Linux-7.0.0-43-generic-x86_64-with-glibc2.39 | Python 3.14.5 | psutil 7.2.2
+administrator or root: False
+
+PASS  one-instance lock: first holder ['True'], second process ['False'] and it read the holder's pid: True, this process refused: True, lock file left empty: True, free after the holder was killed: ['True']
+PASS  raw file on disk: side files left after close: none, deleting a file that a reader has open: allowed, deleted once closed: True
+PASS  file locations: settings ~/.config/submeter, data ~/.local/share/submeter, state ~/.local/state/submeter. Folders could be created under a test home: True
+PASS  process reading: 452 processes, 298 restricted, 0 without a readable command line, memory taken from resident set size
+INFO  cost of one full snapshot: median 114.3 ms, worst 119.3 ms over 20 runs for 452 processes. With working folders: median 119.3 ms, worst 131.9 ms. The rule in docs/11-language.md is 10 ms for 300 processes
+PASS  clocks: smallest monotonic step 0 microseconds, wall clock and monotonic clock disagree by -0.0 ms over one second. Whether the monotonic clock counts time asleep cannot be tested from a script
+
+6 results, 0 failed
+exit=0

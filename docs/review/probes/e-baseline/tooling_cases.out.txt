@@ -1,0 +1,10 @@
+1. The interpreter
+   running Python 3.14.5; requires-python '>=3.12'; .python-version file present: False; mypy python_version '3.12'; ruff target-version 'py312'
+2. ruff and Markdown
+   ruff format --check on a folder holding only note.md: exit 1; 1 file would be reformatted
+   ruff check on the same folder (the block has an unused import): exit 0; All checks passed!
+3. mypy and code that runs only on Windows
+   as run here: exit 0; Success: no issues found in 1 source file
+   with --platform win32: exit 1; Found 1 error in 1 file (checked 1 source file)
+4. The layer test and a collector loop that writes raw files
+   collector/loop.py imports submeter.store.raw: exit 1; 1 failed in 0.13s

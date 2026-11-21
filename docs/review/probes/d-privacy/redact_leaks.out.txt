@@ -1,0 +1,108 @@
+$ uv run python docs/review/probes/d-privacy/redact_leaks.py
+LEAK header               curl -H Authorization: Bearer FAKEtok0123456789abcdef https://api.example.test/v1
+LEAK header               curl --header X-Api-Key: FAKEtok0123456789abcdef https://api.example.test/v1
+LEAK header               curl -H Authorization: Basic RkFLRTpodW50ZXIy https://api.example.test/v1
+LEAK header               curl -H Authorization: Basic RkFLRTpodW50ZXIy=[redacted] https://api.example.test/v1
+LEAK header               wget --header=Authorization: Bearer FAKEtok0123456789abcdef https://api.example.test/v1
+LEAK header               git -c http.extraheader=AUTHORIZATION: basic RkFLRTpodW50ZXIy fetch
+LEAK header               npx mcp-remote https://api.example.test/v1/sse --header Authorization: Bearer FAKEtok0123456789abcdef
+LEAK header               wscat -c wss://api.example.test -H Cookie: sid=FAKEtok0123456789abcdef
+ok   header ctrl          curl -H x-api-key: [redacted] https://api.example.test/v1
+LEAK user:pass            curl -u alice:FAKEpw-7x https://api.example.test/v1
+LEAK user:pass            curl --user alice:FAKEpw-7x https://api.example.test/v1
+LEAK user:pass            sshpass -p FAKEpw-7x ssh build.example.test
+LEAK user:pass            docker login -u alice -p FAKEpw-7x registry.example.test
+LEAK user:pass            net use Z: \\srv\share FAKEpw-7x /user:CORP\alice
+LEAK user:pass            PsExec.exe \\host -u alice -p FAKEpw-7x cmd
+LEAK user:pass            sqlcmd -S db -U sa -P FAKEpw-7x
+LEAK user:pass            redis-cli -a FAKEpw-7x ping
+LEAK user:pass            smbclient //srv/share -U alice%FAKEpw-7x
+LEAK user:pass            htpasswd -b .htpasswd alice FAKEpw-7x
+ok   user:pass ctrl       mysql --user root --password [redacted]
+LEAK attached             mysql -uroot -pFAKEpw-7x appdb
+LEAK attached             mysqldump -pMyPassFAKE-7x [redacted]
+LEAK attached             7z a -pFAKEpw-7x out.7z src
+LEAK attached             ldapsearch -D cn=admin -wFAKEpw-7x
+LEAK opt=NAME=value       docker run --env=API_TOKEN=FAKEpw-7x img
+LEAK opt=NAME=value       docker build --build-arg=NPM_TOKEN=FAKEpw-7x .
+ok   opt=NAME=value       kubectl create secret [redacted]
+LEAK opt=NAME=value       helm upgrade app chart --set=auth.password=FAKEpw-7x
+LEAK opt=NAME=value       terraform apply -var=db_password=FAKEpw-7x
+ok   opt=NAME=value ctrl  docker run -e API_TOKEN=[redacted] img
+ok   opt=NAME=value ctrl  java -Ddb.password=[redacted] -jar app.jar
+LEAK slash option         cmdkey /add:srv /user:alice /pass:FAKEpw-7x
+LEAK slash option         schtasks /create /tn T /ru alice /rp FAKEpw-7x
+LEAK slash option         xfreerdp /u:alice /p:FAKEpw-7x /v:host
+LEAK slash option         tool.exe /password FAKEpw-7x
+LEAK slash option         tool.exe /token:FAKEtok0123456789abcdef
+LEAK slash option         msdeploy -dest:auto,userName=alice,password=FAKEpw-7x
+ok   slash option ctrl    msbuild /p:Password=[redacted]
+LEAK connection           app Server=db;Database=a;User Id=sa;Password=FAKEpw-7x;
+LEAK connection           app host=db user=alice password=FAKEpw-7x dbname=a
+LEAK connection           java jdbc:postgresql://db/a?user=alice&password=FAKEpw-7x
+LEAK connection           az DefaultEndpointsProtocol=https;AccountKey=RkFLRTpodW50ZXIy==;
+LEAK connection           redis-cli -u redis://:FAKEpw-7x@cache:6379/0
+LEAK connection           psql postgres://alice:[redacted]@tail9Z@db/a
+ok   connection ctrl      psql postgres://alice:[redacted]@db/a
+LEAK json                 curl -d {"user":"alice","password":"FAKEpw-7x"} https://api.example.test/v1
+LEAK json                 agent --mcp-config {"env":{"GH_TOKEN":"github_pat_11FAKEtok0123456789abcdef"}}
+LEAK json                 ansible-playbook x.yml --extra-vars {"become_pass":"FAKEpw-7x"}
+LEAK url                  git clone https://FAKEtok0123456789abcdef@git.example.test/o/r.git
+LEAK url                  curl https://api.example.test/v1/items?user=alice&token=FAKEtok0123456789abcdef
+LEAK url                  curl https://api.example.test/v1/geo?key=AIzaSyFAKEFAKEtok0123456789abcdef
+LEAK url                  curl https://api.example.test/v1/blob?sv=2022-11-02&sp=r&sig=RkFLRTpodW50ZXIy%3D
+LEAK url                  chrome http://127.0.0.1:8787/?range=1h&token=FAKEtok0123456789abcdef
+ok   url ctrl             chrome http://127.0.0.1:8787/#token=[redacted]
+ok   url ctrl             curl https://api.example.test/v1/items?token=[redacted]
+ok   url ctrl             git clone https://oauth2:[redacted]@git.example.test/o/r.git
+LEAK wrapper              bash -c tool --api-key FAKEtok0123456789abcdef --max-tokens 4096
+LEAK wrapper              cmd.exe /d /s /c tool.exe --password FAKEpw-7x
+LEAK wrapper              sh -c curl -u alice:FAKEpw-7x https://api.example.test/v1
+LEAK wrapper              bash -c DEBUG=1 API_TOKEN=FAKEtok0123456789abcdef ./run.sh
+LEAK wrapper              sh -c echo FAKEpw-7x | sudo -S apt-get update
+LEAK wrapper              cmd.exe /c curl -H "Authorization: Bearer FAKEtok0123456789abcdef" https://api.example.test/v1
+LEAK wrapper              powershell -Command $p = ConvertTo-SecureString 'FAKEpw-7x' -AsPlainText
+LEAK wrapper              pwsh -c docker login -u alice -p FAKEpw-7x
+LEAK wrapper              wsl.exe -e bash -c mysql -pFAKEpw-7x appdb
+LEAK wrapper              python -c import r; r.get('https://api.example.test/v1', headers={'X-Key': 'FAKEtok0123456789abcdef'})
+ok   wrapper ctrl         bash -lc export API_TOKEN=[redacted]
+ok   wrapper ctrl         cmd.exe /c set PGPASSWORD=[redacted]
+LEAK provider shape       tool login glpat-FAKEfakeFAKE01234567
+LEAK provider shape       tool login rk_test_FAKEfake01234567
+LEAK provider shape       tool SG.FAKEfake0123456789ab.FAKEfake0123456789abcdefgh
+LEAK provider shape       bot 123456789:AAFAKEfake0123456789FAKEfake01234
+LEAK provider shape       vault login hvs.CAESFAKEfake0123456789FAKEfake01
+LEAK provider shape       az login -u app -p FAKE~FAKEtok0123456789abcdef.fake_Q -t x
+LEAK provider shape       gpg --batch correct-horse-battery-staple-FAKE-phrase
+ok   provider shape ctrl  tool login [redacted]
+ok   provider shape ctrl  tool login [redacted]
+LEAK secret name          tool --auth FAKEtok0123456789abcdef
+LEAK secret name          tool --key FAKEtok0123456789abcdef
+LEAK secret name          tool --encryption-key FAKEtok0123456789abcdef
+LEAK secret name          curl --cookie sid=FAKEtok0123456789abcdef https://api.example.test/v1
+LEAK secret name          gh secret set DEPLOY --body FAKEpw-7x
+LEAK secret name          openssl enc -aes-256-cbc -k FAKEpw-7x
+LEAK secret name          tool --pin 4321
+
+header               8 leaked, 0 hidden
+header ctrl          0 leaked, 1 hidden
+user:pass            10 leaked, 0 hidden
+user:pass ctrl       0 leaked, 1 hidden
+attached             4 leaked, 0 hidden
+opt=NAME=value       4 leaked, 1 hidden
+opt=NAME=value ctrl  0 leaked, 2 hidden
+slash option         6 leaked, 0 hidden
+slash option ctrl    0 leaked, 1 hidden
+connection           6 leaked, 0 hidden
+connection ctrl      0 leaked, 1 hidden
+json                 3 leaked, 0 hidden
+url                  5 leaked, 0 hidden
+url ctrl             0 leaked, 3 hidden
+wrapper              10 leaked, 0 hidden
+wrapper ctrl         0 leaked, 2 hidden
+provider shape       7 leaked, 0 hidden
+provider shape ctrl  0 leaked, 2 hidden
+secret name          7 leaked, 0 hidden
+
+84 cases, 71 of them not controls; 70 leaked in all
+exit=0

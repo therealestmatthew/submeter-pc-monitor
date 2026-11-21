@@ -1,0 +1,22 @@
+1. A process that is restricted in one snapshot and readable in the next
+   interval 1 s, gap=False, first_seen=False: credited 5000 CPU-s to a 1-second interval
+2. Snapshots that do not contain every process (hot set every 1 s, cold every 10 s)
+   20 s: hot process used 18.00 CPU-s, credited 18.00; 30 cold processes used 2.40 CPU-s, credited 0.00; 60 exits and 60 starts were reported, and none happened
+3. Intervals the settings allow, against the fixed 30-second gap rule
+   idle_interval 20s x on_battery_multiplier 2: gap=True, used 20 CPU-s, credited 0
+   idle_interval 60s: gap=True, used 30 CPU-s, credited 0
+   cold_interval 60s: gap=True, used 30 CPU-s, credited 0
+   idle_interval 5s x on_battery_multiplier 10: gap=True, used 25 CPU-s, credited 0
+   idle_interval 5s x on_battery_multiplier 2: gap=False, used 5 CPU-s, credited 5
+4. A process whose start time could not be read (0.0) and then could
+   exited=[9], first_seen=True, credited 0 CPU-s: one process is recorded as an exit and a start
+5. The wall clock is stepped while the machine keeps running
+   forward 5 s: gap=True, interval_s=6, used 0.8 CPU-s, credited 0
+   back 5 s: gap=False, interval_s=1, taken_at went from 1006 to 1002, credited 0.8
+6. Pid reuse and first sightings (expected behaviour, shown for completeness)
+   pid 1 started 1000.5: first_seen=True, credited 9
+   pid 3 started 50: first_seen=True, credited 0
+   pid 4 started 998: first_seen=True, credited 0
+   exited: [(1, 100.0)]
+7. A live process that one snapshot fails to return (a read that raced or was refused)
+   pid 2 used 4.8 CPU-s over 6 s and was credited 3.2; 1 exit and 1 start were reported, and none happened

@@ -1,0 +1,13 @@
+1. tables in a raw file match docs/13: True
+   meta: key, value | may be NULL: none
+   event: ts, kind, detail | may be NULL: none
+   command: id, text | may be NULL: ['id']
+   process: pid, started, parent_pid, exe, command_id, workload, first_seen | may be NULL: ['parent_pid', 'command_id']
+   workload_raw: ts, workload, source, interval_s, cpu_s, memory_bytes, io_read_bytes, io_write_bytes, processes, started | may be NULL: none
+   process_raw: ts, pid, started, cpu_s, memory_bytes, threads, keyframe | may be NULL: none
+   system_raw: ts, interval_s, logical_cores, cpu_busy_s, memory_available_bytes | may be NULL: none
+   gap: start, end, reason | may be NULL: none
+2. a process whose I/O could not be read (io_read_bytes None) is totalled into a workload row with io_read_bytes = 0
+   a WorkloadSample with io_read_bytes = None is refused; Bucket fields that may be left out or None: none
+3. a version 2 collector reopened the version 1 file without an error. The file still says schema_version 1 and workload_raw has 10 columns (a fresh version 2 file has 11). Its 11-value insert then fails: table workload_raw has 10 columns but 11 values were supplied
+4. RawFile on a day with no data created 2026-01-01.db (40960 B); RawFile has no way to open a file without writing to it

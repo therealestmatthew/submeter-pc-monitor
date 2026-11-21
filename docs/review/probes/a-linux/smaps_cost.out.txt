@@ -1,0 +1,21 @@
+$ uv run python docs/review/probes/a-linux/smaps_cost.py
+1. CPU time charged to the reader, 156 processes of this user
+  resident 0.84 GB: smaps_rollup 24,570 us (29.3 ms per GB), status 18 us
+  resident 0.63 GB: smaps_rollup 15,953 us (25.1 ms per GB), status 19 us
+  resident 0.54 GB: smaps_rollup 16,181 us (29.9 ms per GB), status 18 us
+  smaps_rollup for the 25 largest: 241.6 ms a round, which at one round every 30 s is 0.805% of a core, and every 1 s is 24.2%
+  smaps_rollup for all 156: 326.0 ms a round, which at one round every 30 s is 1.087% of a core, and every 1 s is 32.6%
+  status for all 156: 2.6 ms a round
+  the 25 largest hold 87% of the proportional memory of all 156
+
+2. the same processes in four units
+  all of this user's: 156 processes, RSS 11.36, PSS 6.80, USS 6.02, anonymous RSS 5.95, swap 1.05 GB
+
+3. the three largest cgroups of this user, processes against the kernel's figures
+  vte-spawn-N.scope: 21 processes, RSS 3.27, PSS 1.88, USS 1.67, anonymous RSS 1.73, swap 0.28 GB
+    kernel: memory.current 2.34, memory.peak 3.76, swap 0.18; of current: anon 1.69, file 0.44 (shmem 0.09), kernel 0.21 GB
+  snap.firefox.firefox-N.scope: 13 processes, RSS 2.25, PSS 1.41, USS 1.23, anonymous RSS 1.28, swap 0.03 GB
+    kernel: memory.current 1.75, memory.peak 2.02, swap 0.03; of current: anon 1.20, file 0.50 (shmem 0.28), kernel 0.04 GB
+  snap.thunderbird.thunderbird-N.scope: 5 processes, RSS 0.75, PSS 0.47, USS 0.33, anonymous RSS 0.26, swap 0.00 GB
+    kernel: memory.current 0.88, memory.peak 1.12, swap 0.00; of current: anon 0.26, file 0.60 (shmem 0.28), kernel 0.01 GB
+exit=0

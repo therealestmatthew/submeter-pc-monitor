@@ -1,0 +1,4 @@
+$ uv run python docs/review/probes/f-consistency/module_table.py
+table rows checked: 15, rows that differ: 0
+provides lists checked: 16
+exit=0

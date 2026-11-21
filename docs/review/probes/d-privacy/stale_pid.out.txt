@@ -1,0 +1,7 @@
+$ uv run python docs/review/probes/d-privacy/stale_pid.py
+child took the lock: True; holder() names the child: True
+after the child was killed, holder() still names it: True
+a process with that pid exists now: False
+the pid file holds only: '1990478' (no start time)
+the lock itself is free again: True
+exit=0

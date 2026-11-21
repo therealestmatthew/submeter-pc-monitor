@@ -1,0 +1,36 @@
+1. What the brief promises
+  docs/06-storage.md:74: - A session or tagged run is summarised when it ends, so its cost stays exact after its raw data is gone.
+  docs/17-build-prompt.md:127: - When a session stops or a tagged run ends, store its exact totals per workload: CPU seconds, peak and mean memory, I/O, processes started and top executables. `cost` and `diff` read these.
+  docs/15-phases-and-decisions.md:17: Gate: a tagged tree spawning 500 sub-second children is charged within 2% of the kernel total, its final totals survive its exit, a restarted collector re-attaches to live groups, and `submeter run` returns when the comm
+  docs/17-build-prompt.md:141: - Enforce the disk budget, default 2 GB, across all files. When over budget, delete the oldest raw file first, never going below 24 hours, then backups down to one, then raise a finding. Never delete history automaticall
+  docs/08-configuration.md:74: A session can override the interval for its own duration, for example `submeter session start bench --interval 250ms`.
+  docs/06-storage.md:75: - Each hour keeps the top ten executables per workload by CPU time and by peak memory, for a year. That answers "what inside the browser grew last week" without keeping every process.
+  docs/08-configuration.md:54: | 250 ms | 5 s | 1000 | 5.6% | 85.0 M | 7.65 GB | 68% | Over both budgets, raw retention about 13 h |
+  docs/08-configuration.md:44: | 250 ms | 10 s | 300 | 2.2% | 27.8 M | 2.50 GB | 68% | Over the disk budget, raw retention about 38 h |
+
+2. Raw day files a 72 h session has lost by the time it ends
+  session: 2026-11-16 06:20:30 to 2026-11-19 06:20:30 UTC (72.0 h)
+  retention 48h (default): expired_raw at session end -> ['2026-11-16.db']
+    raw still on disk covers 2026-11-17 00:00:00 to 2026-11-19 06:20:30: 54.3 of 72.0 h
+  retention 24h (budget floor): expired_raw at session end -> ['2026-11-16.db', '2026-11-17.db']
+    raw still on disk covers 2026-11-18 00:00:00 to 2026-11-19 06:20:30: 30.3 of 72.0 h
+
+3. Session CPU from each tier, workload at a steady 2.0 cores
+  truth: 518,400 CPU-s
+  raw at end, retention 48h (default)       391,260 CPU-s  ( 75.5% of truth)
+  raw at end, retention 24h (budget floor)    218,460 CPU-s  ( 42.1% of truth)
+  minute buckets                            518,460 CPU-s if the edge bucket is kept, 518,340 if dropped (start edge 30 s into its bucket)
+  hourly buckets (minute tier cut, R147)    520,860 CPU-s if the edge bucket is kept, 513,660 if dropped (start edge 1230 s into its bucket)
+
+4. Session top executable from hourly top-ten lists (constructed case)
+  20 bursty executables at 600 CPU-s in alternate hours; one steady at 400 every hour
+  true session top: steady with 28,800 CPU-s
+  'steady' appears in 0 of 72 hourly top-ten lists
+  top from the exe_1h lists: burst01 with 21,600 CPU-s
+
+5. choose_tier() reads retention from settings, not from the files left on disk
+  20-minute window starting 2026-11-17 20:00:00 (40 h back), retention.raw 48h
+  choose_tier -> tier=raw step=1s
+  reason: 'window is inside raw retention'
+  files the budget may delete at its 24 h floor: ['2026-11-17.db']
+  the window lies in 2026-11-17.db; deleted under the floor: True

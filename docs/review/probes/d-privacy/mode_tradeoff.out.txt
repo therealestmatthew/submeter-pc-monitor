@@ -1,0 +1,10 @@
+$ uv run python docs/review/probes/d-privacy/mode_tradeoff.py
+1. exe_only on the 71 realistic cases, given a split list: 0 leaked
+2. this user's processes with a readable command line: 161
+   running a shell or a language runtime: 23
+   of those, with a script file as the first plain argument: 3
+   of those, given a whole command in one argument (-c and the like): 4
+   different texts stored in exe_only mode: 94
+   different texts stored in scrub mode: 149
+   command lines in which scrub mode hides at least one argument: 38
+exit=0

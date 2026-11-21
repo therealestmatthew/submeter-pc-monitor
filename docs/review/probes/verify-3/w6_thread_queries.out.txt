@@ -1,0 +1,12 @@
+psutil 7.2.2, psutil/_pswindows.py
+_proc_info calls: ['cext.proc_info']
+oneshot_enter calls: ['?.cache_activate', '?.cache_activate']
+create_time  reaches _proc_info: True (inside an except fallback)
+cpu_times    reaches _proc_info: True (inside an except fallback)
+memory_info  reaches _proc_info: False
+num_threads  reaches _proc_info: True (on the only path)
+io_counters  reaches _proc_info: True (inside an except fallback)
+_get_raw_meminfo reaches _proc_info: True
+snapshot 1: 466 processes returned, 169 fully readable, num_threads called 467 times
+snapshot 2: 466 processes returned, 169 fully readable, num_threads called 467 times
+snapshot 3: 466 processes returned, 169 fully readable, num_threads called 467 times
