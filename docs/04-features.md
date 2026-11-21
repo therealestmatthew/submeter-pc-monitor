@@ -35,7 +35,7 @@
 - Live dashboard, history explorer, findings feed and session compare.
 - A CLI with JSON output on every command.
 - Self-contained HTML reports and alerts with cooldowns.
-- A read-only MCP server, so an agent can ask what it is costing.
+- An agent started with `submeter run` can ask what it is costing with `submeter cost --run "$SUBMETER_RUN" --json`.
 
 ## Protect
 

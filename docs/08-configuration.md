@@ -104,7 +104,7 @@ A session can override the interval for its own duration, for example `submeter 
 | Privacy | `redaction` | scrub | Set to `exe_only` to store no arguments at all |
 | Privacy | `redact_patterns[]` | built-in list | Add your own secret formats |
 | Providers | `enabled[]` | all | Switch off anything you do not need |
-| API and UI | `port, mcp_enabled` | 8787, false | Move the port. Turn the MCP server on |
+| API and UI | `port, mcp_enabled` | 8787, false | Move the port. `mcp_enabled` is not used in version 1, which has no MCP server |
 | API and UI | `units, default_range` | GiB, 1h | How the dashboard opens |
 
 ## How configuration behaves
@@ -122,7 +122,7 @@ A session can override the interval for its own duration, for example `submeter 
 - The collector and server run as the signed-in user. They never ask for administrator rights.
 - Nothing is sent off the machine. There is no webhook, upload or update check.
 - The API binds to loopback and always requires a token.
-- The MCP server never returns command lines, whatever the redaction mode.
+- `submeter cost --json` and the report never contain command lines, whatever the redaction mode.
 - Unavailable metrics stay unavailable. There is no option to fill gaps with estimates.
 
 ## What an alert rule can name

@@ -24,7 +24,6 @@ flowchart TD
     end
     dashboard["Dashboard<br/>live over WebSocket"]
     cli["CLI<br/>every command --json"]
-    agents["Agents, over MCP<br/>no command lines"]
     run -->|registers the group| ka
     ka -->|cumulative counters| sampler
     bp -->|cumulative counters| sampler
@@ -36,7 +35,6 @@ flowchart TD
     analysis -->|rollups, findings| history
     analysis -->|API · loopback · token| dashboard
     analysis -->|API · loopback · token| cli
-    analysis -->|API · loopback · token| agents
 ```
 
 The same flow in words:
@@ -47,7 +45,7 @@ The same flow in words:
 4. Attribution gives each process one workload: by group membership, then `rules.toml`, then its parent. Secrets are scrubbed here. It emits a WorkloadSample, redacted.
 5. The store has one lifetime per file, a 2 GB cap and one writer for each file: raw files kept 48 h, minute files kept 30 d, and a history file that is kept.
 6. In the server process, analysis reads windows from the store and writes rollups and findings back: rollups, detectors, verdict, session diff and alerts. Minute and hourly buckets are both built from raw data.
-7. The server exposes an API on loopback, protected by a token, to three readers: the dashboard, live over WebSocket; the CLI, where every command takes `--json`; and agents, over MCP, which never receive command lines.
+7. The server exposes an API on loopback, protected by a token, to two readers: the dashboard, live over WebSocket, and the CLI, where every command takes `--json`. Agents read their own run's cost through the CLI, with `submeter cost --run "$SUBMETER_RUN" --json`, whose output never holds a command line. There is no MCP server in version 1.
 
 *Figure:* Data moves one way. The highlighted provider is the exact path: the kernel totals CPU, memory and I/O for every process in a tagged group, including ones that exit between samples. Each program writes only its own files: the collector the raw files, the server the minute and history files, and the launcher one small file per run, so a run is accounted for even if the collector was down. Hourly buckets are built from raw data, shown by the upper arrow inside the store.
 

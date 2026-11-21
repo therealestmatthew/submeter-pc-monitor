@@ -14,7 +14,7 @@ Gate: a 30-minute CI soak stays inside the budget, per-process figures are withi
 
 ## P2: Kernel accounting on Windows, attribution, sessions
 
-Gate: on Windows, a tagged tree spawning 500 sub-second children is charged within 2% of the kernel total, its final totals survive its exit, a restarted collector re-attaches to live groups, and `submeter run` returns when the command does. On Linux, `submeter run` reports that tagged runs are unavailable and runs the command polled. A session's cost reads the same before and after its raw data is deleted.
+Gate: on Windows, a tagged tree spawning 500 sub-second children is charged within 2% of the kernel total, its final totals survive its exit, a restarted collector re-attaches to live groups, and `submeter run` returns when the command does. An agent started with `submeter run` retrieves its own run's cost with `submeter cost --run "$SUBMETER_RUN" --json`, and the output holds no command line. On Linux, `submeter run` reports that tagged runs are unavailable and runs the command polled. A session's cost reads the same before and after its raw data is deleted.
 
 ## P3: Analysis
 
@@ -28,9 +28,9 @@ Gate: requests without a token or with a foreign Origin are refused. A 30-day ra
 
 Gate: each provider passes its recorded fixtures and degrades cleanly when its source is absent.
 
-## P6: Reports and MCP server
+## P6: Reports
 
-Gate: an agent can retrieve its own cost for a session, and no response contains a command line.
+Gate: a report is one self-contained HTML file and holds no command line.
 
 ## Decisions made
 

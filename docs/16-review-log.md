@@ -76,6 +76,8 @@ Command lines often carry API keys and tokens. The draft stored them in plain te
 
 **Fix:** Command lines are redacted before they are written. The API needs a token and checks Host and Origin headers. The MCP server never returns command lines.
 
+Amended by R143 (21 November 2026): there is no MCP server in version 1. An agent reads its own run's cost with `submeter cost --run "$SUBMETER_RUN" --json`, and that output and the report never contain command lines.
+
 ### R05: WSL2 and Docker Desktop show up as one process
 
 On Windows, everything inside WSL2 or Docker Desktop appears as a single VM process. If agents run there, attribution collapses into one opaque block.

@@ -50,7 +50,7 @@ Five layers with data flowing one way: providers, sampler, attribution, store, a
 Three programs share nothing but files on disk, and each writes only its own:
 
 - submeter-collector: providers, sampler, attribution, redaction. It writes the raw files and nothing else.
-- submeter-server: rollups, retention, analysis, alerts, API, dashboard, MCP. It writes the minute files and the history file, and reads the raw files.
+- submeter-server: rollups, retention, analysis, alerts, API, dashboard. It writes the minute files and the history file, and reads the raw files.
 - the launcher, `submeter run`: starts a tagged process tree and writes one small run file for it.
 
 None of the three imports another, and every file has exactly one writer. The reason is that the collector is the hot path, and I want to be able to replace it with a Rust binary later without touching anything else. In phase 0, measure one full sample. If it takes more than 10 ms at 300 processes, or the collector holds more than 80 MB, stop and tell me, because that is my trigger for the Rust collector.
@@ -59,7 +59,7 @@ None of the three imports another, and every file has exactly one writer. The re
 
 Agents spawn thousands of processes that live for less than a second, and polling cannot see them. If children live 300 ms on average, a 1-second poll captures under a third of their CPU time. So use two paths, and label every workload with the one that measured it.
 
-Kernel accounting, for tagged workloads. `submeter run --as NAME [--label LABEL] -- COMMAND` launches the command inside a named Windows Job Object (nested jobs), and records the group in a run file. NAME is a stable workload name that is reused across runs, such as agent:refactor. LABEL identifies one run. Time series are kept per name and totals per run, so a new label never starts a new series. Warn in `doctor` when there are more than 200 distinct workload names. The kernel's totals for the group are authoritative: CPU time, memory, I/O and process counts, including processes that have already exited.
+Kernel accounting, for tagged workloads. `submeter run --as NAME [--label LABEL] -- COMMAND` launches the command inside a named Windows Job Object (nested jobs), and records the group in a run file. The launcher sets SUBMETER_RUN in the command's environment to the id of the run, so an agent inside it can read its own run's cost with `submeter cost --run "$SUBMETER_RUN" --json`. NAME is a stable workload name that is reused across runs, such as agent:refactor. LABEL identifies one run. Time series are kept per name and totals per run, so a new label never starts a new series. Warn in `doctor` when there are more than 200 distinct workload names. The kernel's totals for the group are authoritative: CPU time, memory, I/O and process counts, including processes that have already exited.
 
 A group's counters disappear when the group does, so:
 
@@ -147,7 +147,7 @@ Operations:
 
 Command lines often contain keys and tokens. Redact them before they are written: keep the executable and a pattern-scrubbed argument list, with a configurable redaction list and a strict mode that stores the executable only. Restrict every data file and the API token to the current user.
 
-Binding to 127.0.0.1 is not enough, because any web page in my browser can reach a local port. Require a token on every HTTP and WebSocket request, reject requests whose Host is not a loopback name, and check Origin on the WebSocket. The MCP server must never return command lines or working directories. Nothing leaves the machine. Version 1 has no webhook, upload or update check. Both programs run as the signed-in user and never request administrator rights.
+Binding to 127.0.0.1 is not enough, because any web page in my browser can reach a local port. Require a token on every HTTP and WebSocket request, reject requests whose Host is not a loopback name, and check Origin on the WebSocket. `submeter cost --json` and the report must never contain command lines or working directories. Nothing leaves the machine. Version 1 has no webhook, upload or update check. Both programs run as the signed-in user and never request administrator rights.
 
 ### Analysis
 
@@ -179,7 +179,7 @@ Sampling settings and defaults:
 - on_battery_multiplier = 2
 - overhead_limit: idle 1%, active 3%
 
-Other settings: storage (retention for raw, minute and executables, disk_budget, change_threshold, keyframe_interval 10m, backups to keep), analysis (leak min_duration 2h and min_slope 50MB/h, slow_growth window 7d, baseline learning_period 7d, window 14d and sensitivity 4.0), verdict (window 5m, per-signal thresholds, min_confidence), alerts (rules, cooldown 15m, quiet_hours, channels dashboard and desktop), attribution (rules_file, inherit_from_parent, unattributed_alert, max_workload_names 200), privacy (redaction scrub or exe_only, extra patterns), providers (enabled list), api (port, mcp_enabled), ui (units, default_range), and named per-machine profiles that override any of the above.
+Other settings: storage (retention for raw, minute and executables, disk_budget, change_threshold, keyframe_interval 10m, backups to keep), analysis (leak min_duration 2h and min_slope 50MB/h, slow_growth window 7d, baseline learning_period 7d, window 14d and sensitivity 4.0), verdict (window 5m, per-signal thresholds, min_confidence), alerts (rules, cooldown 15m, quiet_hours, channels dashboard and desktop), attribution (rules_file, inherit_from_parent, unattributed_alert, max_workload_names 200), privacy (redaction scrub or exe_only, extra patterns), providers (enabled list), api (port), ui (units, default_range), and named per-machine profiles that override any of the above.
 
 Alert rules are structured fields: a workload pattern, a metric, above or below, a value, a duration and a severity. Do not invent a rule language to parse. An alert rule may name only these metric ids: cpu_cores, memory_bytes, processes and io_bytes_per_s for any workload, commit_fraction and throttled for the reserved workload `machine`, and overhead_fraction for the workload `submeter`. Refuse any other. Three rules ship built in: commit_fraction above 0.90 for 2 minutes (serious), throttled for 5 minutes (warning), and overhead_fraction above 0.03 for 5 minutes (warning).
 
@@ -192,7 +192,7 @@ Behaviour:
 - A session may override the sampling interval for its own duration.
 - The overhead guard outranks the configured interval. If the limit is exceeded, lengthen intervals and raise a finding.
 
-Not configurable: observe-only behaviour, running without administrator rights, sending nothing off the machine, loopback binding, the token requirement, the rule that MCP never returns command lines, and the rule that unavailable metrics are never estimated.
+Not configurable: observe-only behaviour, running without administrator rights, sending nothing off the machine, loopback binding, the token requirement, the rule that `submeter cost --json` and the report never contain command lines, and the rule that unavailable metrics are never estimated.
 
 ## Interfaces
 
@@ -213,7 +213,7 @@ CLI, where every command accepts --json with a stable schema:
 
 Dashboard views: live overview with the verdict, load per core, a chart by workload that switches between CPU and memory, and the reconciliation bar; a workload table that shows each workload's accounting source and drills down to its process tree; a historical explorer across retention tiers with settings changes marked; a findings feed; session compare. Alerts have thresholds and cooldowns, and appear in the dashboard and as desktop notifications.
 
-Later phases add a read-only MCP server exposing cost, findings and verdict queries.
+Agents get their cost from the CLI: an agent started with `submeter run` reads its own run's cost with `submeter cost --run "$SUBMETER_RUN" --json`. An MCP server is not in version 1.
 
 ## Known limits to show, not hide
 
@@ -245,7 +245,7 @@ Build these components, and tell me before adding any that are not listed:
 7. analysis.detectors, analysis.verdict, analysis.diff
 8. server.api, web, alerts
 9. providers.extended (GPU load and VRAM, throttling and battery, connections)
-10. report and mcp
+10. report
 11. cli, covering every command above
 
 Tables, by file:
@@ -270,10 +270,10 @@ Work in phases. Set up CI on Windows and Linux runners in phase 0, because you c
 
 - Phase 0, baseline check, capability probe and CI: get the baseline passing ruff, mypy strict and pytest on both runners (it has only been run on Linux, so tell me what needed fixing on Windows), then build `submeter doctor` out into the full capability matrix, and report the measured cost of one full sample, the per-process VRAM check, and a written matrix of what each OS delivers with and without elevation.
 - Phase 1, collector, store and CLI: the Windows bulk snapshot provider behind the existing protocol, the collector loop with adaptive cadence and the overhead guard around the existing sampler, the minute and history files built on the existing rollup functions, retention and backups, and the full `top` and `store status`. Gate: a 30-minute CI soak stays inside the budget, per-process figures agree with Windows performance counters within 5%, and totals reconcile within 2%. Killing the collector mid-write loses at most 5 seconds and corrupts nothing. CPU-hours from the hourly tier match the raw sum within 0.1%. Deleting a day of raw data frees its space at once. Do not use Task Manager as a reference; its CPU figure has changed basis between Windows builds. I will run a 24-hour soak myself.
-- Phase 2, kernel accounting on Windows, attribution and sessions. Gate: on Windows, a tagged tree that spawns 500 sub-second children is charged within 2% of the kernel's total, its final totals survive its exit, a restarted collector re-attaches to live groups, and `submeter run` returns with the command's exit code while background processes it left behind are still accounted for. On Linux, `submeter run` reports that tagged runs are unavailable and runs the command polled. A session's cost must read the same before and after its raw data is deleted.
+- Phase 2, kernel accounting on Windows, attribution and sessions. Gate: on Windows, a tagged tree that spawns 500 sub-second children is charged within 2% of the kernel's total, its final totals survive its exit, a restarted collector re-attaches to live groups, and `submeter run` returns with the command's exit code while background processes it left behind are still accounted for. An agent started with `submeter run` retrieves its own run's cost with `submeter cost --run "$SUBMETER_RUN" --json`, and the output holds no command line. On Linux, `submeter run` reports that tagged runs are unavailable and runs the command polled. A session's cost must read the same before and after its raw data is deleted.
 - Phase 3, analysis. Gate: every detector passes its trigger and quiet fixtures, including a leak too slow for the hourly check, and `why` answers in under two seconds.
 - Phase 4, API and dashboard. Gate: requests without a token or with a foreign Origin are refused, and a 30-day range loads in under one second and names the tier it came from.
 - Phase 5, extended providers. Hardware you do not have is tested from recorded fixtures. Say plainly which providers were never run on real hardware.
-- Phase 6, HTML reports and MCP server. Gate: no MCP response contains a command line.
+- Phase 6, HTML reports. Gate: a report is one self-contained HTML file and holds no command line.
 
 Start with phase 0. Before writing code, tell me in a few sentences how you plan to extend the existing layout and any part of this brief or the baseline you think is wrong or underspecified. If something here conflicts with what an OS can really do, say so and propose the closest honest alternative instead of working around it quietly.
