@@ -13,8 +13,8 @@ Command lines are redacted here, on the way to disk, whatever the caller did.
 from __future__ import annotations
 
 import sqlite3
-from collections.abc import Mapping, Sequence
-from contextlib import closing
+from collections.abc import Iterator, Mapping, Sequence
+from contextlib import closing, contextmanager
 from datetime import date
 from pathlib import Path
 from typing import Final
@@ -54,6 +54,11 @@ CREATE TABLE IF NOT EXISTS system_raw (
     gap INTEGER NOT NULL) WITHOUT ROWID;
 CREATE TABLE IF NOT EXISTS gap (start REAL NOT NULL, end REAL NOT NULL, reason TEXT NOT NULL);
 """
+
+
+def _storable(text: str) -> str:
+    """Text SQLite can store: an undecodable byte the OS handed over is kept as an escape."""
+    return text.encode("utf-8", "backslashreplace").decode("utf-8")
 
 
 def open_read_only(path: Path) -> sqlite3.Connection:
@@ -103,7 +108,7 @@ class RawFile:
         """Store one batch in one transaction. Returns how many process rows were written."""
         written = 0
         full = keyframe or batch.gap
-        with self._db:
+        with self._undone_on_error(), self._db:
             if batch.gap:
                 start = batch.taken_at - batch.interval_s
                 self._db.execute(
@@ -125,7 +130,7 @@ class RawFile:
                 [
                     (
                         w.taken_at,
-                        w.workload,
+                        _storable(w.workload),
                         w.source.value,
                         w.interval_s,
                         w.cpu_s,
@@ -160,10 +165,20 @@ class RawFile:
                 written += self._finish(batch.taken_at, key)
         return written
 
+    @contextmanager
+    def _undone_on_error(self) -> Iterator[None]:
+        """If the transaction fails, put the in-memory state back to match the file."""
+        kept = (dict(self._pending), dict(self._waited), dict(self._memory), dict(self._threads))
+        try:
+            yield
+        except BaseException:
+            self._pending, self._waited, self._memory, self._threads = kept
+            raise
+
     def _register(self, sample: ProcessSample, workload: str, seen_at: float) -> None:
         command_id: int | None = None
         if sample.cmdline:
-            text = " ".join(redact_cmdline(sample.cmdline, mode=self._redaction))
+            text = _storable(" ".join(redact_cmdline(sample.cmdline, mode=self._redaction)))
             self._db.execute("INSERT OR IGNORE INTO command (text) VALUES (?)", (text,))
             row = self._db.execute("SELECT id FROM command WHERE text = ?", (text,)).fetchone()
             command_id = int(row[0])
@@ -173,9 +188,9 @@ class RawFile:
                 sample.key.pid,
                 sample.key.started,
                 sample.parent_pid,
-                sample.exe,
+                _storable(sample.exe),
                 command_id,
-                workload,
+                _storable(workload),
                 seen_at,
             ),
         )
@@ -213,7 +228,7 @@ class RawFile:
         the collector changes itself does not start one.
         """
         with self._db:
-            self._db.execute("INSERT INTO event VALUES (?, ?, ?)", (ts, kind, detail))
+            self._db.execute("INSERT INTO event VALUES (?, ?, ?)", (ts, kind, _storable(detail)))
 
     @staticmethod
     def workload_samples(path: Path, start: float, end: float) -> list[WorkloadSample]:
