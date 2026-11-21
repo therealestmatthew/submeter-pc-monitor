@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import contextlib
 import itertools
+import os
 import sqlite3
 import sys
 from pathlib import Path
@@ -34,6 +35,7 @@ def fake_process(pid: int, **reads: object) -> Any:
         "cwd": "/work",
         "ppid": 1,
         "name": "tool",
+        "uids": SimpleNamespace(real=getattr(os, "getuid", lambda: 0)()),
     } | reads
     calls = {name: mock.Mock(side_effect=itertools.repeat(value)) for name, value in reads.items()}
     process = mock.NonCallableMock([*reads, "pid", "oneshot"], oneshot=contextlib.nullcontext)
@@ -99,3 +101,15 @@ def test_windows_threads_are_unavailable(monkeypatch: pytest.MonkeyPatch, tmp_pa
     raw.close()
     with contextlib.closing(sqlite3.connect(tmp_path / "raw.db")) as db:
         assert db.execute("SELECT threads FROM process_raw").fetchall() == [(None,)]
+
+
+def test_another_users_command_line_is_not_kept_on_linux(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(sys, "platform", "linux")
+    monkeypatch.setattr(os, "getuid", lambda: 1000, raising=False)
+    own, other = (
+        fake_process(pid, uids=SimpleNamespace(real=uid)) for pid, uid in [(1, 1000), (2, 0)]
+    )
+    monkeypatch.setattr(psutil, "process_iter", lambda: iter([own, other]))
+    mine, theirs = PsutilProvider().snapshot().processes
+    assert mine.cmdline == ("tool",) and not mine.restricted
+    assert theirs.cmdline is None and theirs.restricted

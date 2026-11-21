@@ -11,6 +11,7 @@ it is counted and never silently dropped.
 
 from __future__ import annotations
 
+import os
 import sys
 import time
 
@@ -72,7 +73,10 @@ class PsutilProvider:
                     cpu_s, memory_bytes, threads, restricted = 0.0, 0, None, True
                 cmdline: tuple[str, ...] | None = None
                 try:
-                    cmdline = tuple(process.cmdline())
+                    if sys.platform == "linux" and process.uids().real != os.getuid():
+                        restricted = True  # Linux shows other users' arguments; keep only the name
+                    else:
+                        cmdline = tuple(process.cmdline())
                 except psutil.AccessDenied:
                     restricted = True
                 except _FAILED:  # a zombie included: its CPU is still readable
