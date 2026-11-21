@@ -89,6 +89,7 @@ class Sampler:
             key=now.key,
             parent_pid=now.parent_pid,
             exe=now.exe,
+            name=now.name,
             cmdline=now.cmdline,
             cwd=now.cwd,
             cpu_s=cpu_s,

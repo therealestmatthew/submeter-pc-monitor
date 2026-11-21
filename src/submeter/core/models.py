@@ -73,7 +73,8 @@ class ProcessCounters(Record):
 
     key: ProcessKey
     parent_pid: int | None = None
-    exe: str = ""
+    exe: str = ""  # the executable's file name where readable, else the process name
+    name: str = ""
     cmdline: tuple[str, ...] | None = Field(default=None, repr=False)
     cwd: str | None = Field(default=None, repr=False)
     cpu_s: float
@@ -109,6 +110,7 @@ class ProcessSample(Record):
     key: ProcessKey
     parent_pid: int | None
     exe: str
+    name: str = ""
     cmdline: tuple[str, ...] | None = Field(repr=False)
     cwd: str | None = Field(repr=False)
     cpu_s: float

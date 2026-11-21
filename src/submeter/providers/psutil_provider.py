@@ -92,6 +92,11 @@ class PsutilProvider:
                         restricted = True
                     except _FAILED:
                         pass
+                name = process.name()
+                try:  # name() is the program's own title on Linux, so exe comes from exe()
+                    exe = os.path.basename(process.exe()) or name
+                except _FAILED:
+                    exe = name
                 cwd: str | None = None
                 if self._read_cwd:
                     try:
@@ -103,7 +108,8 @@ class PsutilProvider:
                 return ProcessCounters(
                     key=key,
                     parent_pid=process.ppid(),
-                    exe=process.name(),
+                    exe=exe,
+                    name=name,
                     cmdline=cmdline,
                     cwd=cwd,
                     cpu_s=cpu_s,

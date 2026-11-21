@@ -16,6 +16,7 @@ import psutil
 import pytest
 from pydantic import ValidationError
 
+from submeter.attribution.rules import Rule
 from submeter.collector.sampler import Sampler
 from submeter.core.models import ProcessCounters, ProcessKey, ProcessSample
 from submeter.providers.psutil_provider import PsutilProvider
@@ -35,6 +36,7 @@ def fake_process(pid: int, **reads: object) -> Any:
         "cwd": "/work",
         "ppid": 1,
         "name": "tool",
+        "exe": "/usr/bin/tool",
         "uids": SimpleNamespace(real=getattr(os, "getuid", lambda: 0)()),
     } | reads
     calls = {name: mock.Mock(side_effect=itertools.repeat(value)) for name, value in reads.items()}
@@ -113,3 +115,15 @@ def test_another_users_command_line_is_not_kept_on_linux(monkeypatch: pytest.Mon
     mine, theirs = PsutilProvider().snapshot().processes
     assert mine.cmdline == ("tool",) and not mine.restricted
     assert theirs.cmdline is None and theirs.restricted
+
+
+def test_exe_is_the_executable_file_and_name_is_kept_apart(monkeypatch: pytest.MonkeyPatch) -> None:
+    fake = fake_process(1, exe="/usr/bin/python3.12", name="pytest")
+    monkeypatch.setattr(psutil, "process_iter", lambda: iter([fake]))
+    provider, sampler = PsutilProvider(), Sampler()
+    sampler.ingest(provider.snapshot())
+    batch = sampler.ingest(provider.snapshot())
+    assert batch is not None and batch.processes[0].exe == "python3.12"
+    assert batch.processes[0].name == "pytest"
+    assert Rule(workload="x", exe=("python3*",)).matches(batch.processes[0])
+    assert Rule(workload="y", name=("pytest",)).matches(batch.processes[0])

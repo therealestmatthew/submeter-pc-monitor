@@ -56,6 +56,7 @@ class Rule(Record):
     workload: str
     priority: int = 0
     exe: tuple[str, ...] = ()
+    name: tuple[str, ...] = ()
     cmdline: str | None = None
     cwd: str | None = None
     parent: tuple[str, ...] = ()
@@ -64,8 +65,8 @@ class Rule(Record):
 
     @model_validator(mode="after")
     def _usable(self) -> Rule:
-        if not (self.exe or self.cmdline or self.cwd or self.parent):
-            raise ValueError("a rule needs at least one of exe, cmdline, cwd or parent")
+        if not (self.exe or self.name or self.cmdline or self.cwd or self.parent):
+            raise ValueError("a rule needs at least one of exe, name, cmdline, cwd or parent")
         if self.cmdline is not None:
             try:
                 re.compile(self.cmdline)
@@ -75,7 +76,10 @@ class Rule(Record):
 
     def matches(self, process: ProcessSample, parent: ProcessSample | None = None) -> bool:
         """`parent` is the process that started this one, when it is known and still running."""
-        if self.exe and _base_name(process.exe) not in {name.lower() for name in self.exe}:
+        exe, name = _base_name(process.exe), process.name.lower()  # both match as glob patterns
+        if self.exe and not any(fnmatch.fnmatchcase(exe, p.lower()) for p in self.exe):
+            return False
+        if self.name and not any(fnmatch.fnmatchcase(name, p.lower()) for p in self.name):
             return False
         if self.parent and (
             parent is None or _base_name(parent.exe) not in {name.lower() for name in self.parent}
