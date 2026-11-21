@@ -24,6 +24,9 @@ from submeter.core.models import (
     SystemCounters,
 )
 
+# Beside psutil's own errors, its Linux parsers let these through for a malformed /proc entry.
+_FAILED = (psutil.Error, OSError, RuntimeError, ValueError)
+
 
 class PsutilProvider:
     name = "process.psutil"
@@ -62,13 +65,15 @@ class PsutilProvider:
                     cpu_s = times.user + times.system
                     memory_bytes = int(getattr(memory, "private", memory.rss))
                     threads = process.num_threads()
-                except psutil.AccessDenied:
+                except (psutil.AccessDenied, OSError, RuntimeError, ValueError):
                     cpu_s, memory_bytes, threads, restricted = 0.0, 0, 0, True
                 cmdline: tuple[str, ...] | None = None
                 try:
                     cmdline = tuple(process.cmdline())
                 except psutil.AccessDenied:
                     restricted = True
+                except _FAILED:  # a zombie included: its CPU is still readable
+                    pass
                 read_bytes: int | None = None
                 write_bytes: int | None = None
                 io_counters = getattr(process, "io_counters", None)  # psutil has none on macOS
@@ -78,7 +83,7 @@ class PsutilProvider:
                         read_bytes, write_bytes = int(io.read_bytes), int(io.write_bytes)
                     except psutil.AccessDenied:
                         restricted = True
-                    except NotImplementedError:
+                    except _FAILED:
                         pass
                 cwd: str | None = None
                 if self._read_cwd:
@@ -86,6 +91,8 @@ class PsutilProvider:
                         cwd = process.cwd()
                     except psutil.AccessDenied:
                         restricted = True
+                    except _FAILED:
+                        pass
                 return ProcessCounters(
                     key=key,
                     parent_pid=process.ppid(),
@@ -101,7 +108,7 @@ class PsutilProvider:
                 )
         except (psutil.NoSuchProcess, psutil.ZombieProcess):
             return None
-        except psutil.AccessDenied:
+        except _FAILED:  # one process failing must not cost the whole snapshot
             return ProcessCounters(
                 key=ProcessKey(pid=process.pid, started=0.0),
                 cpu_s=0.0,
