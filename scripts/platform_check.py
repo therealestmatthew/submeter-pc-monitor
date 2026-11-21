@@ -80,7 +80,7 @@ def check_provider() -> None:
     total = len(snapshot.processes)
     restricted = sum(1 for process in snapshot.processes if process.restricted)
     no_cmdline = sum(1 for process in snapshot.processes if process.cmdline is None)
-    private = hasattr(psutil.Process().memory_info(), "private")
+    memory = "private bytes (vms)" if sys.platform == "win32" else "resident set size"
 
     def cost(provider: PsutilProvider) -> tuple[float, float]:
         times = []
@@ -96,7 +96,7 @@ def check_provider() -> None:
         "process reading",
         "PASS" if total > 0 and restricted < total else "FAIL",
         f"{total} processes, {restricted} restricted, {no_cmdline} without a readable command "
-        f"line, memory taken from {'private bytes' if private else 'resident set size'}",
+        f"line, memory taken from {memory}",
     )
     record(
         "cost of one full snapshot",

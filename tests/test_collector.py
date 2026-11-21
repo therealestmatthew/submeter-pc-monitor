@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import contextlib
 import itertools
+import sys
 from types import SimpleNamespace
 from typing import Any
 from unittest import mock
@@ -72,3 +73,9 @@ def test_failed_reads_keep_the_process(monkeypatch: pytest.MonkeyPatch) -> None:
     io_error, zombie, broken = PsutilProvider(read_cwd=True).snapshot().processes
     assert io_error.cpu_s == zombie.cpu_s == 1.5 and broken.restricted
     assert io_error.io_read_bytes is None and io_error.cwd is None and zombie.cmdline is None
+
+
+def test_windows_memory_is_private_bytes(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(sys, "platform", "win32")
+    monkeypatch.setattr(psutil, "process_iter", lambda: iter([fake_process(10)]))  # no 'private'
+    assert PsutilProvider().snapshot().processes[0].memory_bytes == 300  # vms, not rss

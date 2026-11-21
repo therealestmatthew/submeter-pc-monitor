@@ -11,6 +11,7 @@ it is counted and never silently dropped.
 
 from __future__ import annotations
 
+import sys
 import time
 
 import psutil
@@ -63,7 +64,8 @@ class PsutilProvider:
                     times = process.cpu_times()
                     memory = process.memory_info()
                     cpu_s = times.user + times.system
-                    memory_bytes = int(getattr(memory, "private", memory.rss))
+                    # On Windows psutil's vms is PagefileUsage, which equals private bytes.
+                    memory_bytes = int(memory.vms if sys.platform == "win32" else memory.rss)
                     threads = process.num_threads()
                 except (psutil.AccessDenied, OSError, RuntimeError, ValueError):
                     cpu_s, memory_bytes, threads, restricted = 0.0, 0, 0, True
