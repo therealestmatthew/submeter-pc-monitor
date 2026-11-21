@@ -78,6 +78,8 @@ Command lines often carry API keys and tokens. The draft stored them in plain te
 
 Amended by R143 (21 November 2026): there is no MCP server in version 1. An agent reads its own run's cost with `submeter cost --run "$SUBMETER_RUN" --json`, and that output and the report never contain command lines.
 
+Amended by R150 (21 November 2026): version 1 has no API and opens no network port. The CLI reads the store files directly. The API, with its token and its Host and Origin checks, comes in version 1.1 with the dashboard.
+
 ### R05: WSL2 and Docker Desktop show up as one process
 
 On Windows, everything inside WSL2 or Docker Desktop appears as a single VM process. If agents run there, attribution collapses into one opaque block.
@@ -247,6 +249,8 @@ A new name for every run would start a new series each time and swell every tier
 Data, settings, logs, the API token and locks had no stated location, owner or lifetime, and two collectors could run at once.
 
 **Fix:** A file map per platform with one override, a one-instance lock per program, rotating redacted logs, and a token file only you can read.
+
+Amended by R150 (21 November 2026): the token file comes with the API in version 1.1. Version 1 has no API token.
 
 ## Third pass, medium: comparisons that could mislead
 

@@ -20,17 +20,13 @@ Gate: on Windows, a tagged tree spawning 500 sub-second children is charged with
 
 Gate: every detector passes a trigger fixture and a quiet fixture, including a cache warm-up and a leak too slow for the hourly check. `why` answers in under 2 seconds.
 
-## P4: API and dashboard
+## P4: Report
 
-Gate: requests without a token or with a foreign Origin are refused. A 30-day range loads in under 1 second and states the tier it came from.
+Gate: `submeter report` writes one self-contained HTML file for a session or a range, with a meta Content Security Policy. Each chart states the tier and resolution it came from, and the report holds no command line. The API and the live dashboard are not in version 1; their design and gate are kept for version 1.1 in the [build prompt](17-build-prompt.md).
 
 ## P5: GPU, throttling, battery, connections
 
 Gate: each provider passes its recorded fixtures and degrades cleanly when its source is absent.
-
-## P6: Reports
-
-Gate: a report is one self-contained HTML file and holds no command line.
 
 ## Decisions made
 

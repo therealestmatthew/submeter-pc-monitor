@@ -2,7 +2,7 @@
 
 > Submeter build brief · Part 2, the design · [Index](README.md)
 
-What version 1 cannot measure, and what it does about each. The dashboard and `submeter doctor` state these beside the numbers they affect.
+What version 1 cannot measure, and what it does about each. The CLI output, the report and `submeter doctor` state these beside the numbers they affect.
 
 | Limit | Effect on the numbers | What Submeter does |
 | --- | --- | --- |

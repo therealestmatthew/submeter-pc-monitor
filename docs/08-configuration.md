@@ -104,8 +104,8 @@ A session can override the interval for its own duration, for example `submeter 
 | Privacy | `redaction` | scrub | Set to `exe_only` to store no arguments at all |
 | Privacy | `redact_patterns[]` | built-in list | Add your own secret formats |
 | Providers | `enabled[]` | all | Switch off anything you do not need |
-| API and UI | `port, mcp_enabled` | 8787, false | Move the port. `mcp_enabled` is not used in version 1, which has no MCP server |
-| API and UI | `units, default_range` | GiB, 1h | How the dashboard opens |
+| API and UI | `port, mcp_enabled` | 8787, false | Not used in version 1, which has no API or MCP server. In version 1.1, `port` moves the API |
+| API and UI | `units, default_range` | GiB, 1h | Not used in version 1. In version 1.1, how the dashboard opens |
 
 ## How configuration behaves
 
@@ -121,7 +121,7 @@ A session can override the interval for its own duration, for example `submeter 
 - Observe-only. No setting lets version 1 act on a process.
 - The collector and server run as the signed-in user. They never ask for administrator rights.
 - Nothing is sent off the machine. There is no webhook, upload or update check.
-- The API binds to loopback and always requires a token.
+- Version 1 opens no network port. The API of version 1.1 binds to loopback and always requires a token.
 - `submeter cost --json` and the report never contain command lines, whatever the redaction mode.
 - Unavailable metrics stay unavailable. There is no option to fill gaps with estimates.
 

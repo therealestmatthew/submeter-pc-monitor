@@ -18,7 +18,7 @@ What you would see and type once it is running.
 
 | File | What it holds |
 | --- | --- |
-| [`02-what-it-looks-like.md`](02-what-it-looks-like.md) | The live dashboard: its layout, the seven workloads, the four scenarios, how the verdict is chosen, and the process trees |
+| [`02-what-it-looks-like.md`](02-what-it-looks-like.md) | The live dashboard planned for version 1.1: its layout, the seven workloads, the four scenarios, how the verdict is chosen, and the process trees |
 | [`03-cli-output.md`](03-cli-output.md) | Sample output of `cost`, `why`, `doctor` and `store status` |
 | [`04-features.md`](04-features.md) | What it does, in six groups: measure, attribute, remember, explain, show, protect |
 

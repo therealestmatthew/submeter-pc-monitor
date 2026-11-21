@@ -2,6 +2,8 @@
 
 > Submeter build brief · Part 1, the product · [Index](README.md)
 
+Not in version 1. The live dashboard described here is planned for version 1.1. Version 1 shows these figures through the CLI and the HTML report written by `submeter report`.
+
 A working mock of the live dashboard on a machine with 16 logical cores and 32 GB of memory. Every number is synthetic and the clock runs faster than real time. Pick a scenario, switch the chart between CPU and memory, and select a workload to see its process tree.
 
 ## The mock, described

@@ -22,4 +22,4 @@ The collector and the server share nothing but the database schema. If phase 0 s
 - The collector process holds more than 80 MB.
 - You add deep tracing later. ETW and eBPF deliver thousands of events per second, which Python cannot keep up with.
 
-The dashboard front end is plain JavaScript modules with a canvas chart library, so nothing needs a Node build step.
+The report's charts are plain JavaScript with a canvas chart library, inlined in the HTML file, so nothing needs a Node build step. The live dashboard of version 1.1 is built the same way.

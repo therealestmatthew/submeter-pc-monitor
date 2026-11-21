@@ -81,7 +81,7 @@ The table gives the same links module by module. "Nothing yet" means the caller 
 
 - The Windows bulk snapshot and the Job Object launcher. They call Windows APIs and must be written and tested on Windows.
 - The Linux /proc reader and cgroup accounting. They come after version 1, behind the same provider protocol. Version 1 runs Linux polled through the psutil provider.
-- The writers for the minute and history files, the detectors that call the growth arithmetic, the server and the dashboard. Each depends on decisions made in its own phase.
+- The writers for the minute and history files, the detectors that call the growth arithmetic, the server and the report. Each depends on decisions made in its own phase.
 
 ## Module by module
 
@@ -331,11 +331,11 @@ Chooses the tier and step for a time window, and explains the choice.
 - **Worth knowing:**
   - Picks the finest tier whose retention still covers the start of the window.
   - Moves to a coarser tier, and then to wider steps, when the answer would hold more points than a chart can use.
-  - Returns the reason as text, for the API and the chart to show.
+  - Returns the reason as text, for the CLI and the report's charts to show.
 - **Builds toward:** Component 11, store.query
 - **Provides:** `TierChoice`, `choose_tier`
 - **Imports:** [`core.models`](../src/submeter/core/models.py)
-- **Imported by:** Nothing yet. The API and the commands that read history will.
+- **Imported by:** Nothing yet. The commands that read history, and the report, will.
 
 ### `src/submeter/analysis/growth.py`
 

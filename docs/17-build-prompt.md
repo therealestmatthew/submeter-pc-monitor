@@ -18,7 +18,7 @@ I run many AI coding agents and heavy desktop apps at the same time, and I can't
 2. Live diagnosis: why is the machine slow right now?
 3. Trends: how does behaviour drift over days and weeks, and where are the leaks and regressions?
 
-Build it as a long-running local service with a web dashboard and a CLI. Windows 11 is the target of version 1, and only Windows gets the platform layer: kernel accounting, the launcher and its holder, system counters and autostart. Linux must work from the same codebase, polled: there `submeter run` reports that tagged runs are unavailable and runs the command polled, and CI on a Linux runner runs the portable tests. Put everything OS-specific behind provider interfaces from the first commit, so the Linux platform layer can be added after version 1.
+Build it as a long-running local service with a CLI and a self-contained HTML report. A live web dashboard, and the local API it needs, come in version 1.1. Windows 11 is the target of version 1, and only Windows gets the platform layer: kernel accounting, the launcher and its holder, system counters and autostart. Linux must work from the same codebase, polled: there `submeter run` reports that tagged runs are unavailable and runs the command polled, and CI on a Linux runner runs the portable tests. Put everything OS-specific behind provider interfaces from the first commit, so the Linux platform layer can be added after version 1.
 
 Version 1 only observes. It must never change a process's priority or affinity, suspend it, or kill it. Placing a process tree that Submeter itself launches into a Job Object or cgroup for accounting is allowed. Setting any limit on that group is not. A control layer will come later, so shape analysis output as plain data objects a future policy engine could consume.
 
@@ -34,23 +34,23 @@ When goals conflict, resolve them in this order:
 ## Stack and conventions
 
 - Python 3.12 or newer for everything in version 1, managed with uv. Ruff for lint and format. mypy in strict mode. pytest with pytest-asyncio.
-- Pydantic v2 for all config, sample, finding and API models, with extra="forbid" and frozen=True.
-- SQLite in WAL mode. FastAPI for the local API, with a WebSocket for live data. Typer for the CLI.
-- Dashboard: a static front end served by the server process, with no Node toolchain needed to run it. Use a canvas chart library such as uPlot.
+- Pydantic v2 for all config, sample and finding models, with extra="forbid" and frozen=True.
+- SQLite in WAL mode. Typer for the CLI.
+- Report: `submeter report` writes one self-contained HTML file, with its script and data inline and a meta Content Security Policy, so no Node toolchain is needed. Draw its charts with a canvas chart library such as uPlot.
 - psutil is the fallback and the cross-check, not the hot path.
 - Store timestamps in UTC. Measure intervals on a monotonic clock.
 - Before using any OS API you are not certain about, check current documentation instead of relying on memory. This applies most to Job Objects, cgroup v2 delegation, Windows performance counters, NVML, and psutil, whose API has changed across major versions.
 
 ## Architecture
 
-Five layers with data flowing one way: providers, sampler, attribution, store, analysis. The API, CLI and dashboard are thin readers over store and analysis. Each layer must be testable in isolation from recorded fixtures.
+Five layers with data flowing one way: providers, sampler, attribution, store, analysis. The CLI and the report are thin readers over store and analysis. Each layer must be testable in isolation from recorded fixtures.
 
 ### Three programs, one contract
 
 Three programs share nothing but files on disk, and each writes only its own:
 
 - submeter-collector: providers, sampler, attribution, redaction. It writes the raw files and nothing else.
-- submeter-server: rollups, retention, analysis, alerts, API, dashboard. It writes the minute files and the history file, and reads the raw files.
+- submeter-server: rollups, retention, analysis, alerts. It writes the minute files and the history file, and reads the raw files and the session marker files.
 - the launcher, `submeter run`: starts a tagged process tree and writes one small run file for it.
 
 None of the three imports another, and every file has exactly one writer. The reason is that the collector is the hot path, and I want to be able to replace it with a Rust binary later without touching anything else. In phase 0, measure one full sample. If it takes more than 10 ms at 300 processes, or the collector holds more than 80 MB, stop and tell me, because that is my trigger for the Rust collector.
@@ -107,6 +107,7 @@ Data that expires together lives in a file together, so retention is always a fi
 - Minute files, one per ISO week, written by the server: one bucket per minute for each workload and for the system. Kept 30 days.
 - One history file, written by the server and kept: hourly buckets, hourly summaries per workload and executable, runs, sessions and their summaries, findings, epochs and baselines.
 - Run files, one small JSON file per tagged run, written by the launcher with an atomic rename and read by the server.
+- Session marker files, one small file per session, written by `submeter session start` and `stop` with an atomic rename and read by the server. They replace an API call, because version 1 has no API.
 
 Rules for raw files:
 
@@ -136,7 +137,7 @@ Queries. Answer from the finest tier that covers the whole window, and return th
 Operations:
 
 - Put files in the platform's standard per-user locations for settings, data and state, with SUBMETER_HOME overriding all of them. `submeter store status` prints every file with its writer, size and coverage.
-- One-instance lock per program. Rotating logs, 5 files of 5 MB each, with the same redaction as the store. The API token lives in a file only the current user can read.
+- One-instance lock per program. Rotating logs, 5 files of 5 MB each, with the same redaction as the store.
 - Durability: synchronous=NORMAL. A crash or power loss may lose up to 5 seconds of samples and must never corrupt a file. Keep read transactions short so the write-ahead log can be checkpointed, and truncate it at each checkpoint.
 - At start, run an integrity check on the history file. Quarantine a damaged raw or minute file, record a gap and carry on.
 - Back up the history file daily with SQLite's online backup and keep 3 copies. Migrate it only after a backup. Every file carries a schema version, and readers accept the current and previous versions.
@@ -145,9 +146,9 @@ Operations:
 
 ### Privacy and local security
 
-Command lines often contain keys and tokens. Redact them before they are written: keep the executable and a pattern-scrubbed argument list, with a configurable redaction list and a strict mode that stores the executable only. Restrict every data file and the API token to the current user.
+Command lines often contain keys and tokens. Redact them before they are written: keep the executable and a pattern-scrubbed argument list, with a configurable redaction list and a strict mode that stores the executable only. Restrict every data file to the current user.
 
-Binding to 127.0.0.1 is not enough, because any web page in my browser can reach a local port. Require a token on every HTTP and WebSocket request, reject requests whose Host is not a loopback name, and check Origin on the WebSocket. `submeter cost --json` and the report must never contain command lines or working directories. Nothing leaves the machine. Version 1 has no webhook, upload or update check. Both programs run as the signed-in user and never request administrator rights.
+Version 1 opens no network port: the CLI reads the store files directly, and the API with its token comes in version 1.1. `submeter cost --json` and the report must never contain command lines or working directories. Nothing leaves the machine. Version 1 has no webhook, upload or update check. Both programs run as the signed-in user and never request administrator rights.
 
 ### Analysis
 
@@ -179,7 +180,7 @@ Sampling settings and defaults:
 - on_battery_multiplier = 2
 - overhead_limit: idle 1%, active 3%
 
-Other settings: storage (retention for raw, minute and executables, disk_budget, change_threshold, keyframe_interval 10m, backups to keep), analysis (leak min_duration 2h and min_slope 50MB/h, slow_growth window 7d, baseline learning_period 7d, window 14d and sensitivity 4.0), verdict (window 5m, per-signal thresholds, min_confidence), alerts (rules, cooldown 15m, quiet_hours, channels dashboard and desktop), attribution (rules_file, inherit_from_parent, unattributed_alert, max_workload_names 200), privacy (redaction scrub or exe_only, extra patterns), providers (enabled list), api (port), ui (units, default_range), and named per-machine profiles that override any of the above.
+Other settings: storage (retention for raw, minute and executables, disk_budget, change_threshold, keyframe_interval 10m, backups to keep), analysis (leak min_duration 2h and min_slope 50MB/h, slow_growth window 7d, baseline learning_period 7d, window 14d and sensitivity 4.0), verdict (window 5m, per-signal thresholds, min_confidence), alerts (rules, cooldown 15m, quiet_hours, channels dashboard and desktop), attribution (rules_file, inherit_from_parent, unattributed_alert, max_workload_names 200), privacy (redaction scrub or exe_only, extra patterns), providers (enabled list), and named per-machine profiles that override any of the above.
 
 Alert rules are structured fields: a workload pattern, a metric, above or below, a value, a duration and a severity. Do not invent a rule language to parse. An alert rule may name only these metric ids: cpu_cores, memory_bytes, processes and io_bytes_per_s for any workload, commit_fraction and throttled for the reserved workload `machine`, and overhead_fraction for the workload `submeter`. Refuse any other. Three rules ship built in: commit_fraction above 0.90 for 2 minutes (serious), throttled for 5 minutes (warning), and overhead_fraction above 0.03 for 5 minutes (warning).
 
@@ -192,7 +193,7 @@ Behaviour:
 - A session may override the sampling interval for its own duration.
 - The overhead guard outranks the configured interval. If the limit is exceeded, lengthen intervals and raise a finding.
 
-Not configurable: observe-only behaviour, running without administrator rights, sending nothing off the machine, loopback binding, the token requirement, the rule that `submeter cost --json` and the report never contain command lines, and the rule that unavailable metrics are never estimated.
+Not configurable: observe-only behaviour, running without administrator rights, sending nothing off the machine, the rule that `submeter cost --json` and the report never contain command lines, and the rule that unavailable metrics are never estimated.
 
 ## Interfaces
 
@@ -201,23 +202,35 @@ CLI, where every command accepts --json with a stable schema:
 - `submeter daemon start|stop|status|install|uninstall`, installing a Windows scheduled task at logon (a systemd user unit for Linux comes after version 1)
 - `submeter run --as NAME [--label LABEL] -- COMMAND`
 - `submeter top`, `submeter why`, `submeter cost`, `submeter diff A B`
-- `submeter session start|stop|list`
-- `submeter report` for a self-contained HTML report
+- `submeter findings` to list findings, newest first
+- `submeter session start|stop|list`, where start and stop write the session's marker file
+- `submeter report` for a self-contained HTML report, which holds version 1's charts for a session or range
 - `submeter export` to JSON or CSV
-- `submeter config show|check|reload|rotate-token`
+- `submeter config show|check|reload`
 - `submeter store status|check|backup`
 - `submeter rules test` to show which rule claims a given process
 - `submeter doctor` for the capability matrix, restricted-process count, disk usage and the collector's own cost
 
 `submeter why` must answer in under two seconds.
 
-Dashboard views: live overview with the verdict, load per core, a chart by workload that switches between CPU and memory, and the reconciliation bar; a workload table that shows each workload's accounting source and drills down to its process tree; a historical explorer across retention tiers with settings changes marked; a findings feed; session compare. Alerts have thresholds and cooldowns, and appear in the dashboard and as desktop notifications.
+Alerts have thresholds and cooldowns, and appear as desktop notifications.
 
 Agents get their cost from the CLI: an agent started with `submeter run` reads its own run's cost with `submeter cost --run "$SUBMETER_RUN" --json`. An MCP server is not in version 1.
 
+## The API and dashboard (version 1.1)
+
+Not in version 1. The design is kept here for version 1.1:
+
+- Stack: FastAPI for the local API, with a WebSocket for live data. The dashboard is a static front end served by the server process, with no Node toolchain needed to run it, and uses the report's canvas chart library.
+- Security: binding to 127.0.0.1 is not enough, because any web page in my browser can reach a local port. Require a token on every HTTP and WebSocket request, reject requests whose Host is not a loopback name, and check Origin on the WebSocket. The API token lives in a file only the current user can read, and `submeter config rotate-token` replaces it. Loopback binding and the token requirement are not configurable.
+- API, all under /api/v1 and read-only: health, capabilities, config, epochs, workloads, workloads/{id}/processes, series, verdict, findings, diff, sessions, and a WebSocket at /live. Every series response names the tier and resolution it came from.
+- Dashboard views: live overview with the verdict, load per core, a chart by workload that switches between CPU and memory, and the reconciliation bar; a workload table that shows each workload's accounting source and drills down to its process tree; a historical explorer across retention tiers with settings changes marked; a findings feed; session compare.
+- Settings: api (port) and ui (units, default_range). Version 1 accepts them and does not use them.
+- Gate: requests without a token or with a foreign Origin are refused, and a 30-day range loads in under one second and names the tier it came from.
+
 ## Known limits to show, not hide
 
-Version 1 cannot measure some things. Say so in the dashboard and in `doctor`, beside the numbers they affect, instead of leaving a gap that looks like a zero:
+Version 1 cannot measure some things. Say so in the CLI output, in the report and in `doctor`, beside the numbers they affect, instead of leaving a gap that looks like a zero:
 
 - Work done for a workload by another process, such as the Docker daemon, a shared language server or a browser that was already open, is charged to that other process.
 - Polled workloads on Windows undercount short-lived children.
@@ -243,7 +256,7 @@ Build these components, and tell me before adding any that are not listed:
 5. launcher (`submeter run`) and providers.group (Job Object totals; cgroup totals come after version 1)
 6. attribution and privacy.redact
 7. analysis.detectors, analysis.verdict, analysis.diff
-8. server.api, web, alerts
+8. alerts
 9. providers.extended (GPU load and VRAM, throttling and battery, connections)
 10. report
 11. cli, covering every command above
@@ -253,8 +266,6 @@ Tables, by file:
 - raw file: meta, event, command, process, workload_raw, process_raw, system_raw, gap
 - minute file: meta, rollup_1m
 - history file: meta, workload, epoch, rollup_1h, exe_1h, run, session, session_summary, finding, baseline
-
-API, all under /api/v1 and read-only except session markers: health, capabilities, config, epochs, workloads, workloads/{id}/processes, series, verdict, findings, diff, sessions (GET and POST), and a WebSocket at /live. Every series response names the tier and resolution it came from.
 
 Also deliver: CI on Windows and Linux, where the Linux runner runs the portable tests; recorded fixtures for every provider and detector; a load generator that can spawn short-lived children, leak memory at a set rate and burn CPU, because the gates below depend on it; default submeter.toml and rules.toml; a Windows scheduled task (the systemd user unit comes after version 1); and docs/STATUS.md.
 
@@ -272,8 +283,7 @@ Work in phases. Set up CI on Windows and Linux runners in phase 0, because you c
 - Phase 1, collector, store and CLI: the Windows bulk snapshot provider behind the existing protocol, the collector loop with adaptive cadence and the overhead guard around the existing sampler, the minute and history files built on the existing rollup functions, retention and backups, and the full `top` and `store status`. Gate: a 30-minute CI soak stays inside the budget, per-process figures agree with Windows performance counters within 5%, and totals reconcile within 2%. Killing the collector mid-write loses at most 5 seconds and corrupts nothing. CPU-hours from the hourly tier match the raw sum within 0.1%. Deleting a day of raw data frees its space at once. Do not use Task Manager as a reference; its CPU figure has changed basis between Windows builds. I will run a 24-hour soak myself.
 - Phase 2, kernel accounting on Windows, attribution and sessions. Gate: on Windows, a tagged tree that spawns 500 sub-second children is charged within 2% of the kernel's total, its final totals survive its exit, a restarted collector re-attaches to live groups, and `submeter run` returns with the command's exit code while background processes it left behind are still accounted for. An agent started with `submeter run` retrieves its own run's cost with `submeter cost --run "$SUBMETER_RUN" --json`, and the output holds no command line. On Linux, `submeter run` reports that tagged runs are unavailable and runs the command polled. A session's cost must read the same before and after its raw data is deleted.
 - Phase 3, analysis. Gate: every detector passes its trigger and quiet fixtures, including a leak too slow for the hourly check, and `why` answers in under two seconds.
-- Phase 4, API and dashboard. Gate: requests without a token or with a foreign Origin are refused, and a 30-day range loads in under one second and names the tier it came from.
+- Phase 4, HTML reports. Gate: `submeter report` writes one self-contained HTML file for a session or a range, with a meta Content Security Policy. Each chart names the tier and resolution it came from, and the report holds no command line.
 - Phase 5, extended providers. Hardware you do not have is tested from recorded fixtures. Say plainly which providers were never run on real hardware.
-- Phase 6, HTML reports. Gate: a report is one self-contained HTML file and holds no command line.
 
 Start with phase 0. Before writing code, tell me in a few sentences how you plan to extend the existing layout and any part of this brief or the baseline you think is wrong or underspecified. If something here conflicts with what an OS can really do, say so and propose the closest honest alternative instead of working around it quietly.

@@ -32,15 +32,15 @@
 
 ## Show
 
-- Live dashboard, history explorer, findings feed and session compare.
-- A CLI with JSON output on every command.
-- Self-contained HTML reports and alerts with cooldowns.
+- A CLI with JSON output on every command, with `submeter findings` for the findings and `submeter diff` to compare two sessions.
+- Self-contained HTML reports, which hold the charts for a session or range, and alerts with cooldowns.
 - An agent started with `submeter run` can ask what it is costing with `submeter cost --run "$SUBMETER_RUN" --json`.
+- The live dashboard, with its history explorer, findings feed and session compare, comes in version 1.1.
 
 ## Protect
 
 - Observe only. No setting lets version 1 act on a process.
 - Command lines are scrubbed of secrets before they are stored.
-- The local API needs a token and refuses requests from web pages.
+- Version 1 opens no network port. The local API of version 1.1 needs a token and refuses requests from web pages.
 - Runs as the signed-in user and never asks for administrator rights.
 - Nothing leaves the machine.

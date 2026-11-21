@@ -27,11 +27,9 @@ Three programs that share only files on disk: a collector, a server and the laun
 | 17 `analysis.detectors` | Leak, slow growth, baseline anomaly, spike, swap storm, process count [baseline](../src/submeter/analysis/growth.py) | P3 |
 | 18 `analysis.verdict` | Bottleneck classifier with confidence and evidence | P3 |
 | 19 `analysis.diff` | Session and period comparison, with epoch checks | P3 |
-| 20 `server.api` | HTTP and WebSocket API, read-only apart from session markers, with token, Host and Origin checks | P4 |
-| 21 `web` | Dashboard: live, workloads, history, findings, compare, settings | P4 |
 | 22 `alerts` | Rule evaluation, cooldowns, dashboard and desktop delivery | P4 |
 | 23 `providers.extended` | GPU load and VRAM, throttling and battery, connections per process | P5 |
-| 24 `report` | Self-contained HTML report for a session or range | P6 |
+| 24 `report` | Self-contained HTML report for a session or range, with a meta Content Security Policy. Version 1's charts are drawn here | P4 |
 
 ## Tables, by file
 
@@ -57,15 +55,18 @@ Three programs that share only files on disk: a collector, a server and the laun
 - `why` bottleneck verdict
 - `cost` cost per workload, session or run
 - `diff A B` compare two sessions or periods
-- `session start | stop | list`
+- `findings` the findings, newest first
+- `session start | stop | list` start and stop write a session marker file, which the server reads
 - `report` self-contained HTML
 - `export` JSON or CSV
-- `config show | check | reload | rotate-token`
+- `config show | check | reload`
 - `rules test` which rule claims a process
 - `store status | check | backup`
 - `doctor` what this machine can measure
 
-## API routes
+## API routes (version 1.1)
+
+Not in version 1, which has no API. These are kept for the dashboard in version 1.1. All are read-only.
 
 - `GET /health`
 - `GET /capabilities`
@@ -78,7 +79,6 @@ Three programs that share only files on disk: a collector, a server and the laun
 - `GET /findings`
 - `GET /diff`
 - `GET /sessions`
-- `POST /sessions` the only write
 - `WS /live`
 
 ## Not in version 1
@@ -93,3 +93,4 @@ Three programs that share only files on disk: a collector, a server and the laun
 - The Linux platform layer: cgroup tagged runs, the direct /proc reader, PSI and the other Linux system counters, and the systemd user unit. Version 1 builds the platform layer for Windows only, where the builds run, because a second design doubles every platform phase and its gates could be checked only on a CI runner. Linux runs polled through psutil and is tested in CI
 - An MCP server (component 25, read-only cost, findings and verdict). It would add a phase, a new dependency or a hand-written server, a transport and a withholding rule, for what the CLI already gives the same agents: an agent started with `submeter run` reads its own run's cost with `submeter cost --run "$SUBMETER_RUN" --json`
 - Parquet export. It needs a large new dependency, pyarrow, and no job, gate or report reads an export. JSON and CSV need only the standard library
+- The HTTP API with its WebSocket and token (component 20), and the live dashboard (component 21). No job's acceptance check needs them, and they would bring version 1's only network listener, a token system and four or more new dependencies. Version 1 draws its charts in `submeter report`, lists findings with `submeter findings` and records sessions in marker files. Both come in version 1.1

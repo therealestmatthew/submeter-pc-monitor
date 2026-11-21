@@ -22,8 +22,8 @@ flowchart TD
     subgraph server["SERVER PROCESS"]
         analysis["Analysis<br/>rollups · detectors · verdict · session diff · alerts"]
     end
-    dashboard["Dashboard<br/>live over WebSocket"]
     cli["CLI<br/>every command --json"]
+    report["Report<br/>one self-contained HTML file"]
     run -->|registers the group| ka
     ka -->|cumulative counters| sampler
     bp -->|cumulative counters| sampler
@@ -33,8 +33,8 @@ flowchart TD
     raw -->|reads windows| analysis
     analysis -->|rollups, findings| minute
     analysis -->|rollups, findings| history
-    analysis -->|API · loopback · token| dashboard
-    analysis -->|API · loopback · token| cli
+    store -->|files read directly| cli
+    cli -->|submeter report| report
 ```
 
 The same flow in words:
@@ -45,9 +45,9 @@ The same flow in words:
 4. Attribution gives each process one workload: by group membership, then `rules.toml`, then its parent. Secrets are scrubbed here. It emits a WorkloadSample, redacted.
 5. The store has one lifetime per file, a 2 GB cap and one writer for each file: raw files kept 48 h, minute files kept 30 d, and a history file that is kept.
 6. In the server process, analysis reads windows from the store and writes rollups and findings back: rollups, detectors, verdict, session diff and alerts. Minute and hourly buckets are both built from raw data.
-7. The server exposes an API on loopback, protected by a token, to two readers: the dashboard, live over WebSocket, and the CLI, where every command takes `--json`. Agents read their own run's cost through the CLI, with `submeter cost --run "$SUBMETER_RUN" --json`, whose output never holds a command line. There is no MCP server in version 1.
+7. The CLI reads the store files directly, and every command takes `--json`. `submeter report` writes the charts for a session or range into one self-contained HTML file. `submeter session start` and `stop` write a session marker file with an atomic rename, which the server reads. Agents read their own run's cost through the CLI, with `submeter cost --run "$SUBMETER_RUN" --json`, whose output never holds a command line. Version 1 opens no network port: the API and the live dashboard come in version 1.1, and there is no MCP server.
 
-*Figure:* Data moves one way. The highlighted provider is the exact path: the kernel totals CPU, memory and I/O for every process in a tagged group, including ones that exit between samples. Each program writes only its own files: the collector the raw files, the server the minute and history files, and the launcher one small file per run, so a run is accounted for even if the collector was down. Hourly buckets are built from raw data, shown by the upper arrow inside the store.
+*Figure:* Data moves one way. The highlighted provider is the exact path: the kernel totals CPU, memory and I/O for every process in a tagged group, including ones that exit between samples. Each program writes only its own files: the collector the raw files, the server the minute and history files, and the launcher one small file per run, so a run is accounted for even if the collector was down. `submeter session` writes one marker file per session. Hourly buckets are built from raw data, shown by the upper arrow inside the store.
 
 ## Why tagged workloads use kernel accounting
 

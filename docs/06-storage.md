@@ -17,7 +17,7 @@ Data that expires together lives in a file together, so retention is always a fi
 | `runs/*.json` | Launcher | Until read | One small file per tagged run: its group, its label and its final totals | That run's exact totals |
 | `submeter.toml`, `rules.toml` | You | Kept | Settings and attribution rules | Defaults apply until you restore them |
 | `logs/*.log` | Each program | 5 files of 5 MB | Each program's own diagnostics, with the same redaction as the store | Nothing that was measured |
-| `api-token`, `*.lock` | Server, each program | Until rotated | The local API token, readable only by you, and one lock per program so two copies cannot run | A new token is issued at the next start |
+| `*.lock` | Each program | While the program runs | One lock per program, so two copies cannot run. The API token file comes with the API in version 1.1 | Nothing that was measured |
 
 ## Where the files live
 
@@ -25,7 +25,7 @@ Data that expires together lives in a file together, so retention is always a fi
 | --- | --- | --- |
 | Settings | `%APPDATA%\Submeter` | `~/.config/submeter` |
 | Data | `%LOCALAPPDATA%\Submeter\data` | `~/.local/share/submeter` |
-| Logs, token, locks | `%LOCALAPPDATA%\Submeter\state` | `~/.local/state/submeter` |
+| Logs and locks | `%LOCALAPPDATA%\Submeter\state` | `~/.local/state/submeter` |
 | Exports and reports | Wherever you run the command, or the folder given with `--out` | Wherever you run the command, or the folder given with `--out` |
 
 Setting `SUBMETER_HOME` moves everything under one folder. `submeter store status` prints every file with its writer, size and coverage.

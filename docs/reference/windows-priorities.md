@@ -57,7 +57,7 @@ This was the part most likely to be wrong, so it was redesigned before this pack
 
 - **Done on Linux:** a raw file is written, closed with its write-ahead log folded back in, and deleted.
 - **Unknown:**
-  - Windows refuses to delete a file that any program has open. Retention deletes whole expired files, so a dashboard or a command reading an old day would block it. The script reports whether deletion is refused while a reader is open. If it is, retention needs to retry later, which the build must plan for.
+  - Windows refuses to delete a file that any program has open. Retention deletes whole expired files, so a command or a report reading an old day would block it. The script reports whether deletion is refused while a reader is open. If it is, retention needs to retry later, which the build must plan for.
   - Antivirus software can hold a new file open for a moment after it is written. Watch for errors that come and go.
 - **How to check:** the "raw file on disk" line of the script.
 
@@ -74,7 +74,7 @@ This was the part most likely to be wrong, so it was redesigned before this pack
 - **Done on Linux:** the Windows paths are built and compared in a test: settings under `%APPDATA%\Submeter`, data and state under `%LOCALAPPDATA%\Submeter`.
 - **Unknown:** whether those folders are writable, redirected or synced on a managed computer. Data must not land in a synced folder, because a synced database can be corrupted and would break the rule that nothing leaves the machine.
 - **How to check:** the "file locations" line of the script, then look at where the two folders really are. Setting `SUBMETER_HOME` moves everything if they are unsuitable.
-- **Later:** the API token must be readable only by its owner. On Windows that is an access control list, not a file mode, and no code for it exists yet.
+- **Later, in version 1.1 with the API:** the API token must be readable only by its owner. On Windows that is an access control list, not a file mode, and no code for it exists yet.
 
 ## 7. Design claims that are not yet in code
 
