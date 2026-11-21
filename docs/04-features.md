@@ -33,7 +33,8 @@
 ## Show
 
 - A CLI with JSON output on every command, with `submeter findings` for the findings and `submeter diff` to compare two sessions.
-- Self-contained HTML reports, which hold the charts for a session or range, and alerts with cooldowns.
+- Self-contained HTML reports, which hold the charts for a session or range.
+- Alert rules with cooldowns, which raise findings. Version 1 has no desktop notifications.
 - An agent started with `submeter run` can ask what it is costing with `submeter cost --run "$SUBMETER_RUN" --json`.
 - The live dashboard, with its history explorer, findings feed and session compare, comes in version 1.1.
 

@@ -32,7 +32,6 @@ sensitivity = 4.0
 
 [alerts]
 cooldown = "15m"
-channels = ["dashboard", "desktop"]
 
 [[alerts.rules]]
 name = "agents eating the machine"

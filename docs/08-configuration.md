@@ -95,8 +95,8 @@ A session can override the interval for its own duration, for example `submeter 
 | Verdict | `min_confidence` | moderate | Below this the verdict reads Inconclusive |
 | Alerts | `rules[]` | 3 built in | Your own thresholds per workload or system-wide |
 | Alerts | `cooldown` | 15m | Minimum gap between repeats of the same alert |
-| Alerts | `quiet_hours` | off | Hold notifications overnight |
-| Alerts | `channels` | dashboard, desktop | Where alerts appear. Nothing is sent off the machine |
+| Alerts | `quiet_hours` | off | Not used in version 1, which has no desktop notifications. Later, it holds notifications overnight |
+| Alerts | `channels` | dashboard, desktop | Not used in version 1, where every alert is a finding. Later, it says where alerts appear. Nothing is sent off the machine |
 | Attribution | `rules_file` | rules.toml | Where workload rules live |
 | Attribution | `inherit_from_parent` | true | Turn off to see helper processes on their own |
 | Attribution | `unattributed_alert` | 10% CPU | Tells you when a rule is missing |
@@ -141,7 +141,7 @@ An alert rule names one workload pattern and one metric from this list. A rule t
 
 ## The three built-in alert rules
 
-These ship switched on, and your own rules are added to them. They obey the same cooldown and quiet hours.
+These ship switched on, and your own rules are added to them. They obey the same cooldown. A firing rule raises a finding, which `submeter findings`, `submeter why` and the report show.
 
 | Name | Workload | Metric | Condition | For | Severity |
 | --- | --- | --- | --- | --- | --- |
@@ -188,7 +188,6 @@ sensitivity = 4.0
 
 [alerts]
 cooldown = "15m"
-channels = ["dashboard", "desktop"]
 
 [[alerts.rules]]
 name = "agents eating the machine"

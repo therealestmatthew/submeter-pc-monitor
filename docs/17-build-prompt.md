@@ -180,7 +180,7 @@ Sampling settings and defaults:
 - on_battery_multiplier = 2
 - overhead_limit: idle 1%, active 3%
 
-Other settings: storage (retention for raw, minute and executables, disk_budget, change_threshold, keyframe_interval 10m, backups to keep), analysis (leak min_duration 2h and min_slope 50MB/h, slow_growth window 7d, baseline learning_period 7d, window 14d and sensitivity 4.0), verdict (window 5m, per-signal thresholds, min_confidence), alerts (rules, cooldown 15m, quiet_hours, channels dashboard and desktop), attribution (rules_file, inherit_from_parent, unattributed_alert, max_workload_names 200), privacy (redaction scrub or exe_only, extra patterns), providers (enabled list), and named per-machine profiles that override any of the above.
+Other settings: storage (retention for raw, minute and executables, disk_budget, change_threshold, keyframe_interval 10m, backups to keep), analysis (leak min_duration 2h and min_slope 50MB/h, slow_growth window 7d, baseline learning_period 7d, window 14d and sensitivity 4.0), verdict (window 5m, per-signal thresholds, min_confidence), alerts (rules, cooldown 15m), attribution (rules_file, inherit_from_parent, unattributed_alert, max_workload_names 200), privacy (redaction scrub or exe_only, extra patterns), providers (enabled list), and named per-machine profiles that override any of the above.
 
 Alert rules are structured fields: a workload pattern, a metric, above or below, a value, a duration and a severity. Do not invent a rule language to parse. An alert rule may name only these metric ids: cpu_cores, memory_bytes, processes and io_bytes_per_s for any workload, commit_fraction and throttled for the reserved workload `machine`, and overhead_fraction for the workload `submeter`. Refuse any other. Three rules ship built in: commit_fraction above 0.90 for 2 minutes (serious), throttled for 5 minutes (warning), and overhead_fraction above 0.03 for 5 minutes (warning).
 
@@ -213,7 +213,7 @@ CLI, where every command accepts --json with a stable schema:
 
 `submeter why` must answer in under two seconds.
 
-Alerts have thresholds and cooldowns, and appear as desktop notifications.
+Alerts have thresholds and cooldowns. A firing alert rule raises a finding, which `submeter findings`, `submeter why` and the report show. Desktop notifications come after version 1.
 
 Agents get their cost from the CLI: an agent started with `submeter run` reads its own run's cost with `submeter cost --run "$SUBMETER_RUN" --json`. An MCP server is not in version 1.
 
