@@ -362,8 +362,8 @@ def test_the_windows_lock_makes_the_calls_windows_expects(
     first.release()
     assert second.acquire()
     second.release()
-    # every call is on one byte at offset 0: try, try and fail, unlock, try, unlock
-    assert calls == [(2, 1, 0), (2, 1, 0), (0, 1, 0), (2, 1, 0), (0, 1, 0)]
+    # every call is on one byte at offset 0: try, try and fail, probe and fail, unlock, try, unlock
+    assert calls == [(2, 1, 0), (2, 1, 0), (2, 1, 0), (0, 1, 0), (2, 1, 0), (0, 1, 0)]
 
 
 # ---- raw store -------------------------------------------------------------------------------

@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
+import psutil
+
 from submeter.core.models import Tier
-from submeter.store.files import FileMap
+from submeter.store.files import FileMap, InstanceLock
 from submeter.store.query import choose_tier
 from submeter.store.raw import RawFile
 
@@ -64,3 +67,17 @@ def test_write_ahead_logs_are_bounded_and_counted(tmp_path: Path) -> None:
     files.history_file.write_bytes(b"x" * 10)
     files.history_file.with_name("history.db-wal").write_bytes(b"x" * 5)
     assert files.disk_use()["history"] == 15
+
+
+def test_holder_names_only_the_live_holder_of_a_held_lock(tmp_path: Path) -> None:
+    """R105: a stale or reused pid is never reported, so nothing can signal an unrelated process."""
+    path = tmp_path / "collector.lock"
+    crashed = InstanceLock(path)
+    assert crashed.acquire() and crashed._fd is not None
+    os.close(crashed._fd)  # the holder dies: the system frees the lock and the pid file stays
+    assert crashed.pid_file.exists() and InstanceLock(path).holder() is None
+    with InstanceLock(path) as lock:
+        assert lock.holder() == os.getpid()
+        started = psutil.Process().create_time()
+        lock.pid_file.write_text(f"{os.getpid()} {started + 1}", encoding="ascii")
+        assert lock.holder() is None  # that pid now names a process that started at another time

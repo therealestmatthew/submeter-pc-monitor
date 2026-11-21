@@ -22,6 +22,8 @@ from pathlib import Path
 from types import TracebackType
 from typing import Final, Literal
 
+import psutil
+
 HOME_VARIABLE: Final = "SUBMETER_HOME"
 Program = Literal["collector", "server"]
 
@@ -233,15 +235,32 @@ class InstanceLock:
             return False
         self._fd = fd
         with contextlib.suppress(OSError):  # the pid is a convenience; the lock is what matters
-            self.pid_file.write_text(str(os.getpid()), encoding="ascii")
+            started = psutil.Process().create_time()
+            self.pid_file.write_text(f"{os.getpid()} {started!r}", encoding="ascii")
         return True
 
     def holder(self) -> int | None:
-        """The pid recorded by whoever last took the lock, if it can be read."""
+        """The holder's pid; None unless the lock is held and that pid started when recorded."""
         try:
-            return int(self.pid_file.read_text(encoding="ascii").strip())
-        except (OSError, ValueError):
+            pid, started = self.pid_file.read_text(encoding="ascii").split()
+            same = psutil.Process(int(pid)).create_time() == float(started)
+        except (OSError, ValueError, psutil.Error):
             return None
+        return int(pid) if same and self._held() else None
+
+    def _held(self) -> bool:
+        """Probe the lock without waiting: True when another handle holds it."""
+        try:
+            fd = os.open(self._path, os.O_RDWR)
+        except OSError as error:  # on Windows a holder can make even opening fail
+            return sys.platform == "win32" and not isinstance(error, FileNotFoundError)
+        try:
+            free = _try_lock(fd)
+            if free:
+                _unlock(fd)
+            return not free
+        finally:
+            os.close(fd)
 
     def release(self) -> None:
         if self._fd is None:
