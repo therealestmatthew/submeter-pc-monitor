@@ -321,7 +321,8 @@ def test_file_map_names_expiry_and_lock(tmp_path: Path) -> None:
     for name in ("2026-11-17.db", "2026-11-18.db", "2026-11-20.db"):
         (files.raw_dir / name).write_bytes(b"x")
     now = DAY0 + 9 * 3600  # 09:00 UTC on the 20th
-    assert [path.name for path in files.expired_raw(now, 48 * 3600)] == ["2026-11-17.db"]
+    expired = files.expired_raw(now, 48 * 3600, rolled_up_until=now)
+    assert [path.name for path in expired] == ["2026-11-17.db"]
     assert files.disk_use()["raw"] == 3
     lock = InstanceLock(files.lock_file("collector"))
     with lock:

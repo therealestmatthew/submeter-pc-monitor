@@ -31,10 +31,23 @@ def test_expired_raw_takes_the_side_files_with_the_day(tmp_path: Path) -> None:
     files.ensure()
     for name in ("2026-11-17.db", "2026-11-17.db-wal", "2026-11-17.db-shm", "2026-11-20.db"):
         (files.raw_dir / name).write_bytes(b"x")
-    expired = files.expired_raw(DAY0 + 9 * HOUR, 48 * HOUR)
+    now = DAY0 + 9 * HOUR
+    expired = files.expired_raw(now, 48 * HOUR, rolled_up_until=now)
     # the side files come first, so a pass cut short leaves the .db to be found next time
     assert [path.name for path in expired] == [
         "2026-11-17.db-wal",
         "2026-11-17.db-shm",
         "2026-11-17.db",
     ]
+
+
+def test_expired_raw_waits_for_the_rolled_up_mark(tmp_path: Path) -> None:
+    """R88: a raw day is never offered for deletion before its hourly buckets are built."""
+    files = FileMap.discover({"SUBMETER_HOME": str(tmp_path)})
+    files.ensure()
+    for day in (17, 18, 19, 20):
+        (files.raw_dir / f"2026-11-{day}.db").write_bytes(b"x")
+    now, end_of_17th = DAY0 + 9 * HOUR, DAY0 - 48 * HOUR
+    # retention alone (24 h) would expire the 17th and the 18th
+    expired = files.expired_raw(now, 24 * HOUR, rolled_up_until=end_of_17th)
+    assert [path.name for path in expired] == ["2026-11-17.db"]
