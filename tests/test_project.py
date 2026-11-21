@@ -17,3 +17,8 @@ def project_settings() -> dict[str, Any]:
 def test_python_floor_is_3_13() -> None:
     """Python 3.13 is the first whose time.monotonic() on Windows resolves 1 microsecond (R124)."""
     assert project_settings()["project"]["requires-python"] == ">=3.13"
+
+
+def test_ruff_leaves_markdown_alone() -> None:
+    """The brief's Markdown is not Python to format; ruff format would rewrite it (R134)."""
+    assert "*.md" in project_settings()["tool"]["ruff"].get("extend-exclude", [])
