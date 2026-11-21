@@ -52,7 +52,10 @@ class Sampler:
 
         elapsed = snapshot.monotonic - previous.monotonic
         wall = snapshot.taken_at - previous.taken_at
-        gap = elapsed <= 0 or elapsed > self._gap_after_s or wall - elapsed > self._suspend_slack_s
+        asleep = 0.0  # how far the interval clock ran ahead of the clock that stops in suspend
+        if snapshot.awake is not None and previous.awake is not None:
+            asleep = elapsed - (snapshot.awake - previous.awake)
+        gap = elapsed <= 0 or elapsed > self._gap_after_s or asleep > self._suspend_slack_s
         busy = sum(snapshot.system.cpu_busy_s) - sum(previous.system.cpu_busy_s)
         return SampleBatch(
             taken_at=snapshot.taken_at,

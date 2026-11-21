@@ -99,9 +99,10 @@ class Snapshot(Record):
     """Everything one provider call returned, stamped with both clocks."""
 
     taken_at: float
-    monotonic: float
+    monotonic: float  # the interval clock, which counts suspend: CLOCK_BOOTTIME, QPC on Windows
     processes: tuple[ProcessCounters, ...]
     system: SystemCounters
+    awake: float | None = None  # a clock that stops during suspend; None when it was not read
 
 
 class ProcessSample(Record):

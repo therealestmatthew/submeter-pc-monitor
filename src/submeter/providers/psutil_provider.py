@@ -11,6 +11,7 @@ it is counted and never silently dropped.
 
 from __future__ import annotations
 
+import ctypes
 import os
 import sys
 import time
@@ -30,6 +31,17 @@ from submeter.core.models import (
 _FAILED = (psutil.Error, OSError, RuntimeError, ValueError)
 
 
+def _clocks() -> tuple[float, float | None]:
+    """The interval clock, which counts suspend, and the clock that stops during it, if read."""
+    if sys.platform == "linux":
+        return time.clock_gettime(time.CLOCK_BOOTTIME), time.clock_gettime(time.CLOCK_MONOTONIC)
+    if sys.platform == "win32":  # accurate to a clock tick only, so it never times an interval
+        awake = ctypes.c_ulonglong()  # 100 ns units
+        ctypes.windll.kernel32.QueryUnbiasedInterruptTime(ctypes.byref(awake))
+        return time.monotonic(), awake.value / 1e7
+    return time.monotonic(), None
+
+
 class PsutilProvider:
     name = "process.psutil"
 
@@ -45,7 +57,7 @@ class PsutilProvider:
         return Capability(name=self.name, status=Availability.FULL)
 
     def snapshot(self) -> Snapshot:
-        taken_at, monotonic = time.time(), time.monotonic()
+        taken_at, (monotonic, awake) = time.time(), _clocks()
         # On Windows pid 0 is the Idle process: its CPU time is the machine's idle time.
         listed = (p for p in psutil.process_iter() if not (sys.platform == "win32" and p.pid == 0))
         processes = [c for c in map(self._read, listed) if c is not None]
@@ -54,6 +66,7 @@ class PsutilProvider:
         return Snapshot(
             taken_at=taken_at,
             monotonic=monotonic,
+            awake=awake,
             processes=tuple(processes),
             system=self._system(),
         )

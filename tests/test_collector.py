@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import contextlib
+import ctypes
 import itertools
 import os
 import sqlite3
@@ -18,6 +19,7 @@ from pydantic import ValidationError
 
 from submeter.attribution.rules import Rule
 from submeter.collector.sampler import Sampler
+from submeter.core import models
 from submeter.core.models import ProcessCounters, ProcessKey, ProcessSample
 from submeter.providers.psutil_provider import PsutilProvider
 from submeter.store.raw import RawFile
@@ -85,12 +87,14 @@ def test_failed_reads_keep_the_process(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_windows_memory_is_private_bytes(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(sys, "platform", "win32")
+    monkeypatch.setattr(ctypes, "windll", mock.Mock(), raising=False)  # its clock reads 0
     monkeypatch.setattr(psutil, "process_iter", lambda: iter([fake_process(10)]))  # no 'private'
     assert PsutilProvider().snapshot().processes[0].memory_bytes == 300  # vms, not rss
 
 
 def test_windows_threads_are_unavailable(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.setattr(sys, "platform", "win32")
+    monkeypatch.setattr(ctypes, "windll", mock.Mock(), raising=False)  # its clock reads 0
     fake = fake_process(10)
     monkeypatch.setattr(psutil, "process_iter", lambda: iter([fake]))
     provider, sampler = PsutilProvider(), Sampler()
@@ -131,8 +135,30 @@ def test_exe_is_the_executable_file_and_name_is_kept_apart(monkeypatch: pytest.M
 
 def test_windows_idle_process_is_not_read(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(sys, "platform", "win32")
+    monkeypatch.setattr(ctypes, "windll", mock.Mock(), raising=False)  # its clock reads 0
     idle = fake_process(
         0, name="System Idle Process", cpu_times=SimpleNamespace(user=0, system=9e4)
     )
     monkeypatch.setattr(psutil, "process_iter", lambda: iter([idle, fake_process(10)]))
     assert [p.key.pid for p in PsutilProvider().snapshot().processes] == [10]
+
+
+# ---- sampler ---------------------------------------------------------------------------------
+def tick(
+    wall: float, clock: float, awake: float | None, *processes: ProcessCounters
+) -> models.Snapshot:
+    system = models.SystemCounters(
+        logical_cores=4, cpu_busy_s=(clock,), memory_total_bytes=0, memory_available_bytes=0
+    )
+    return models.Snapshot(
+        taken_at=wall, monotonic=clock, awake=awake, processes=processes, system=system
+    )
+
+
+def test_suspend_is_told_by_the_clock_that_stops_not_by_the_wall_clock() -> None:
+    sampler = Sampler()
+    sampler.ingest(tick(10_000, 100, 100))
+    asleep = sampler.ingest(tick(6_400, 104, 101))  # 3 s asleep; wall clock stepped back an hour
+    awake = sampler.ingest(tick(6_501, 105, 102))  # both clocks agree; wall clock stepped ahead
+    assert asleep is not None and asleep.gap
+    assert awake is not None and not awake.gap
