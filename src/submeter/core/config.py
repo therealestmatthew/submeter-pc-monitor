@@ -183,7 +183,7 @@ class Attribution(Record):
 
 
 class Privacy(Record):
-    redaction: Literal["scrub", "exe_only"] = "scrub"
+    redaction: Literal["scrub", "exe_only"] = "exe_only"
     redact_patterns: tuple[str, ...] = ()
 
 

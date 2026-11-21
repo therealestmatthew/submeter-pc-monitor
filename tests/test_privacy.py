@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from submeter.core.config import Settings
 from submeter.core.models import SampleBatch
 from submeter.privacy.redact import REDACTED, redact_cmdline
 from submeter.store.raw import RawFile
@@ -31,3 +32,20 @@ def test_exe_only_stores_the_executable_and_scrub_splits_a_title(tmp_path: Path)
     assert redact_cmdline(title, mode="exe_only", exe="postgres") == ("postgres",)
     secret = ("worker --api-key sk-abcdefghijklmnopqrstu",)
     assert redact_cmdline(secret) == ("worker", "--api-key", REDACTED)
+
+
+SCRUB_MISSES = (  # scrub is best-effort: these common forms pass through it unchanged
+    ("curl", "-H", "Authorization: Bearer FAKEtok-1"),
+    ("mysql", "-uroot", "-pFAKEpw-7x", "db"),
+    ("curl", "-u", "alice:FAKEpw-7x", "https://example.invalid"),
+    ("bash", "-c", "tool --api-key FAKEtok-1"),
+    ("docker", "run", "--env=API_TOKEN=FAKEtok-1", "image"),
+    ("app", "Server=db;User Id=sa;Password=FAKEpw-7x;"),
+)
+
+
+def test_exe_only_is_the_default_because_scrub_misses_common_forms(tmp_path: Path) -> None:
+    """R96: by default only the executable is stored; scrub is an opt-in, best-effort mode."""
+    assert b"FAKEpw" not in stored(tmp_path, ("mysql", "-pFAKEpw-7x"), "mysql")
+    assert Settings().privacy.redaction == "exe_only"
+    assert [redact_cmdline(args) for args in SCRUB_MISSES] == list(SCRUB_MISSES)

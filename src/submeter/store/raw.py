@@ -76,7 +76,7 @@ class RawFile:
         *,
         cpu_points: float = 0.5,
         memory_step: int = 8 * 1024**2,
-        redaction: Mode = "scrub",
+        redaction: Mode = "exe_only",
     ) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
         self.path = path
@@ -302,7 +302,7 @@ class RawStore:
         keyframe_interval_s: float = 600.0,
         cpu_points: float = 0.5,
         memory_step: int = 8 * 1024**2,
-        redaction: Mode = "scrub",
+        redaction: Mode = "exe_only",
     ) -> None:
         self._files = files
         self._keyframe_interval_s = keyframe_interval_s
