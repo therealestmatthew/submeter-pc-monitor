@@ -141,7 +141,7 @@ Operations:
 - At start, run an integrity check on the history file. Quarantine a damaged raw or minute file, record a gap and carry on.
 - Back up the history file daily with SQLite's online backup and keep 3 copies. Migrate it only after a backup. Every file carries a schema version, and readers accept the current and previous versions.
 - Enforce the disk budget, default 2 GB, across all files. When over budget, delete the oldest raw file first, never going below 24 hours, then backups down to one, then raise a finding. Never delete history automatically.
-- Export to Parquet and JSON.
+- Export to JSON and CSV.
 
 ### Privacy and local security
 
@@ -203,7 +203,7 @@ CLI, where every command accepts --json with a stable schema:
 - `submeter top`, `submeter why`, `submeter cost`, `submeter diff A B`
 - `submeter session start|stop|list`
 - `submeter report` for a self-contained HTML report
-- `submeter export` to Parquet or JSON
+- `submeter export` to JSON or CSV
 - `submeter config show|check|reload|rotate-token`
 - `submeter store status|check|backup`
 - `submeter rules test` to show which rule claims a given process

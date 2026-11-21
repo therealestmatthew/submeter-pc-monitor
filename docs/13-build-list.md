@@ -59,7 +59,7 @@ Three programs that share only files on disk: a collector, a server and the laun
 - `diff A B` compare two sessions or periods
 - `session start | stop | list`
 - `report` self-contained HTML
-- `export` Parquet or JSON
+- `export` JSON or CSV
 - `config show | check | reload | rotate-token`
 - `rules test` which rule claims a process
 - `store status | check | backup`
@@ -92,3 +92,4 @@ Three programs that share only files on disk: a collector, a server and the laun
 - A collector inside WSL2 or Docker Desktop: no transport from the guest to the host is designed. The VM shows as one opaque workload, and `doctor` reports its share of busy CPU time
 - The Linux platform layer: cgroup tagged runs, the direct /proc reader, PSI and the other Linux system counters, and the systemd user unit. Version 1 builds the platform layer for Windows only, where the builds run, because a second design doubles every platform phase and its gates could be checked only on a CI runner. Linux runs polled through psutil and is tested in CI
 - An MCP server (component 25, read-only cost, findings and verdict). It would add a phase, a new dependency or a hand-written server, a transport and a withholding rule, for what the CLI already gives the same agents: an agent started with `submeter run` reads its own run's cost with `submeter cost --run "$SUBMETER_RUN" --json`
+- Parquet export. It needs a large new dependency, pyarrow, and no job, gate or report reads an export. JSON and CSV need only the standard library
