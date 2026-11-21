@@ -94,7 +94,7 @@ def top(
     batch = sampler.ingest(provider.snapshot())
     if batch is None:
         raise typer.Exit(1)
-    assignment = Attributor(rule_set, self_pid=os.getpid()).assign(batch.processes)
+    assignment = Attributor(rule_set, self_pids={os.getpid()}).assign(batch.processes)
     workloads = aggregate(batch, assignment)
     if as_json:
         typer.echo(json.dumps([workload.model_dump(mode="json") for workload in workloads]))

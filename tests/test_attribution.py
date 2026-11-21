@@ -4,7 +4,14 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
-from submeter.attribution.rules import UNATTRIBUTED, Attribution, Attributor, Rule, RuleSet
+from submeter.attribution.rules import (
+    SELF,
+    UNATTRIBUTED,
+    Attribution,
+    Attributor,
+    Rule,
+    RuleSet,
+)
 from submeter.core.models import ProcessKey, ProcessSample
 
 MB = 1024**2
@@ -37,3 +44,9 @@ def test_include_children_overrides_the_global_setting_both_ways() -> None:
     off = names(Attributor(rules, inherit_from_parent=False).assign(processes))
     assert (on[11], on[21], on[31]) == (UNATTRIBUTED, "browser", "ide")
     assert (off[11], off[21], off[31]) == (UNATTRIBUTED, "browser", UNATTRIBUTED)
+
+
+def test_every_submeter_pid_and_its_children_are_submeter() -> None:
+    processes = [sample(10, "python"), sample(20, "python"), sample(21, "sh", 20)]
+    assignment = Attributor(RuleSet(), self_pids={10, 20}).assign([*processes, sample(30, "x")])
+    assert names(assignment) == {10: SELF, 20: SELF, 21: SELF, 30: UNATTRIBUTED}

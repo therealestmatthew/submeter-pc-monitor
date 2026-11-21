@@ -125,11 +125,12 @@ class Attributor:
         rules: RuleSet,
         *,
         inherit_from_parent: bool = True,
-        self_pid: int | None = None,
+        self_pids: Collection[int] = (),
     ) -> None:
+        """self_pids are every running Submeter process; each one, and its children, is Submeter."""
         self._rules = rules.ordered()
         self._inherit = inherit_from_parent
-        self._self_pid = self_pid
+        self._self_pids = frozenset(self_pids)
 
     def assign(
         self,
@@ -175,7 +176,7 @@ class Attributor:
         group = groups.get(process.key)
         if group is not None:
             return Attribution(workload=group, reason="kernel group", inheritable=True)
-        if process.key.pid == self._self_pid:
+        if process.key.pid in self._self_pids:
             return Attribution(workload=SELF, reason="submeter itself", inheritable=True)
         for rule in self._rules:
             if rule.matches(process, parent):
