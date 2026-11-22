@@ -15,7 +15,7 @@ Three programs that share only files on disk: a collector, a server and the laun
 | 05 `providers.linux.procfs` | Direct /proc reader, plus PSI. Not in version 1: Linux runs polled through the psutil provider | After v1 |
 | 06 `providers.system` | Per-core load, frequency and throttling, commit, paging, disk latency, run queue and the on-battery flag, on Windows. On Linux, version 1 has only psutil's per-core load, available memory and on-battery flag; the Linux counters come after version 1 | P2 |
 | 07 `collector.sampler` | Every process every tick, with the costly fields on a slower cadence. Adaptive cadence, deltas, gap detection, overhead guard [baseline](../src/submeter/collector/sampler.py) | P2 |
-| 08 `store.files` | The file map, one-instance locks, schema versions, integrity checks, backups, the disk budget [baseline](../src/submeter/store/files.py) | P1 |
+| 08 `store.files` | The file map, one-instance locks, schema versions, integrity checks, backups, the disk budget [baseline](../src/submeter/store/files.py) | P1 on |
 | 09 `store.raw` | Daily raw files: batched writes, change-only rows with keyframes, command lines stored once [baseline](../src/submeter/store/raw.py) | P2 |
 | 10 `store.rollup` | Hourly buckets with sums, coverage and histograms, built from raw samples. Summaries per executable, session and run [baseline](../src/submeter/store/rollup.py) | P3 |
 | 11 `store.query` | Answers a window from raw samples merged to wider steps while they cover it, else from hourly buckets. Merges histograms and states the tier and resolution used [baseline](../src/submeter/store/query.py) | P2 on |

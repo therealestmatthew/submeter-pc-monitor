@@ -27,7 +27,7 @@ The build starts from this package and one prompt. The package holds the brief a
 ## What is fixed and what is open
 
 - Fixed: observe only, no administrator rights, and nothing leaves the machine. The review checks that the design obeys these three and may not reopen them.
-- Open: everything else, including the three jobs, the interface, the extra telemetry, Python, the phase order, the 25 components and the baseline code. A finding that argues for a cut needs evidence and a cheaper alternative.
+- Open: everything else, including the three jobs, the interface, the extra telemetry, Python, the phase order, the components in docs/13-build-list.md and the baseline code. A finding that argues for a cut needs evidence and a cheaper alternative.
 
 ## How the review is held to account
 
