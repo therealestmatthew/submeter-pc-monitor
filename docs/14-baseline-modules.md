@@ -233,7 +233,7 @@ A process provider built on psutil, so it is not tied to one operating system.
   - exe is the file name of psutil's exe(), or name() when exe() cannot be read. name() is stored as name, because on Linux it is the program's own title.
   - Not here yet (finding R123, planned): reading a pid again through a fresh psutil object when psutil still lists it but reports it gone. Today, when a new process takes a pid that psutil's cache holds for an earlier process, the new one is missing from two snapshots and then credited no CPU for that time.
   - Not here yet (finding R57, planned): None for a CPU time it cannot read, and no stand-in start time. Today a refused CPU read is written as 0.0 CPU-seconds, and a process that fails to read at all is returned with the start time 0.0.
-  - Memory is private bytes on Windows and resident memory elsewhere. Swap is not added yet.
+  - Memory is private bytes on Windows and resident memory elsewhere. On Windows it is read from psutil's `vms`, which is the pagefile usage, the same figure as private bytes. There is no fallback to working set. Swap is not added yet.
   - On Windows thread counts are not read, because psutil answers each with a query of the whole system, so they are None: unavailable, not zero. A process that cannot be read also gets None.
   - Disk I/O is left empty where psutil cannot read it, as on macOS.
   - Reading each working directory is off by default because of its cost.
