@@ -2,7 +2,7 @@
 
 > Submeter build brief · Part 2, the design · [Index](README.md)
 
-Illustrative data showing what each detector looks at. These are the views the report's charts show in version 1, and the dashboard's History and Compare pages in version 1.1.
+Illustrative data showing what each detector looks at. The leak and session-diff charts are views the report draws in version 1, and the dashboard's history explorer and session compare in version 1.1. The baseline anomaly chart is kept for after version 1.
 
 ## Leak detection: growth without a plateau
 
