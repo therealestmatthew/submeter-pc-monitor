@@ -2,7 +2,7 @@
 
 A local performance monitor that answers three questions from one data set: what each workload costs, why the machine is slow right now, and how behaviour drifts over weeks.
 
-This folder is the Submeter build brief as one file per section. Its own heading reads "Build brief · v8 · reviewed three times, with tested baseline code and a starter package". Every sentence, table and sample from the brief is here. The charts and the dashboard mock, which the brief draws with script, are written out as tables and text, and [`brief.html`](brief.html) is the brief itself for anyone who wants to see them drawn.
+This folder is the Submeter build brief as one file per section. Its own heading reads "Build brief · v8 · reviewed three times, with tested baseline code and a starter package". Every sentence, table and sample from the brief as delivered is here, and the topic files have since been corrected by the rulings in `review/02-rulings.md`. The charts and the dashboard mock, which the brief draws with script, are written out as tables and text, and [`brief.html`](brief.html) is the v8 brief as delivered, for anyone who wants to see them drawn. It is not updated after rulings.
 
 ## Read in this order
 
@@ -55,7 +55,7 @@ What gets made, in what order, and the prompt that starts it.
 | --- | --- |
 | [`reference/windows-priorities.md`](reference/windows-priorities.md) | What only a Windows computer can confirm, most urgent first, with what was done on Linux and how to check each item |
 | [`reference/claude-code-notes.md`](reference/claude-code-notes.md) | What Claude Code does with instruction files, subagents, working copies and parallel agents, checked against its documentation on 20 November 2026 |
-| [`brief.html`](brief.html) | The brief as a web page, with the charts, the working mock and the calculator. Open it in a browser |
+| [`brief.html`](brief.html) | The v8 brief as delivered, as a web page, with the charts, the working mock and the calculator. It is not updated after rulings; where it differs, the topic files win. Open it in a browser |
 
 ## Written later, by the sessions that build Submeter
 
@@ -73,6 +73,7 @@ What gets made, in what order, and the prompt that starts it.
 2. `review/02-rulings.md`, once it exists. A ruling overrides anything written before it, and the document it affects is corrected at the same time.
 3. The topic files, 01 to 16.
 4. `17-build-prompt.md`, which restates the topic files compactly. Where the two differ, the topic file is right and the difference is a defect to report.
+5. `brief.html` is the v8 page as delivered. It is not updated after rulings; where it differs, the topic files win.
 
 `16-review-log.md` records why the design says what it says. Read it before proposing to undo something.
 
