@@ -20,7 +20,7 @@ Phase 0 settles the facts that change the design of version 1 on the owner's own
 
 `doctor` is not built out into the full capability matrix in phase 0. It grows with each provider.
 
-Step 1 also records how many processes fall in the Restricted bucket, which the script prints, and their share of CPU time, which `submeter top` shows. The output of step 1 and of each probe is saved under `docs/review/ground-windows/`. Every figure the review in `docs/review/` measured came from Linux. The plan marks those figures as Linux figures, and the choices phase 0 decides, the Rust choice among them, rest on the output from the owner's Windows machine.
+Step 1 also records the number of processes the script reports as restricted, and the `restricted` row's cores as a share of all workloads' cores in `submeter top`, run without a rules file so that both figures cover the same processes. The output of step 1 and of each probe is saved under `docs/review/ground-windows/`. Every figure the review in `docs/review/` measured came from Linux. The plan marks those figures as Linux figures, and the choices phase 0 decides, the Rust choice among them, rest on the output from the owner's Windows machine.
 
 CI proves portability: ruff, mypy (with `--platform` for the other system), pytest, fixture parsing and logic on both systems. It does not prove privilege, hardware or session behaviour, because the Windows runners are administrators with User Account Control off. Tests that need an unprivileged user, a user session (the logon task) or hardware (GPU, the on-battery flag, suspend) are marked and run on the owner's machine at the gate. The CI soak states its process count. CI runs on every pushed branch.
 
