@@ -136,6 +136,7 @@ The frozen records passed between layers: counters, samples, workload totals, bu
 - **Why it exists:** These classes are the contract between the collector, the server and the command line. Frozen and strict, so a record cannot be altered after it is made or carry a misspelt field.
 - **Worth knowing:**
   - A process is identified by ProcessKey, which is pid plus start time.
+  - Not here yet (finding R56, planned): the start time as the platform's integer stamp, ticks since boot with the boot id on Linux and CreateTime as a FILETIME integer on Windows. Today it is psutil's wall-clock float, so a clock step can cut a child from its parent's workload, and a provider that does not cache start times would re-key every process.
   - ProcessCounters holds running totals as a provider read them. ProcessSample holds what happened in one interval.
   - Bucket carries everything needed to merge buckets exactly: sums, extremes, a time-weighted mean, two histograms and covered seconds.
   - No behaviour lives here.
