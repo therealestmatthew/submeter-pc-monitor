@@ -63,11 +63,12 @@ This was the part most likely to be wrong, so it was redesigned before this pack
 
 ## 5. Clocks and sleep
 
-- **Done on Linux:** the sampler treats an interval as a gap when the monotonic clock jumps by more than 30 seconds, or when the wall clock runs more than 2 seconds ahead of it. Both paths are tested with made-up clocks.
+- **Done on Linux:** each snapshot carries two clocks: one that counts suspend, CLOCK_BOOTTIME, on which every interval is measured, and one that stops during suspend, CLOCK_MONOTONIC. The sampler treats an interval as a gap when it is longer than 30 seconds, or when the first clock ran more than 2 seconds ahead of the second. The wall clock plays no part in the test. Both paths are tested with made-up clocks.
+- **Settled by Microsoft's documentation:** QueryPerformanceCounter, which `time.monotonic()` uses from Python 3.13, "returns the total number of ticks that have occurred since the Windows operating system was started, including the time when the machine was in a sleep state such as standby, hibernate, or connected standby". QueryUnbiasedInterruptTime "does not include time the system spends in sleep or hibernation". So on Windows the provider measures intervals on the first and reads the second only for the suspend test. Neither needs administrator rights.
 - **Unknown:**
   - The size of one step of the monotonic clock. If it is around 15 ms, intervals of 250 ms carry a few percent of error.
-  - Whether the monotonic clock keeps counting while the computer sleeps. Either answer produces a gap, by a different rule, but only a real suspend proves it.
-- **How to check:** the "clocks" line of the script for the first. For the second, start `uv run submeter top --seconds 60`, put the computer to sleep for a minute inside that window, and confirm the result reports no burst of CPU time.
+  - Whether the two clocks behave as documented across a real suspend on this computer. The provider's call to QueryUnbiasedInterruptTime has never run on Windows.
+- **How to check:** the "clocks" line of the script for the first. For the second, run the sampler at a 10 s expected interval across a 60 s sleep: take a snapshot with the psutil provider, put the computer to sleep for a minute, wake it, take a second snapshot, pass both to the sampler, and print the batch's `gap` and `interval_s` and how far each clock moved. It passes when `gap` is true, `interval_s` includes the minute asleep, and the clock that stops during suspend moved only by the time the computer was awake. A gap alone does not pass it, because an interval longer than 30 seconds is a gap whatever the clocks do.
 
 ## 6. File locations
 

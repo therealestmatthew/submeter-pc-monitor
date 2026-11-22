@@ -38,7 +38,7 @@ When goals conflict, resolve them in this order:
 - SQLite in WAL mode. Typer for the CLI.
 - Report: `submeter report` writes one self-contained HTML file, with its script and data inline and a meta Content Security Policy, so no Node toolchain is needed. Draw its charts with a canvas chart library such as uPlot.
 - psutil is the fallback and the cross-check on Windows, not the hot path there. On Linux in version 1 it is the process reader, and the overhead guard lengthens the intervals.
-- Store timestamps in UTC. Measure intervals on a monotonic clock.
+- Store timestamps in UTC. Measure intervals on a monotonic clock that keeps counting during suspend: CLOCK_BOOTTIME on Linux, and on Windows QueryPerformanceCounter, which `time.monotonic()` uses from Python 3.13.
 - Before using any OS API you are not certain about, check current documentation instead of relying on memory. This applies most to Job Objects, cgroup v2 delegation, Windows performance counters, NVML, and psutil, whose API has changed across major versions.
 
 ## Architecture
@@ -81,7 +81,7 @@ On Linux, version 1 polls through the psutil provider, and the direct /proc read
 Rules for both paths:
 
 - Providers return cumulative counters. The sampler computes rates from deltas, so a change of cadence never loses or invents CPU time. Every sample records the interval it covers.
-- Detect suspend and resume. Record a gap. Never emit one giant sample across it.
+- Detect suspend and resume. Suspend is the growth of a clock that counts sleep over one that does not: CLOCK_BOOTTIME minus CLOCK_MONOTONIC on Linux, QueryPerformanceCounter minus QueryUnbiasedInterruptTime on Windows. Neither needs administrator rights. Read the clock that stops during suspend only for this test, because on Windows it is accurate only to a system clock tick, up to 15.625 ms. Record a gap. Never emit one giant sample across it.
 - Identify a process by pid plus start time. Treat a parent link as valid only if the parent started before the child.
 - A process the collector cannot read is counted in a Restricted bucket with whatever is visible. It is never dropped.
 - WSL2 and Docker Desktop appear on Windows as a single VM process. Show it as its own workload labelled opaque, and report its share of busy CPU time, and of capacity, in `doctor`. A collector inside the guest is not in version 1.

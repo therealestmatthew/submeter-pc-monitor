@@ -241,7 +241,8 @@ Subtracts consecutive snapshots to find what each process did during the interva
   - The first call returns nothing, because there is no interval yet.
   - A process born during the interval is credited all its CPU time. An older process seen for the first time is credited none.
   - A reused pid is a new process, because identity includes the start time.
-  - An interval longer than 30 seconds, or a wall clock more than 2 seconds ahead of the monotonic clock, is a gap: deltas are zero and the batch says so.
+  - Each snapshot carries two clocks. Intervals are measured on the one that counts suspend: CLOCK_BOOTTIME on Linux, `time.monotonic()` on Windows. The other stops during suspend, CLOCK_MONOTONIC on Linux and QueryUnbiasedInterruptTime on Windows, and is read only for the suspend test. Where it is not read, there is no suspend test.
+  - An interval longer than 30 seconds, or one in which the clock that counts suspend ran more than 2 seconds ahead of the clock that does not, is a gap: deltas are zero and the batch says so.
   - Not here yet: the adaptive cadence loop and the overhead guard.
 - **Builds toward:** Core of component 07, collector.sampler
 - **Provides:** `Sampler`
