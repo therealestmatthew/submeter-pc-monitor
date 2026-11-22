@@ -12,7 +12,7 @@ What version 1 cannot measure, and what it does about each. The CLI output, the 
 | WSL2 and Docker Desktop | Everything inside appears as one VM process | Shows the VM as an opaque workload, and reports its share of busy CPU time in `doctor`. No guest collector is built in version 1 |
 | A CPU-second is not a fixed amount of work | Efficiency cores and reduced frequency do less with the same second | Reports CPU time as measured, with frequency beside it. Nothing is normalised in version 1 |
 | Per-process VRAM | Not collected in version 1. On Windows the only per-process counter may over-report | Reports the adapter's VRAM used and total, which the GPU-bound verdict reads |
-| Temperatures on Windows | Not available without administrator rights | Detects throttling from frequency instead |
+| Temperatures | Not read in version 1. Windows has no source without administrator rights, and the Linux hwmon reader comes after version 1 | On Windows, detects throttling from frequency instead |
 | Network per process | Bytes per process need administrator rights, and connections per process and bytes per interface are not collected in version 1 either | Reports no network figures in version 1 |
 | Processes owned by other users or the system | CPU time and working set are counted. Command lines and USS are not readable | Counts them in the Restricted bucket and never drops them |
 | Which files a process touches | Only bytes read and written and handle counts are recorded per process | Reports I/O totals per process and disk latency for the system. Per-file tracking would need deep tracing |

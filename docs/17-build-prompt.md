@@ -246,7 +246,7 @@ Version 1 cannot measure some things. Say so in the CLI output, in the report an
 - Workload memory totals can lag by up to the USS interval.
 - CPU time is not normalised for core type or frequency.
 - Which files a process reads or writes is not recorded, only bytes and handle counts.
-- Temperatures on Windows and per-process network bytes are not collected, because version 1 runs without administrator rights.
+- Temperatures, per-process VRAM and network figures are not collected in version 1. On Windows, temperatures and per-process network bytes would also need administrator rights.
 
 ## Overhead budget
 
