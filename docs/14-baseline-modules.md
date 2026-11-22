@@ -270,6 +270,8 @@ Gives every process exactly one workload, with the reason, and totals a batch by
 - **Worth knowing:**
   - Order: tagged kernel group, then Submeter itself, then rules in priority order, then inheritance from a valid parent, then Unattributed or Restricted.
   - A parent link counts only if the parent started no later than the child.
+  - Attributor remembers each process's workload across batches and forgets it when assign() is told the process exited, so an inherited workload lasts for the life of the process. A remembered process moves only when a kernel group or a Submeter pid claims it, or when its executable or command line has changed and a rule matches it. Each move is listed in `changes`, for the caller to record as an event in the raw file.
+  - Not here yet: seeding what Attributor remembers from the open raw file when the collector starts.
   - A rule may match on exe, cmdline, cwd and parent, the program that started the process. Every condition it gives must hold. Program names match on file name, ignoring case.
   - `needs_cwd` tells the caller whether any rule uses the working folder, so that folders are read only then.
   - aggregate takes each tagged workload's group totals and reports the group's CPU time, process count and, when the group can report it, I/O, in place of the sum of its polled processes. It labels those workloads kernel, Restricted partial and the rest polled.
