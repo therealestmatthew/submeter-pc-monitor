@@ -239,7 +239,7 @@ CLI, where every command accepts --json with a stable schema:
 - `submeter export` to JSON or CSV
 - `submeter config show|check|reload`, where reload restarts the collector and server
 - `submeter store status|check|backup`
-- `submeter rules test` to show which rule claims a given process
+- `submeter rules test` to show which rule claims a given process. Command-line rules match the live command line before redaction, which the collector can read only for the user's own processes, so `rules test` reads the live process and marks which arguments the store hides
 - `submeter doctor` for the capability matrix, restricted-process count, disk usage and the collector's own cost, and on Linux whether /proc is mounted with hidepid
 
 `submeter why` must answer in under two seconds.

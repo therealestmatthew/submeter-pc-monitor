@@ -199,9 +199,10 @@ Redacts command lines, and hides secrets in free text, before anything is stored
 - **Worth knowing:**
   - Two modes. In `exe_only`, the default, only the executable name the provider read is kept, never `args[0]`, which a process can rewrite into a whole title such as "postgres: alice appdb 10.0.0.5(5432) idle". With no executable name, nothing is kept. In `scrub`, which is opt-in, the arguments are kept with secrets hidden.
   - Scrub splits an `args[0]` that holds spaces, keeps its first word as the program and scrubs the other words like any argument.
-  - Scrub hides the value after a secret-looking flag, the value of a secret-looking NAME=value pair, known token shapes, URL passwords, and long opaque strings of letters and digits. A 40-character commit hash is hidden as well.
-  - Scrub is best-effort: it hides known shapes and cannot recognise every credential. It does not hide an attached -pPASS, -u user:pass, a header such as "Authorization: Bearer ...", a command inside bash -c, --env=NAME=value or a connection string. A test records these forms.
-  - Ordinary arguments survive scrub: --max-tokens 4096 is left alone.
+  - Scrub hides the value after a flag one of whose words names a secret, the value of a NAME=value pair whose name does, known token shapes, URL passwords, and long opaque strings of letters and digits. A 40-character commit hash is hidden as well.
+  - A secret word counts wherever it ends a word of the flag or name, at `-`, `_`, `.` or the end, so `-storepass`, `--dbpassword` and `PGPASSWORD=` are hidden while `--passes`, `--tokenizer`, `--compass` and `--bypass-cache` are kept.
+  - Scrub is best-effort: it hides known shapes and cannot recognise every credential. It does not hide an attached -pPASS, -u user:pass, a header such as "Authorization: Bearer ...", a command inside bash -c, --env=NAME=value or a connection string. A test records these forms. It also leaves a string that starts with `/`, which it takes for a path, a UUID, and a secret word with more letters or digits after it, such as --password2.
+  - Ordinary arguments survive scrub: --max-tokens 4096, an absolute path with a long hashed folder name and a session UUID are left alone.
 - **Builds toward:** Component 16, privacy.redact
 - **Provides:** `REDACTED`, `Mode`, `redact_text`, `redact_cmdline`
 - **Imports:** standard library only
