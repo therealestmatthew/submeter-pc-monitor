@@ -8,7 +8,7 @@ A working mock of the live dashboard on a machine with 16 logical cores and 32 G
 
 ## The mock, described
 
-The page `brief.html` in this folder runs the mock in a browser. This section states everything the mock shows, so nothing here depends on opening it.
+The page `brief.html` in this folder runs the mock in a browser. This section states everything the mock shows, as corrected by the rulings, so nothing here depends on opening it. `brief.html` is the mock as delivered and is not updated after rulings; where it differs, this section wins. It differs in four places: the overhead tile reads "1 s cadence · limit 3%"; Restricted is labelled partial with 0.3 GB of working set, so the workloads total 20.8 GB, 65% of 32; the System process tree reads "Kernel time, interrupts, deferred calls and non-process memory. No process owns these."; and the Restricted process tree reads "restricted partial · 0.16 cores · 0.3 GB" and "CPU time and working set are counted."
 
 The mock models a machine with 16 logical cores, 12 on performance cores and 4 efficiency cores, and 32 GB of memory. It advances once a second and keeps the last 120 points, which is 2 minutes. It pauses itself when the browser asks for reduced motion.
 
@@ -48,7 +48,7 @@ On Linux the memory tile shows memory in use instead of commit: 1 − MemAvailab
 | System | counters | 0.35 | 2.6 GB | n/a |
 | Restricted | polled | 0.16 | n/a | 14 |
 
-Together they use 4.96 cores, which is 31% of 16, and 20.5 GB, which is 64% of 32. Restricted memory is n/a, because none of its processes gives a USS reading, and a figure that no process gives is unavailable, never 0 (the metric catalogue in [Storage](06-storage.md)). Restricted's source is polled, the path that measured its CPU time, because a partial or unavailable mark is kept on each figure, not on the workload. The mock in `brief.html`, which is not updated after rulings, still labels Restricted partial and shows its working set, 0.3 GB, and a total of 20.8 GB.
+Together they use 4.96 cores, which is 31% of 16, and 20.5 GB, which is 64% of 32. Restricted memory is n/a, because none of its processes gives a USS reading, and a figure that no process gives is unavailable, never 0 (the metric catalogue in [Storage](06-storage.md)). Restricted's source is polled, the path that measured its CPU time, because a partial or unavailable mark is kept on each figure, not on the workload.
 
 The State column reads Steady unless one of these holds:
 
