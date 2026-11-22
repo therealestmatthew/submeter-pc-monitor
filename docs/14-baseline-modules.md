@@ -2,13 +2,13 @@
 
 > Submeter build brief · Part 3, the build · [Index](README.md)
 
-Sixteen Python modules that form the platform-neutral core of Submeter, with the project file and their tests. This is working code, written and run for this brief: 2,356 lines in the modules and 62 tests. They start twelve of the 22 components in the build list. Each entry says what the module does, why it exists, what it provides, what it imports and what imports it.
+Sixteen Python modules that form the platform-neutral core of Submeter, with the project file and their tests. This is working code, written and run for this brief: 2,625 lines in the modules and 62 tests. They start twelve of the 22 components in the build list. Each entry says what the module does, why it exists, what it provides, what it imports and what imports it.
 
-In this package the files are already in place at the paths shown, 27 files in all: the 20 described here and 7 empty `__init__.py` files, one in each package folder.
+In this package the files are already in place at the paths shown, 35 files in all: the 20 described here, the 8 test files the review's code fixes added, and 7 empty `__init__.py` files, one in each package folder.
 
 ## What was checked, and what was not
 
-- Ruff reports nothing. mypy in strict mode reports no issues in 25 files, checked as Linux and again as Windows. All 62 tests run on Python 3.13: 61 pass and 1 is a strict expected failure, R61's recorded breach in tests/test_attribution.py. The original 20 also passed on 3.12, before the package required 3.13.
+- Ruff reports nothing. mypy in strict mode reports no issues in 34 files, checked as Linux and again as Windows. All 62 tests run on Python 3.13: 61 pass and 1 is a strict expected failure, R61's recorded breach in tests/test_attribution.py. The original 20 also passed on 3.12, before the package required 3.13.
 - Everything ran on Linux. `submeter top` took two snapshots of live processes and printed totals by workload.
 - This package was unpacked into an empty folder, where `uv sync`, Ruff, mypy and the tests all passed.
 - Nothing ran on Windows, so expect small fixes there. The one-instance lock was redesigned so that its lock file is never written, and its Windows calls are tested against a stand-in, but Windows itself has not answered them. Private-bytes memory in the psutil provider has never run. [`reference/windows-priorities.md`](reference/windows-priorities.md) lists what to check first, and `scripts/platform_check.py` checks it.
@@ -59,21 +59,21 @@ The table gives the same links module by module. "Nothing yet" means the caller 
 | Module | Lines | Imports | Imported by |
 | --- | --- | --- | --- |
 | [`core.units`](../src/submeter/core/units.py) | 140 | nothing in the package | cli, core.config |
-| [`core.models`](../src/submeter/core/models.py) | 187 | nothing in the package | analysis.growth, attribution.rules, collector.sampler, core.config, providers.base, providers.psutil_provider, store.query, store.raw, store.rollup |
-| [`core.histogram`](../src/submeter/core/histogram.py) | 92 | nothing in the package | store.rollup |
-| [`core.config`](../src/submeter/core/config.py) | 318 | core.models, core.names, core.units | cli |
+| [`core.models`](../src/submeter/core/models.py) | 204 | nothing in the package | analysis.growth, attribution.rules, collector.sampler, core.config, providers.base, providers.psutil_provider, store.query, store.raw, store.rollup |
+| [`core.histogram`](../src/submeter/core/histogram.py) | 97 | nothing in the package | store.rollup |
+| [`core.config`](../src/submeter/core/config.py) | 315 | core.models, core.names, core.units | cli |
 | [`core.names`](../src/submeter/core/names.py) | 31 | nothing in the package | attribution.rules, core.config |
-| [`privacy.redact`](../src/submeter/privacy/redact.py) | 83 | nothing in the package | store.raw |
+| [`privacy.redact`](../src/submeter/privacy/redact.py) | 94 | nothing in the package | store.raw |
 | [`providers.base`](../src/submeter/providers/base.py) | 36 | core.models | cli |
-| [`providers.psutil_provider`](../src/submeter/providers/psutil_provider.py) | 129 | core.models | cli |
-| [`collector.sampler`](../src/submeter/collector/sampler.py) | 112 | core.models | cli |
-| [`attribution.rules`](../src/submeter/attribution/rules.py) | 233 | core.models, core.names | cli |
-| [`store.files`](../src/submeter/store/files.py) | 260 | nothing in the package | cli, store.raw |
-| [`store.raw`](../src/submeter/store/raw.py) | 287 | core.models, privacy.redact, store.files | nothing yet |
-| [`store.rollup`](../src/submeter/store/rollup.py) | 173 | core.histogram, core.models | nothing yet |
-| [`store.query`](../src/submeter/store/query.py) | 54 | core.models | nothing yet |
-| [`analysis.growth`](../src/submeter/analysis/growth.py) | 110 | core.models | nothing yet |
-| [`cli`](../src/submeter/cli.py) | 142 | attribution.rules, collector.sampler, core.config, core.units, providers.base, providers.psutil_provider, store.files | entry point |
+| [`providers.psutil_provider`](../src/submeter/providers/psutil_provider.py) | 164 | core.models | cli |
+| [`collector.sampler`](../src/submeter/collector/sampler.py) | 105 | core.models | cli |
+| [`attribution.rules`](../src/submeter/attribution/rules.py) | 282 | core.models, core.names | cli |
+| [`store.files`](../src/submeter/store/files.py) | 313 | nothing in the package | cli, store.raw |
+| [`store.raw`](../src/submeter/store/raw.py) | 350 | core.models, privacy.redact, store.files | nothing yet |
+| [`store.rollup`](../src/submeter/store/rollup.py) | 185 | core.histogram, core.models | nothing yet |
+| [`store.query`](../src/submeter/store/query.py) | 55 | core.models | nothing yet |
+| [`analysis.growth`](../src/submeter/analysis/growth.py) | 109 | core.models | nothing yet |
+| [`cli`](../src/submeter/cli.py) | 145 | attribution.rules, collector.sampler, core.config, core.units, providers.base, providers.psutil_provider, store.files | entry point |
 
 ## How to check them
 
@@ -132,7 +132,7 @@ Converts "250ms", "48h", "2GB", "50MB/h" and "1%" into seconds, bytes, bytes per
 
 ### `src/submeter/core/models.py`
 
-187 lines · [open the file](../src/submeter/core/models.py)
+204 lines · [open the file](../src/submeter/core/models.py)
 
 The frozen records passed between layers: counters, samples, workload totals, buckets, findings and capabilities.
 
@@ -158,7 +158,7 @@ The frozen records passed between layers: counters, samples, workload totals, bu
 
 ### `src/submeter/core/histogram.py`
 
-92 lines · [open the file](../src/submeter/core/histogram.py)
+97 lines · [open the file](../src/submeter/core/histogram.py)
 
 A 64-bin histogram that merges by adding bins and returns percentiles.
 
@@ -176,7 +176,7 @@ A 64-bin histogram that merges by adding bins and returns percentiles.
 
 ### `src/submeter/core/config.py`
 
-318 lines · [open the file](../src/submeter/core/config.py)
+315 lines · [open the file](../src/submeter/core/config.py)
 
 Builds one immutable Settings object from defaults, submeter.toml, environment variables and overrides, and records where each value came from.
 
@@ -215,7 +215,7 @@ Checks workload names, and keeps the names Submeter assigns for Submeter alone.
 
 ### `src/submeter/privacy/redact.py`
 
-83 lines · [open the file](../src/submeter/privacy/redact.py)
+94 lines · [open the file](../src/submeter/privacy/redact.py)
 
 Redacts command lines, and hides secrets in free text, before anything is stored.
 
@@ -249,7 +249,7 @@ The protocol every process provider implements, and the capability report that d
 
 ### `src/submeter/providers/psutil_provider.py`
 
-129 lines · [open the file](../src/submeter/providers/psutil_provider.py)
+164 lines · [open the file](../src/submeter/providers/psutil_provider.py)
 
 A process provider built on psutil, so it is not tied to one operating system.
 
@@ -274,7 +274,7 @@ A process provider built on psutil, so it is not tied to one operating system.
 
 ### `src/submeter/collector/sampler.py`
 
-112 lines · [open the file](../src/submeter/collector/sampler.py)
+105 lines · [open the file](../src/submeter/collector/sampler.py)
 
 Subtracts consecutive snapshots to find what each process did during the interval.
 
@@ -296,7 +296,7 @@ Subtracts consecutive snapshots to find what each process did during the interva
 
 ### `src/submeter/attribution/rules.py`
 
-233 lines · [open the file](../src/submeter/attribution/rules.py)
+282 lines · [open the file](../src/submeter/attribution/rules.py)
 
 Gives every process exactly one workload, with the reason, and totals a batch by workload.
 
@@ -321,7 +321,7 @@ Gives every process exactly one workload, with the reason, and totals a batch by
 
 ### `src/submeter/store/files.py`
 
-260 lines · [open the file](../src/submeter/store/files.py)
+313 lines · [open the file](../src/submeter/store/files.py)
 
 The file map: where settings, data and state live on each platform, the name of the file for a given day or week, which files have expired, and the lock that stops two copies running.
 
@@ -344,7 +344,7 @@ The file map: where settings, data and state live on each platform, the name of 
 
 ### `src/submeter/store/raw.py`
 
-287 lines · [open the file](../src/submeter/store/raw.py)
+350 lines · [open the file](../src/submeter/store/raw.py)
 
 Writes the daily raw file: workload totals every interval, process rows on change with keyframes, and command lines stored once.
 
@@ -370,7 +370,7 @@ Writes the daily raw file: workload totals every interval, process rows on chang
 
 ### `src/submeter/store/rollup.py`
 
-173 lines · [open the file](../src/submeter/store/rollup.py)
+185 lines · [open the file](../src/submeter/store/rollup.py)
 
 Folds samples into buckets, and buckets into wider buckets, keeping totals exact.
 
@@ -392,7 +392,7 @@ Folds samples into buckets, and buckets into wider buckets, keeping totals exact
 
 ### `src/submeter/store/query.py`
 
-54 lines · [open the file](../src/submeter/store/query.py)
+55 lines · [open the file](../src/submeter/store/query.py)
 
 Chooses the tier and step for a time window, and explains the choice.
 
@@ -409,7 +409,7 @@ Chooses the tier and step for a time window, and explains the choice.
 
 ### `src/submeter/analysis/growth.py`
 
-110 lines · [open the file](../src/submeter/analysis/growth.py)
+109 lines · [open the file](../src/submeter/analysis/growth.py)
 
 The Theil-Sen slope, the plateau test, the usual range from median and spread, and daily minimums.
 
@@ -428,7 +428,7 @@ The Theil-Sen slope, the plateau test, the usual range from median and spread, a
 
 ### `src/submeter/cli.py`
 
-142 lines · [open the file](../src/submeter/cli.py)
+145 lines · [open the file](../src/submeter/cli.py)
 
 The command line, with the first five commands: doctor, top, config show, config check and store status.
 
@@ -447,7 +447,7 @@ The command line, with the first five commands: doctor, top, config show, config
 
 ### `tests/test_baseline.py`
 
-521 lines · [open the file](../tests/test_baseline.py)
+522 lines · [open the file](../tests/test_baseline.py)
 
 Nineteen tests covering every module above, including one that runs the command line end to end.
 

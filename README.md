@@ -134,8 +134,8 @@ submeter-pc-monitor/
 ├── examples/
 │   ├── submeter.toml            sample settings
 │   └── rules.toml                sample attribution rules
-├── src/submeter/                the baseline: 15 modules in 7 packages
-└── tests/                        20 tests, including the layering rule
+├── src/submeter/                the baseline: 16 modules in 7 packages
+└── tests/                        62 tests in 10 files, including the layering rule
 ```
 
 The first session adds `uv.lock`, `docs/review/`, `docs/PLAN.md`, `docs/STATUS.md`, `docs/tasks/`, `prompts/02-orchestration-prompt.md` and `.claude/agents/`.
