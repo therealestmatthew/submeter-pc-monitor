@@ -142,6 +142,7 @@ The frozen records passed between layers: counters, samples, workload totals, bu
   - ProcessCounters has an optional children_cpu_s, for the Linux child time of children a process has reaped. No provider fills it yet.
   - Bucket carries everything needed to merge buckets exactly: sums, extremes, a time-weighted mean, two histograms and covered seconds.
   - GroupTotals holds what the kernel counted for one tagged group over one interval: CPU time, I/O (None when the group cannot report it) and process count.
+  - Not here yet: separate fields for the two memory units. memory_bytes holds the unit read every tick, and the unit for workload totals, USS or PSS with the time it was read, is a planned field.
   - No behaviour lives here.
 - **Builds toward:** Component 01, core.models
 - **Provides:** `Record`, `Availability`, `AccountingSource`, `Severity`, `Confidence`, `Tier`, `Capability`, `ProcessKey`, `ProcessCounters`, `SystemCounters`, `Snapshot`, `ProcessSample`, `SampleBatch`, `WorkloadSample`, `Bucket`, `Finding`, `GroupTotals`

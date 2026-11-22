@@ -54,7 +54,7 @@ Raw rows and raw data on disk are not modelled. Every process is read every tick
 | `idle_interval` | 5s | 1s to 60s | Sampling rate once the machine has been quiet |
 | `idle_after` | 60s | 10s to 10m | Quiet time before dropping to the idle interval |
 | `uss_interval` | 30s | 10s to 5m | How often the costly per-process readings are taken: the expensive memory reading, working folders when a rule uses them, and command lines on Linux |
-| `uss_top_n` | 25 | 0 to 200 | How many of the largest processes get the expensive memory reading |
+| `uss_top_n` | 25 | 0 to 200 | How many of the largest processes get the expensive memory reading. A workload's memory total is the sum over its processes that have a reading, marked partial with the count of processes without one |
 | `gpu_interval` | 2s | 1s to 30s | GPU load and adapter VRAM sampling |
 | `thermal_interval` | 5s | 1s to 60s | Not used in version 1, which reads no temperatures or battery level. Frequency and the on-battery flag are read with the system counters. Later, temperature and battery sampling |
 | `network_interval` | 5s | 1s to 60s | Not used in version 1, which reads no network figures. Later, connection counts and interface bytes |
