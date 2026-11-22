@@ -40,7 +40,7 @@ The owner also runs a 24-hour soak on the Windows machine. It passes when Submet
 
 ## P3: Attribution rules, history, sessions
 
-Builds the server, with the history file and a nullable column for every catalogue metric version 1 collects, the hourly rollup, retention, the disk budget, backups and the copying of final run files into the history file; the attribution rules; sessions, through their marker files; and the collector's reading of each live group's totals, with re-attach after a restart.
+Builds the server (component 26), with the history file, its integrity check at start and a nullable column for every catalogue metric version 1 collects, the hourly rollup, retention, the disk budget, backups, the epochs built from the collector's events, and the copying of final run files into the history file; the attribution rules; sessions, through their marker files; and the collector's reading of each live group's totals, with re-attach after a restart.
 
 Gate: CPU-hours from the hourly tier match the raw sum of the samples whose end times fall in each hour within 0.1%, tested with ticks at fractional seconds as well as whole ones. Deleting a day of raw data, with its -wal and -shm, frees its space once no reader holds it. On Windows, a restarted collector re-attaches to live groups. A session's cost reads the same before and after its raw data is deleted, including a session longer than raw retention, tested with an injected clock and a retention of a few minutes passed directly to the retention function. Run with the server, the 30-minute CI soak of P2 still stays inside the overhead budget, now summed over every Submeter process, the server included.
 

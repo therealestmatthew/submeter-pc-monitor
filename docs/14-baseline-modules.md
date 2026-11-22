@@ -2,7 +2,7 @@
 
 > Submeter build brief · Part 3, the build · [Index](README.md)
 
-Sixteen Python modules that form the platform-neutral core of Submeter, with the project file and their tests. This is working code, written and run for this brief: 2,356 lines in the modules and 20 tests. They start twelve of the 21 components in the build list. Each entry says what the module does, why it exists, what it provides, what it imports and what imports it.
+Sixteen Python modules that form the platform-neutral core of Submeter, with the project file and their tests. This is working code, written and run for this brief: 2,356 lines in the modules and 20 tests. They start twelve of the 22 components in the build list. Each entry says what the module does, why it exists, what it provides, what it imports and what imports it.
 
 In this package the files are already in place at the paths shown, 27 files in all: the 20 described here and 7 empty `__init__.py` files, one in each package folder.
 

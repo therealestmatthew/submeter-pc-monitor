@@ -43,7 +43,7 @@ What gets made, in what order, and the prompt that starts it.
 
 | File | What it holds |
 | --- | --- |
-| [`13-build-list.md`](13-build-list.md) | The 21 components, 16 tables and 14 commands of version 1, the API routes kept for version 1.1, and what is not in version 1 |
+| [`13-build-list.md`](13-build-list.md) | The 22 components, 16 tables and 14 commands of version 1, the API routes kept for version 1.1, and what is not in version 1 |
 | [`14-baseline-modules.md`](14-baseline-modules.md) | The sixteen modules already written: what each does, why, what it provides, what it imports and what imports it |
 | [`15-phases-and-decisions.md`](15-phases-and-decisions.md) | The six phases with their gates, the floor of version 1, and the four settled decisions |
 | [`16-review-log.md`](16-review-log.md) | All 37 findings from three review passes, with an index |

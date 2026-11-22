@@ -2,7 +2,7 @@
 
 > Submeter build brief · Part 3, the build · [Index](README.md)
 
-Three programs that share only files on disk: a collector, a server and the launcher. Together they are 21 components in version 1 (component 05 comes after it), 16 tables across two kinds of data file, raw and history, plus one run file per tagged run, and 14 commands. Version 1 has no API routes; the routes below are kept for version 1.1. Each program writes only its own files, and none imports another. Twelve of the 21 components are already started as tested code under [Baseline modules](14-baseline-modules.md). Each of those carries a baseline tag that links to its module.
+Three programs that share only files on disk: a collector, a server and the launcher. Together they are 22 components in version 1 (component 05 comes after it), 16 tables across two kinds of data file, raw and history, plus one run file per tagged run, and 14 commands. Version 1 has no API routes; the routes below are kept for version 1.1. Each program writes only its own files, and none imports another. Twelve of the 22 components are already started as tested code under [Baseline modules](14-baseline-modules.md). Each of those carries a baseline tag that links to its module.
 
 ## Components
 
@@ -19,7 +19,7 @@ Three programs that share only files on disk: a collector, a server and the laun
 | 09 `store.raw` | Daily raw files: batched writes, change-only rows with keyframes, command lines stored once [baseline](../src/submeter/store/raw.py) | P2 |
 | 10 `store.rollup` | Hourly buckets with sums, coverage and histograms, built from raw samples. Summaries per executable, session and run [baseline](../src/submeter/store/rollup.py) | P3 |
 | 11 `store.query` | Answers a window from raw samples merged to wider steps while they cover it, else from hourly buckets. Merges histograms and states the tier and resolution used [baseline](../src/submeter/store/query.py) | P2 on |
-| 12 `cli` | All commands, each with JSON output, in a package with one module per command group [baseline](../src/submeter/cli.py) | P1 on |
+| 12 `cli` | All commands, each with JSON output, in a package with one module per command group. Every command reads the store files directly, not through an API [baseline](../src/submeter/cli.py) | P1 on |
 | 13 `launcher` | `submeter run`: creates the command inside a Job Object (PROC_THREAD_ATTRIBUTE_JOB_LIST), so no descendant starts outside it, returns the command's exit code, and writes one run file: live when the group is created, then final, with the group's totals, once the group is empty. When the command left processes behind, the launcher's detached holder writes the final state. It sets no limits on the group, does not allow breakaway and does not set kill-on-close. On Linux it reports that tagged runs are unavailable and runs the command polled; the cgroup path comes after version 1 | P1 |
 | 14 `providers.group` | Reads a Job Object's totals: the final totals the launcher writes to the run file, and each live group's totals, with re-attach after a restart. cgroup totals come after version 1 | P1, P3 |
 | 15 `attribution` | Rule engine, inheritance, the four fixed buckets with the machine-level figure for CPU time not seen by polling beside them, reconciliation check [baseline](../src/submeter/attribution/rules.py) | P2 on |
@@ -30,6 +30,7 @@ Three programs that share only files on disk: a collector, a server and the laun
 | 22 `alerts` | Rule evaluation and cooldowns. A firing rule raises a finding | P4 |
 | 23 `providers.extended` | GPU load by engine type, machine-wide and per process, with the busiest as the headline, and the adapter's VRAM used and total | P5 |
 | 24 `report` | Self-contained HTML report for a session or range, with a meta Content Security Policy. Version 1's charts are drawn here | P5 |
+| 26 `server` | The server program, `submeter-server`: checks the history file's integrity at start, builds hourly buckets from the raw files, applies retention and the disk budget, backs up the history file, copies final run files and session marker files into the history file, turns the collector's events into epochs, and runs analysis and alerts. It writes only the history file and its backups | P3 on |
 
 ## Tables, by file
 

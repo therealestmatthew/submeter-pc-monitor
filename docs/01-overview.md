@@ -26,6 +26,6 @@
 - **Language:** Python 3.13 throughout, with the collector as its own process
 - **Privileges:** Runs as the signed-in user. No administrator rights
 - **Data:** Kept in local files. Nothing leaves the machine
-- **Size of the build:** 3 programs, 21 components, raw and history files plus run files, 6 phases
+- **Size of the build:** 3 programs, 22 components, raw and history files plus run files, 6 phases
 
 To start, unpack the starter package and give a Claude Code session the execution prompt, as set out under [How to start](../README.md). It reviews the design, waits for your rulings, then writes the plan and the prompt that builds it. The four decisions that were open are settled under [Build phases](15-phases-and-decisions.md).
