@@ -16,7 +16,7 @@ Phase 0 settles the facts that change the design of version 1 on the owner's own
 | --- | --- | --- |
 | Job Object | Creates a job as this user, nests one job inside another, also when the terminal or Claude Code has already placed the process in a job, reads the totals after every child has exited, and reopens the job by name after the process that created it has exited | The design of the holder that keeps a tagged group open until it is empty |
 | Bulk snapshot | A prototype of the system-wide process snapshot, timed at the owner's process count. It also shows what the snapshot returns for other users' processes without administrator rights | Whether the collector stays in Python, and the default intervals |
-| Per-user autostart | Makes a program start at logon without administrator rights | How `submeter daemon install` installs on Windows |
+| Per-user autostart | As a standard user, registers and deletes a logon task with the settings `submeter daemon install` uses: an InteractiveToken logon trigger, no stop or refusal on battery, no time limit and normal priority (see the [build prompt](17-build-prompt.md)) | How `submeter daemon install` installs on Windows: that scheduled task, or the `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` key if a standard user cannot register the task |
 
 `doctor` is not built out into the full capability matrix in phase 0. It grows with each provider.
 
