@@ -33,7 +33,7 @@ When goals conflict, resolve them in this order:
 
 ## Stack and conventions
 
-- Python 3.12 or newer for everything in version 1, managed with uv. Ruff for lint and format. mypy in strict mode. pytest with pytest-asyncio.
+- Python 3.13 or newer for everything in version 1, managed with uv. From 3.13, `time.monotonic()` on Windows uses QueryPerformanceCounter, at 1 microsecond, instead of a clock that steps in 15.6 ms, which would put about 6% of error on a 250 ms interval. Ruff for lint and format. mypy in strict mode. pytest with pytest-asyncio.
 - Pydantic v2 for all config, sample and finding models, with extra="forbid" and frozen=True.
 - SQLite in WAL mode. Typer for the CLI.
 - Report: `submeter report` writes one self-contained HTML file, with its script and data inline and a meta Content Security Policy, so no Node toolchain is needed. Draw its charts with a canvas chart library such as uPlot.

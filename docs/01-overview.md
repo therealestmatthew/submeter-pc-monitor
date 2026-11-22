@@ -23,7 +23,7 @@
 - **Extra telemetry:** GPU load by engine type and the adapter's VRAM. Per-process VRAM, temperatures, battery level and network per process come after version 1
 - **Control:** Observe only. No process is ever changed in version 1
 - **Platforms:** Windows 11 gets everything. Linux runs polled from the same codebase and is tested in CI. Its tagged runs, system counters and autostart come after version 1
-- **Language:** Python 3.12 throughout, with the collector as its own process
+- **Language:** Python 3.13 throughout, with the collector as its own process
 - **Privileges:** Runs as the signed-in user. No administrator rights
 - **Data:** Kept in local files. Nothing leaves the machine
 - **Size of the build:** 3 programs, 21 components, raw and history files plus run files, 6 phases

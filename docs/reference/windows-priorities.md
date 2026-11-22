@@ -25,7 +25,7 @@ Keep its full output in the review, whatever it says. A line that starts with FA
 
 ## 1. The baseline's own checks
 
-- **Done on Linux:** `uv sync`, `uv run ruff check`, `uv run ruff format --check`, `uv run mypy src tests` and `uv run pytest` all pass, on Python 3.12 and 3.13. mypy was also run with `--platform win32`, which type-checks the Windows-only branches without running them.
+- **Done on Linux:** `uv sync`, `uv run ruff check`, `uv run ruff format --check`, `uv run mypy src tests` and `uv run pytest` all pass on Python 3.13. They passed on 3.12 too, before the package required 3.13. mypy was also run with `--platform win32`, which type-checks the Windows-only branches without running them.
 - **Unknown:** everything at run time. Likely trouble: a test's temporary folder that cannot be removed because a database file is still open, and path comparisons that assume forward slashes.
 - **How to check:** run the five commands. Record the full output of any failure.
 - **If it fails:** it is a finding for the review, not something to fix before the rulings.
@@ -66,7 +66,7 @@ This was the part most likely to be wrong, so it was redesigned before this pack
 - **Done on Linux:** each snapshot carries two clocks: one that counts suspend, CLOCK_BOOTTIME, on which every interval is measured, and one that stops during suspend, CLOCK_MONOTONIC. The sampler treats an interval as a gap when it is longer than 30 seconds, or when the first clock ran more than 2 seconds ahead of the second. The wall clock plays no part in the test. Both paths are tested with made-up clocks.
 - **Settled by Microsoft's documentation:** QueryPerformanceCounter, which `time.monotonic()` uses from Python 3.13, "returns the total number of ticks that have occurred since the Windows operating system was started, including the time when the machine was in a sleep state such as standby, hibernate, or connected standby". QueryUnbiasedInterruptTime "does not include time the system spends in sleep or hibernation". So on Windows the provider measures intervals on the first and reads the second only for the suspend test. Neither needs administrator rights.
 - **Unknown:**
-  - The size of one step of the monotonic clock. If it is around 15 ms, intervals of 250 ms carry a few percent of error.
+  - The size of one step of the monotonic clock. From Python 3.13, which the package requires, `time.monotonic()` uses QueryPerformanceCounter, documented at 1 microsecond. Under 3.12 it stepped in 15.6 ms, which put about 6% of error on a 250 ms interval.
   - Whether the two clocks behave as documented across a real suspend on this computer. The provider's call to QueryUnbiasedInterruptTime has never run on Windows.
 - **How to check:** the "clocks" line of the script for the first. For the second, run the sampler at a 10 s expected interval across a 60 s sleep: take a snapshot with the psutil provider, put the computer to sleep for a minute, wake it, take a second snapshot, pass both to the sampler, and print the batch's `gap` and `interval_s` and how far each clock moved. It passes when `gap` is true, `interval_s` includes the minute asleep, and the clock that stops during suspend moved only by the time the computer was awake. A gap alone does not pass it, because an interval of about 70 seconds is a gap by its length alone, whatever the clocks do.
 

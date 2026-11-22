@@ -2,7 +2,9 @@
 
 > Submeter build brief · Part 2, the design · [Index](README.md)
 
-**Recommended: Python 3.12 for all of version 1, with the collector isolated as its own process**
+**Recommended: Python 3.13 for all of version 1, with the collector isolated as its own process**
+
+Python 3.13 is the oldest version accepted, because from 3.13 `time.monotonic()` on Windows resolves 1 microsecond instead of 15.6 ms, which matters at intervals as short as 250 ms.
 
 Once the collector takes one bulk snapshot per tick, its cost is the system call, not the interpreter. Python then gives you the strongest analysis libraries, a codebase you can review yourself, and one typed language for a coding agent to keep consistent.
 

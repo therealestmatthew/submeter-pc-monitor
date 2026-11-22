@@ -8,7 +8,7 @@ In this package the files are already in place at the paths shown, 26 files in a
 
 ## What was checked, and what was not
 
-- Ruff reports nothing. mypy in strict mode reports no issues in 25 files, checked as Linux and again as Windows. All 20 tests pass on Python 3.12 and 3.13.
+- Ruff reports nothing. mypy in strict mode reports no issues in 25 files, checked as Linux and again as Windows. All 20 tests pass on Python 3.13. They also passed on 3.12, before the package required 3.13.
 - Everything ran on Linux. `submeter top` took two snapshots of live processes and printed totals by workload.
 - This package was unpacked into an empty folder, where `uv sync`, Ruff, mypy and the tests all passed.
 - Nothing ran on Windows, so expect small fixes there. The one-instance lock was redesigned so that its lock file is never written, and its Windows calls are tested against a stand-in, but Windows itself has not answered them. Private-bytes memory in the psutil provider has never run. [`reference/windows-priorities.md`](reference/windows-priorities.md) lists what to check first, and `scripts/platform_check.py` checks it.
@@ -95,7 +95,7 @@ Declares the package, its three runtime dependencies, the submeter command, and 
 - **Worth knowing:**
   - Source lives under src/submeter, and tests import it through the pytest pythonpath setting.
   - mypy runs in strict mode with the Pydantic plugin. Ruff uses a 100-character line.
-  - Requires Python 3.12 or newer. The build backend is hatchling.
+  - Requires Python 3.13 or newer, because from 3.13 `time.monotonic()` on Windows resolves 1 microsecond instead of 15.6 ms. The build backend is hatchling.
 - **Builds toward:** Project file
 
 ### `src/submeter/__init__.py`
