@@ -308,6 +308,8 @@ Nothing said how much a crash may lose, how the write-ahead log stays small, or 
 
 **Fix:** At most 5 seconds lost and never a corrupt file, short read transactions, an integrity check at start, a daily backup of history, and a schema version in every file.
 
+Amended by R89 (21 November 2026): synchronous=NORMAL syncs the write-ahead log only at a checkpoint, so a power loss can lose more than 5 seconds. A program crash loses nothing committed; a power loss or OS crash may lose the samples since the last checkpoint, up to a few minutes. The kill test does not test power loss.
+
 ## Third pass, accepted
 
 ### R37: Which files a process touches is not tracked
