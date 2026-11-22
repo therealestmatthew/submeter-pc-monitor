@@ -149,7 +149,6 @@ class WorkloadSample(Record):
     io_write_bytes: int
     processes: int
     started: int
-    gap: bool = False
 
 
 class Bucket(Record):
@@ -171,7 +170,7 @@ class Bucket(Record):
     started: int
     memory_min: int
     memory_max: int
-    memory_mean: float | None
+    memory_mean: float
     memory_last: int
     processes_max: int
     cores_hist: tuple[float, ...]

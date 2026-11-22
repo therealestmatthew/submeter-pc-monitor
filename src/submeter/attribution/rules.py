@@ -231,7 +231,6 @@ def aggregate(
             io_write_bytes=total.io_write_bytes,
             processes=total.processes,
             started=total.started,
-            gap=batch.gap,
         )
         for workload, total in totals.items()
     )
