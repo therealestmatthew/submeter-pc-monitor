@@ -176,7 +176,7 @@ Builds one immutable Settings object from defaults, submeter.toml, a named profi
   - The sample `submeter.toml` in `examples/` loads through this module without error.
   - Not here yet: the three built-in alert rules. The rules list holds only your own.
 - **Builds toward:** Component 02, core.config
-- **Provides:** `ENV_PREFIX`, `ActiveInterval`, `IdleInterval`, `ColdInterval`, `IdleAfter`, `SlowInterval`, `GpuInterval`, `UssInterval`, `KeyframeInterval`, `HotThreshold`, `OverheadShare`, `OverheadLimit`, `Sampling`, `Retention`, `Backups`, `ChangeThreshold`, `Storage`, `Leak`, `SlowGrowth`, `Baseline`, `Analysis`, `Verdict`, `AlertRule`, `Alerts`, `Attribution`, `Privacy`, `Providers`, `Api`, `Ui`, `Settings`, `ConfigError`, `LoadedSettings`, `load_settings`
+- **Provides:** `ENV_PREFIX`, `ActiveInterval`, `IdleInterval`, `IdleAfter`, `SlowInterval`, `GpuInterval`, `UssInterval`, `KeyframeInterval`, `OverheadShare`, `OverheadLimit`, `Sampling`, `Retention`, `Backups`, `ChangeThreshold`, `Storage`, `Leak`, `SlowGrowth`, `Baseline`, `Analysis`, `Verdict`, `AlertRule`, `Alerts`, `Attribution`, `Privacy`, `Providers`, `Api`, `Ui`, `Settings`, `ConfigError`, `LoadedSettings`, `load_settings`
 - **Imports:** [`core.models`](../src/submeter/core/models.py), [`core.units`](../src/submeter/core/units.py), pydantic
 - **Imported by:** [`cli`](../src/submeter/cli.py)
 
@@ -244,7 +244,7 @@ Subtracts consecutive snapshots to find what each process did during the interva
   - An interval longer than 30 seconds, or a wall clock more than 2 seconds ahead of the monotonic clock, is a gap: deltas are zero and the batch says so.
   - Not here yet: the adaptive cadence loop and the overhead guard.
 - **Builds toward:** Core of component 07, collector.sampler
-- **Provides:** `Sampler`, `hot_keys`
+- **Provides:** `Sampler`
 - **Imports:** [`core.models`](../src/submeter/core/models.py)
 - **Imported by:** [`cli`](../src/submeter/cli.py)
 

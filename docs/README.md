@@ -35,7 +35,7 @@ How the numbers are produced, and how far each one can be trusted.
 | [`09-telemetry.md`](09-telemetry.md) | Where each metric comes from on Windows and Linux, what works without administrator rights, and the sources |
 | [`10-known-limits.md`](10-known-limits.md) | What version 1 cannot measure, and what it does about each |
 | [`11-language.md`](11-language.md) | Why Python, the alternatives, and when the collector would move to Rust |
-| [`12-glossary.md`](12-glossary.md) | Twelve terms |
+| [`12-glossary.md`](12-glossary.md) | Eleven terms |
 
 **Part 3 · The build**
 
