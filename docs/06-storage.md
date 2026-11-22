@@ -40,6 +40,10 @@ Setting `SUBMETER_HOME` moves everything under one folder. `submeter store statu
 - Read transactions are kept short so the write-ahead log can be checkpointed. `journal_size_limit` bounds the log left after a checkpoint. `submeter store status` and `doctor` report the size of each write-ahead log, and a finding is raised when one is larger than that limit.
 - Every file carries a schema version, and readers accept every version still on disk.
 
+## Table columns
+
+[Exactly what gets built](13-build-list.md) lists the tables of each file. The raw file's columns are defined in the baseline's [`store/raw.py`](../src/submeter/store/raw.py). The history file's columns are not written yet. The first task of phase 3, with one owner, writes the DDL of every history table here, before the server writes the file or anything reads it, so that the server's writers, the analysis and the CLI are built against one definition. A `rollup_1h` row maps to one `Bucket` record from `core.models`.
+
 ## How commands reach the programs
 
 Commands reach the running programs only through files, which each program polls each tick. There is no control port and no signal, because Windows has no signal that asks a process to exit cleanly. Control files live under the state folder. Run files stay in the data folder.

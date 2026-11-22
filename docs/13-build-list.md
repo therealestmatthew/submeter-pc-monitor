@@ -37,6 +37,8 @@ Three programs that share only files on disk: a collector, a server and the laun
 - Raw file, one per day: `meta`, `event`, `command`, `process`, `workload_raw`, `process_raw`, `system_raw`, `gap`
 - History file: `meta`, `workload`, `epoch`, `rollup_1h`, `exe_1h`, `run`, `session`, `session_summary`, `finding`
 
+The raw file's columns are defined in [`store/raw.py`](../src/submeter/store/raw.py). The first task of phase 3 writes the history file's columns as DDL in [Storage](06-storage.md#table-columns).
+
 ## Alongside the code
 
 - CI on Windows and Linux runners with a 30-minute soak. The Linux runner runs the portable tests
@@ -80,7 +82,7 @@ Not in version 1, which has no API. These are kept for the dashboard in version 
 - `GET /findings`
 - `GET /diff`
 - `GET /sessions`
-- `WS /live`
+- `WS /live` live data. Its message format and rate are not written yet; version 1.1 writes them before it builds the route
 
 ## Not in version 1
 

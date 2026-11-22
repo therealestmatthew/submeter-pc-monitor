@@ -431,6 +431,7 @@ The command line, with the first five commands: doctor, top, config show, config
 - **Worth knowing:**
   - submeter top takes two snapshots, attributes the difference and prints totals by workload.
   - doctor, top and store status accept --json. config show accepts --effective, which is also its default.
+  - Their JSON does not use the envelope in [CLI output](03-cli-output.md) yet: doctor prints an object with a version, top a bare list, and store status an object with bytes and total. The first task of phase 1 moves every command to the envelope.
   - doctor lists any Submeter path that other users can read, or says the check is unavailable on Windows.
   - top reads working folders only when a rule matches on cwd.
   - A bad settings file exits with code 2 and one line per problem. Not handled yet: a named file that is missing or not UTF-8, or a `--rules` file that does not validate. For a missing file, config show uses the defaults and top uses no rules without saying so, and config check stops with an uncaught error; the other cases stop the command with an uncaught error. A planned task makes each exit with code 2 (finding R111).

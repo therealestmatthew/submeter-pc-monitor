@@ -80,3 +80,7 @@ logs/ (2 programs)      each         18 MB
 Total   1.08 GB of 2 GB    integrity ok    1 writer per file
 Epoch   14, since 2026-11-12: active_interval 1s to 2s
 ```
+
+## What does --json print?
+
+With `--json`, every command prints one JSON object, its envelope. The `schema` key names the command and the version of its shape, as in `{"schema": "submeter.cost/1", ...}`, and the command's own fields follow in the same object. The version rises whenever the shape changes. Each command has a snapshot test of its JSON output. The first task of phase 1, with one owner, sets the envelope, because `submeter cost --run --json`, which agents read, is built in that phase.
