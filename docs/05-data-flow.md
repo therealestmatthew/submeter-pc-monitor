@@ -70,7 +70,7 @@ The model: children have exponentially distributed lifetimes with a mean of L, a
 | Attribution | `WorkloadSample` | workload, accounting source, gap flag, awake seconds, redacted command | 0.7 M workload rows |
 | Raw file | `process_raw` | written on change, with a full snapshot every 10 minutes | 3 to 4 M rows |
 | History file | `rollup_1h`, `exe_1h` | sums, min, max, mean, histogram, covered, awake and active seconds per hour, plus the top executables per workload | About 2 K rows |
-| Session or run end | `session_summary`, `run` | exact totals per workload, kept for good | A row per workload |
+| Session or run | `session_summary`, `run` | exact totals per workload, added to tick by tick while it runs and closed at its end, kept for good | A row per workload |
 | Analysis | `Finding` | type, severity, confidence, workload, window, evidence | Tens |
 
 Volumes are estimates for 300 processes at a 1-second active interval, made with the earlier model of hot and cold sets and kept until the collector's rows per tick are measured.

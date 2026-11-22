@@ -242,6 +242,8 @@ After 48 hours a session's cost could only be rebuilt from coarser buckets, and 
 
 **Fix:** A session or tagged run is summarised exactly when it ends. `cost` and `diff` read the summaries.
 
+Amended by R122 (21 November 2026): a session longer than raw retention cannot be summarised from raw at its end. Totals accumulate in an open summary row as each raw tick is written, and the row is closed at the end, so a session of any length stays exact.
+
 ### R27: Percentiles could not be combined across periods
 
 The first review made the hourly p95 come from raw data, but a daily or weekly p95 still had nothing valid to be built from.

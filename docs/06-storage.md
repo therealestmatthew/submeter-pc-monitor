@@ -43,7 +43,7 @@ Setting `SUBMETER_HOME` moves everything under one folder. `submeter store statu
 - Active seconds, so idle and busy periods can be compared separately.
 - The machine's capacity in core-seconds, the shortest and longest sampling interval it contains, and an epoch number, all explained below.
 
-A sample belongs, whole, to the bucket that holds its end time. A bucket covers [start, start + width), the same half-open split that puts each sample in its day file, so no bucket needs two day files. A read of raw samples for a window, and a query that merges raw samples into wider steps, use the same rule.
+A sample belongs, whole, to the bucket that holds its end time. A bucket covers [start, start + width), the same half-open split that puts each sample in its day file, so no bucket needs two day files. A read of raw samples for a window, and a query that merges raw samples into wider steps, use the same rule. The per-executable part of a session or run summary is closed 60 seconds after the session or run ends, because a quiet process's CPU can be held that long before its row is written.
 
 ## Which data answers which question
 
@@ -73,7 +73,7 @@ The chart draws lookback on a logarithmic time axis marked 1 s, 1 min, 1 h, 2 d,
 
 - A question is answered from raw samples, merged to wider steps, while they cover the start of its window, and otherwise from hourly buckets. Every answer states the tier and resolution it came from.
 - Charts draw the minimum-to-maximum envelope, so a spike survives in wider steps.
-- A session or tagged run is summarised when it ends, so its cost stays exact after its raw data is gone.
+- A session's or tagged run's totals accumulate while it runs: as each raw tick is written, the server adds it to an open summary row in the history file, and closes the row when the session stops or the run ends. Nothing is recomputed from raw at the end, so its cost stays exact however long it ran and after its raw data is gone. After a restart the server catches up from the raw data still on disk; a summary whose raw data was deleted before that is marked incomplete. For a tagged run, CPU, I/O and process counts still come from the kernel at the end.
 - Each hour keeps the top ten executables per workload by CPU time and by peak memory, for a year. That answers "what inside the browser grew last week" without keeping every process.
 
 ## Metric catalogue
