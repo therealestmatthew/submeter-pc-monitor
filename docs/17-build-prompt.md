@@ -173,6 +173,7 @@ Operations:
 - Keep a rolled-up-until mark in the history file. At start, the server rolls up every raw day it holds, oldest first, before any retention pass, and deletes a raw file only after the mark has passed that day's end. As a safety cap, so a stopped server cannot fill the disk, the collector deletes its own raw files older than 7 days, or older than retention.raw if that is longer, and records each such deletion as an event row in its open raw file; the server raises a finding when it next reads that file. Retention deletes each raw file's .db with its -wal and -shm, treats a refused delete as one to retry on the next pass, and counts space as freed only when the files are gone.
 - Enforce the disk budget, default 2 GB, across all files. When over budget, delete the oldest raw file first, never going below 24 hours, then backups down to one, then raise a finding. Never delete history automatically. The server enforces the budget, so it is not enforced while the server is down; the collector does not enforce it, and its cap bounds the raw files to about 7 days, or to retention.raw if that is longer.
 - Export to JSON and CSV.
+- A record that cannot be stored never fails the tick. Text that is not valid UTF-8, such as an argument or an executable name with undecodable bytes, is stored with backslash escapes. If a write still fails, the collector puts its in-memory state back to match the file: that tick's samples are lost, and the next tick is written in full.
 
 ### Privacy and local security
 

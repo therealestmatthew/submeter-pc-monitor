@@ -325,6 +325,7 @@ Writes the daily raw file: workload totals every interval, process rows on chang
   - A gap is recorded in its own table, and that batch is written in full.
   - Not here yet (finding R39, planned): a gap column on workload_raw and system_raw, returned by workload_samples(). Until then a gap batch's workload and system rows look like observed time to the roll-up.
   - Command lines are redacted here whatever the caller did, in `exe_only` mode unless scrub is chosen. A test reads the file bytes to confirm the secret is absent. When redaction keeps nothing, the process is stored with no command line, which reads as unavailable.
+  - Text that is not valid UTF-8 is stored with backslash escapes, so an undecodable byte in a command line, an executable name, a workload name or an event detail is written as an escape such as `\udce9` and never fails the write. If a write fails anyway, the in-memory state goes back to what it was before the call, so it matches the file and the next write registers every process again. A test covers both.
   - RawStore rolls over at UTC midnight and flushes pending CPU before closing a file.
   - Not here yet (finding R55, planned): RawStore never reopening a day earlier than the open file. Today a batch stamped on an earlier day, after a wall-clock step back across midnight, reopens that closed day's file.
   - journal_size_limit bounds the write-ahead log left after each checkpoint to 4 MiB. Only close() truncates it.
