@@ -44,9 +44,9 @@ The mock models a machine with 16 logical cores, 12 on performance cores and 4 e
 | Builds | kernel · job | 0.3 | 1.2 GB | 4 |
 | Unattributed | polled | 0.25 | 2.0 GB | 61 |
 | System | counters | 0.35 | 2.6 GB | n/a |
-| Restricted | partial | 0.16 | n/a | 14 |
+| Restricted | polled | 0.16 | n/a | 14 |
 
-Together they use 4.96 cores, which is 31% of 16, and 20.5 GB, which is 64% of 32. Restricted memory is n/a, because none of its processes gives a USS reading, and a figure that no process gives is unavailable, never 0 (the metric catalogue in [Storage](06-storage.md)). The mock in `brief.html`, which is not updated after rulings, still shows Restricted's working set, 0.3 GB, and a total of 20.8 GB.
+Together they use 4.96 cores, which is 31% of 16, and 20.5 GB, which is 64% of 32. Restricted memory is n/a, because none of its processes gives a USS reading, and a figure that no process gives is unavailable, never 0 (the metric catalogue in [Storage](06-storage.md)). Restricted's source is polled, the path that measured its CPU time, because a partial or unavailable mark is kept on each figure, not on the workload. The mock in `brief.html`, which is not updated after rulings, still labels Restricted partial and shows its working set, 0.3 GB, and a total of 20.8 GB.
 
 The State column reads Steady unless one of these holds:
 
@@ -149,7 +149,7 @@ No workload owns these.
 **Restricted**
 
 ```text
-restricted  partial · 0.16 cores · n/a
+restricted  polled · 0.16 cores · n/a
 14 processes owned by other users.
 CPU time is counted.
 Command lines and USS are not readable,

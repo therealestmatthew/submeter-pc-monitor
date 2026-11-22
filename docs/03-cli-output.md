@@ -16,7 +16,7 @@ browser          polled        0.52     5.4 GB    5.0 GB           31
 ide              polled        0.31     3.6 GB    3.4 GB           14
 unattributed     polled        0.11     2.1 GB    2.0 GB           74
 system           counters      0.24        n/a       n/a          n/a
-restricted       partial       0.05        n/a       n/a           14
+restricted       polled        0.05        n/a       n/a           14
 
 Total  8.03 of 12.80 CPU-hours available (62.7%) over 48 min
 Note   polled workloads may undercount short-lived children
