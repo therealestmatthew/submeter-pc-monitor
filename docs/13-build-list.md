@@ -50,7 +50,7 @@ Three programs that share only files on disk: a collector, a server and the laun
 
 ## Commands
 
-- `daemon start | stop | status | install | uninstall`
+- `daemon start | stop | status | install | uninstall` stop writes each program's stop file
 - `run --as NAME [--label L] -- COMMAND`
 - `top` live workload view
 - `why` bottleneck verdict

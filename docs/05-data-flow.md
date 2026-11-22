@@ -47,6 +47,15 @@ The same flow in words:
 
 *Figure:* Data moves one way. The highlighted provider is the exact path: on Windows the Job Object totals CPU time, I/O and processes started for every process in a tagged group, including ones that exit between samples. It keeps no current memory figure, so a tagged group's memory is the sum of its members' USS, as for any workload. On Linux tagged runs are unavailable in version 1. Each program writes only its own files: the collector the raw files, the server the history file, and the launcher one small file per run, so a run is accounted for even if the collector was down. `submeter session` writes one marker file per session. Hourly buckets are built from raw data: the server reads windows from the raw files and writes the buckets to the history file.
 
+## How commands reach the programs
+
+Files are the only channel to the running programs and between them. There is no control port, and Windows has no signal that asks a process to exit cleanly, so a request is a file on both systems. Each program polls for its files each tick.
+
+- `submeter daemon stop` writes a stop file for each program. The program exits cleanly and removes its stop file as it goes. `submeter config reload` stops the programs this way before starting them again.
+- `submeter session start` and `stop` write a session marker file, which the server reads.
+- The launcher writes a run file for each tagged run. The collector reads the live ones to find the groups, and the server copies the final ones into the history file.
+- The collector reports to the server through `event` rows in its raw file. A change in a provider's status starts an epoch, and the overhead guard lengthening the intervals becomes a finding.
+
 ## Why tagged workloads use kernel accounting
 
 | Method | Share of short-lived CPU time captured |

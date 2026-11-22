@@ -28,7 +28,7 @@ Retention deletes each raw file's .db with its -wal and -shm. A file's space is 
 | --- | --- | --- |
 | Settings | `%APPDATA%\Submeter` | `~/.config/submeter` |
 | Data | `%LOCALAPPDATA%\Submeter\data` | `~/.local/share/submeter` |
-| Logs and locks | `%LOCALAPPDATA%\Submeter\state` | `~/.local/state/submeter` |
+| Logs, locks and control files | `%LOCALAPPDATA%\Submeter\state` | `~/.local/state/submeter` |
 | Exports and reports | Wherever you run the command, or the folder given with `--out` | Wherever you run the command, or the folder given with `--out` |
 
 Setting `SUBMETER_HOME` moves everything under one folder. `submeter store status` prints every file with its writer, size and coverage.
@@ -39,6 +39,17 @@ Setting `SUBMETER_HOME` moves everything under one folder. `submeter store statu
 - Each SQLite file runs in WAL mode with synchronous=NORMAL. A program crash loses nothing committed. A power loss or an operating-system crash may lose the samples written since the last checkpoint, up to a few minutes, and must never corrupt a file. The few minutes were measured at a 1 s interval and are to be confirmed at the shipped cadence once the collector exists.
 - Read transactions are kept short so the write-ahead log can be checkpointed. `journal_size_limit` bounds the log left after a checkpoint. `submeter store status` and `doctor` report the size of each write-ahead log, and a finding is raised when one is larger than that limit.
 - Every file carries a schema version, and readers accept every version still on disk.
+
+## How commands reach the programs
+
+Commands reach the running programs only through files, which each program polls each tick. There is no control port and no signal, because Windows has no signal that asks a process to exit cleanly. Control files live under the state folder. Run files stay in the data folder.
+
+| File | Written by | Read by | What it does |
+| --- | --- | --- | --- |
+| `control/stop-collector`, `control/stop-server` | `submeter daemon stop`, and `submeter config reload` before it starts the programs again | That program | Asks it to exit cleanly. The program removes the file as it exits |
+| `control/sessions/<id>.json` | `submeter session start` and `stop`, with an atomic rename | The server | Marks a session's start and stop |
+| `runs/<id>.json` | The launcher | The collector while live, the server once final | Names a tagged group, then holds its final totals, as the table of files above says |
+| `event` rows in the open raw file | The collector | The server | Reports a change in a provider's status, which starts an epoch, and the overhead guard lengthening the intervals, which becomes a finding |
 
 ## What every bucket records
 

@@ -58,6 +58,8 @@ Three programs share nothing but files on disk, and each writes only its own:
 
 `submeter session start` and `stop` write the session marker files, which the server reads. None of the three programs writes them.
 
+Files are the only channel to the running programs. There is no control port, and Windows has no signal that asks a process to exit cleanly, so each program polls for its control files each tick. `submeter daemon stop` writes a stop file for each program, which the program removes as it exits cleanly, and `submeter config reload` stops the programs this way before starting them again. The collector reports to the server through `event` rows in its raw file: a change in a provider's status starts an epoch, and the overhead guard lengthening the intervals becomes a finding.
+
 None of the three imports another, and every file has exactly one writer. The reason is that the collector is the hot path, and I want to be able to replace it with a Rust binary later without touching anything else. In phase 0, run the collector (snapshot, deltas, attribution and raw-store writes) for 10 minutes on my Windows machine, as the bulk-snapshot probe under How to work says. If, for 300 processes at the default intervals with the provider that will ship, its CPU time as a share of one core is over the overhead budget (3% active, 1% idle), or its private bytes are over 80 MB, stop and tell me, because that is my trigger for the Rust collector. The psutil fallback's figures are reported, not judged.
 
 ### Collection: two accounting paths
@@ -231,7 +233,7 @@ Behaviour:
 - Settings and rules are read when a program starts, and never while it runs. `submeter config reload` restarts the collector and server: it stops them as `daemon stop` does and starts them as `daemon start` does, which on Windows runs the scheduled task.
 - `submeter config show --effective` prints every value with its source. `submeter config check FILE` validates without applying.
 - A restart starts a new epoch only if something that defines an epoch (see Epochs under Store) has changed. The epoch is marked on the charts, so a shift in the data can be traced to a settings change.
-- The overhead guard outranks the configured interval. If the limit is exceeded, lengthen the collector's intervals and raise a finding. Stretch uss_interval or shrink uss_top_n before lengthening the active and idle intervals: on Linux the USS reading costs about 25 to 30 ms of CPU per GB resident in the processes read.
+- The overhead guard outranks the configured interval. If the limit is exceeded, lengthen the collector's intervals and record an event in the raw file, which the server raises as a finding. Stretch uss_interval or shrink uss_top_n before lengthening the active and idle intervals: on Linux the USS reading costs about 25 to 30 ms of CPU per GB resident in the processes read.
 
 Not configurable: observe-only behaviour, running without administrator rights, sending nothing off the machine, the rule that `submeter cost --json` and the report never contain command lines, and the rule that unavailable metrics are never estimated.
 
