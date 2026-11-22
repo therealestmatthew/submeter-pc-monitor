@@ -96,6 +96,8 @@ The chart draws lookback on a logarithmic time axis marked 1 s, 1 min, 1 h, 2 d,
 
 A workload's figure for a metric is the sum over its processes that gave a reading. If all of them did, it is a full sum. If only some did, the figure is marked partial, with the count of processes missing it. If none did, it is unavailable, shown as n/a and never as 0. The mark is kept for each figure, so the workload's accounting source still names the path that measured its CPU time.
 
+The raw and history tables hold a column for every metric in this catalogue from their first schema version, nullable, where NULL means unavailable. Every file carries a schema version, and readers accept every version still on disk. When the collector opens a day's raw file and finds a different schema version, it starts a new file for the rest of the day, under a name the file map parses and expires, and leaves the old file as it is.
+
 ## When two periods can be compared
 
 - An epoch is a stretch of time in which the sampling intervals, the rules file, each provider's status, the hardware and the Submeter version all stayed the same. Any change starts a new epoch and is marked on every chart. A wall-clock step that the collector detects also starts a new epoch.
