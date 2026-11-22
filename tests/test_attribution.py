@@ -55,6 +55,15 @@ def test_every_submeter_pid_and_its_children_are_submeter() -> None:
     assert names(assignment) == {10: SELF, 20: SELF, 21: SELF, 30: UNATTRIBUTED}
 
 
+def test_a_pid_registered_after_its_first_batch_moves_to_submeter() -> None:
+    attributor = Attributor(RuleSet(rule=(Rule(workload="agent", exe=("bash",)),)), self_pids=[10])
+    holder = sample(20, "python", 5)  # started by an agent's shell before its pid is known
+    assert names(attributor.assign([sample(5, "bash"), holder]))[20] == "agent"
+    attributor.set_self_pids({10, 20})
+    assert names(attributor.assign([sample(5, "bash"), holder]))[20] == SELF
+    assert attributor.changes == [(holder.key, "agent", SELF)]
+
+
 def test_an_inherited_workload_lasts_for_the_life_of_the_process() -> None:
     rules = RuleSet(
         rule=(

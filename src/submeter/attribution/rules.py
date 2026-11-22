@@ -3,8 +3,9 @@
 Each process maps to exactly one workload, tried in this order: membership of
 a tagged kernel group, then the rules in rules.toml, then inheritance from a
 valid parent, then the Unattributed or Restricted bucket. Nothing is dropped,
-which is what lets the parts be checked against the whole. Outside a kernel group,
-a process keeps its workload for life, unless it execs into a program a rule matches.
+which is what lets the parts be checked against the whole. Outside a kernel group
+or a Submeter pid, a process keeps its workload for life, unless it execs into a
+program a rule matches.
 
 A parent link counts only if the parent started no later than the child,
 because operating systems reuse process ids.
@@ -136,6 +137,10 @@ class Attributor:
         self._known: dict[ProcessKey, tuple[str, tuple[str, ...] | None, Attribution]] = {}
         self.changes: list[tuple[ProcessKey, str, str]] = []  # (process, from, to), last assign
 
+    def set_self_pids(self, pids: Collection[int]) -> None:
+        """Replace the Submeter pids from the next assign(), as holders start and stop."""
+        self._self_pids = frozenset(pids)
+
     def assign(
         self,
         processes: Sequence[ProcessSample],
@@ -177,12 +182,12 @@ class Attributor:
         return resolved
 
     def _remembered(self, process: ProcessSample, direct: Attribution | None) -> Attribution | None:
-        """Last batch's workload, unless a kernel group or, after an exec, a rule now decides."""
+        """Last batch's workload, unless a kernel group, a Submeter pid or, after exec, a rule."""
         before = self._known.get(process.key)
         if before is None:
             return direct
         exe, cmdline, kept = before
-        decides = direct is not None and direct.reason == "kernel group"
+        decides = direct is not None and direct.reason in ("kernel group", "submeter itself")
         if direct is None or (not decides and (exe, cmdline) == (process.exe, process.cmdline)):
             return kept
         if direct.workload != kept.workload:
