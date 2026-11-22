@@ -6,7 +6,7 @@ This section is the outcome of an audit of the store and of every metric that is
 
 ## Two lifetimes, two kinds of file
 
-Data that expires together lives in a file together, so retention is always a file delete: instant, exact, and with nothing left behind to compact. Each program writes only its own files, so every file has one writer.
+Data that expires together lives in a file together, so retention is always a file delete: exact, and with nothing left behind to compact. Each program writes only its own files, so every file has one writer.
 
 | File | Written by | Kept for | Holds | If it is lost |
 | --- | --- | --- | --- | --- |
@@ -19,6 +19,8 @@ Data that expires together lives in a file together, so retention is always a fi
 | `*.lock` | Each program | While the program runs | One lock per program, so two copies cannot run. The API token file comes with the API in version 1.1 | Nothing that was measured |
 
 The server keeps a rolled-up-until mark in the history file. At start it rolls up every raw day it holds, oldest first, before any retention pass, and it deletes a raw file only after the mark has passed that day's end. While the server is down, the collector deletes its own raw files older than 7 days, or older than `retention.raw` if that is longer, so a stopped server cannot fill the disk. It records each such deletion as an event in its open raw file, and the server raises a finding when it next reads that file.
+
+Retention deletes each raw file's .db with its -wal and -shm. A file's space is freed only once no program has it open: Windows refuses to delete a file that is open, and Linux keeps an open file's space until it is closed. A refused delete is retried on the next pass, and space counts as freed only when the files are gone.
 
 ## Where the files live
 
