@@ -89,7 +89,7 @@ Most come from `docs/09-telemetry.md` and `docs/10-known-limits.md`. No baseline
 - **GPU.** Whether the per-process GPU engine counters and the adapter's VRAM figures are readable. Per-process VRAM, and how far its sum drifts from the adapter total, comes after version 1.
 - **Thermal.** The brief says temperature is unavailable without administrator rights and that throttling can still be seen. Confirm both.
 - **Network (after version 1).** The brief says connections are visible for the user's own processes only.
-- **Security software.** Whether anything above is blocked, slowed or flagged on a managed computer. If a probe is flagged, stop and tell me.
+- **Security software.** Whether anything above is blocked, slowed or flagged on a managed computer. After `platform_check.py`, look in the Defender Operational log for attack surface reduction (ASR) events naming python.exe: psutil reads every process's command line with more access than the collector will use, and Defender's rule that guards the LSASS process can log that. If a probe is flagged, stop and tell me.
 
 ## 8. Running a swarm of agents on Windows
 
