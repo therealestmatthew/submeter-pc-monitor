@@ -62,7 +62,7 @@ vm.guest            opaque        WSL2 VM holds 3% of CPU time, under the 10% ru
 
 Restricted   14 processes visible but not readable
 Workloads    11 names, limit 200
-Collector    0.6% of one core at 1 s, 41 MB
+Collector    0.6% of one core at 2 s, 41 MB
 ```
 
 ## Where is the data, and how much?

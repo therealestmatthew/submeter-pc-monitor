@@ -70,7 +70,11 @@ A group's counters disappear when the group does, so:
 
 Linux tagged runs (after version 1). Version 1 builds kernel accounting on Windows only. On Linux, `submeter run` reports that tagged runs are unavailable and runs the command polled, so its workload is labelled polled. The design kept for later: the launcher starts the command inside a cgroup v2 and records the group in the run file. `cpu.stat` is always readable, and the memory and io files only where those controllers are delegated. The holder, final-totals and re-attach rules above apply to the cgroup in the same way.
 
-Bulk polling, for everything else. Do not walk processes one at a time on the hot path. On Windows, take one system-wide process snapshot per tick that returns CPU times, memory counters, I/O counters, thread and handle counts for every process. Microsoft documents that call as subject to change, so fall back to psutil if it fails, report the provider as partial while the fallback is in use, and keep a CI test that fails loudly if the snapshot stops parsing. On Linux, version 1 polls through the psutil provider, and the direct /proc reader comes after version 1. psutil measured about 95 ms per tick, store writes included, at 300 processes on Linux, so there the overhead guard holds the active interval at about 3.2 s or longer and the idle interval at about 9.5 s or longer. Keep a hot set of recently active processes at the active interval and a cold set at the cold interval. Polled workloads are labelled as polled, with a note that short-lived children may be undercounted. On Linux, recover reaped children's CPU time from the parent's child-time counters.
+Bulk polling, for everything else. Do not walk processes one at a time on the hot path. Every tick, read the cumulative CPU and I/O counters and the memory gauges of every process. Read the costly fields on a slower cadence: USS or PSS at the USS interval, for the largest processes only; the working folder only when a rule uses it, at the USS interval; and the command line as each system's passage below says. The default active interval of 2 s fits the overhead budget only with a direct reader, such as the Windows bulk snapshot. With psutil the overhead guard lengthens the interval. Polled workloads are labelled as polled, with a note that short-lived children may be undercounted.
+
+On Windows, take one system-wide process snapshot per tick that returns CPU times, memory counters, I/O counters, thread and handle counts for every process. Microsoft documents that call as subject to change, so fall back to psutil if it fails, report the provider as partial while the fallback is in use, and keep a CI test that fails loudly if the snapshot stops parsing. Read a process's command line once, when it is first seen, because a Windows process cannot start running a different program.
+
+On Linux, version 1 polls through the psutil provider, and the direct /proc reader comes after version 1. psutil measured about 95 ms per tick, store writes included, at 300 processes on Linux, so there the overhead guard holds the active interval at about 3.2 s or longer and the idle interval at about 9.5 s or longer. Read command lines again at the USS interval, because a process can exec another program, or rewrite its title, under the same pid and start time. Recover reaped children's CPU time from the parent's child-time counters.
 
 Rules for both paths:
 
@@ -176,11 +180,9 @@ Settings live in submeter.toml and attribution rules in rules.toml. Both load in
 Sampling settings and defaults:
 
 - mode = adaptive (or fixed)
-- active_interval = 1s (allowed 250ms to 10s)
+- active_interval = 2s (allowed 250ms to 10s)
 - idle_interval = 5s (1s to 60s)
-- cold_interval = 10s (5s to 60s)
 - idle_after = 60s
-- hot_cpu_threshold = 0.5%
 - uss_interval = 30s, uss_top_n = 25
 - gpu_interval = 2s
 - on_battery_multiplier = 2
@@ -257,7 +259,7 @@ Build these components, and tell me before adding any that are not listed:
 
 1. core.models and core.config
 2. providers.base, providers.windows.bulk and providers.system (Windows counters; providers.linux.procfs and the Linux system counters come after version 1)
-3. collector.sampler (hot and cold sets, adaptive cadence, deltas, gap detection, overhead guard)
+3. collector.sampler (every process every tick with the costly fields on a slower cadence, adaptive cadence, deltas, gap detection, overhead guard)
 4. store.files, store.raw, store.rollup, store.query
 5. launcher (`submeter run`) and providers.group (Job Object totals; cgroup totals come after version 1)
 6. attribution and privacy.redact

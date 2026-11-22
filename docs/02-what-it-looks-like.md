@@ -32,7 +32,7 @@ The mock models a machine with 16 logical cores, 12 on performance cores and 4 e
 | CPU time in use | Percent of 16 cores | "5.0 of 16 cores" | Turns serious above 86% |
 | Memory commit | Percent of 32 GB | "20.8 of 32 GB" | Turns warning above 74% and serious above 86% |
 | GPU busiest engine | Percent | "3D engine · VRAM 2.8 of 12 GB". VRAM is modelled as 2.1 GB plus the GPU percentage divided by 22 | Shows the percentage |
-| Submeter overhead | Percent of one core | "1 s cadence · limit 3%" | Shows the share of the 3% limit in use |
+| Submeter overhead | Percent of one core | "2 s cadence · limit 3%" | Shows the share of the 3% limit in use |
 
 ### The seven workloads at rest
 

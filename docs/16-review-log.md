@@ -64,6 +64,8 @@ Reading 300 processes one at a time every second in Python likely costs 3 to 6% 
 
 **Fix:** One bulk system call returns every process's counters at once. Processes are split into a hot set at 1 s and a cold set at 10 s. USS is read slowly and only for the largest processes. The budget is now 1% at idle and 3% when active, and cadence yields before the budget does.
 
+Amended by R142 (21 November 2026): there are no hot and cold sets. Every tick reads every process's counters, and only the costly fields (USS or PSS, working folders, and command lines on Linux) wait for the USS interval. The default active interval is 2 s, which fits the budget only with a direct reader such as the bulk snapshot; with psutil the overhead guard lengthens the interval.
+
 ### R03: Raw storage would reach several gigabytes
 
 300 processes at 1 s for 48 hours is 51.8 million rows before indexes. The first draft set retention by age only, with no ceiling on disk.

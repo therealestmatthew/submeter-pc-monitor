@@ -8,68 +8,60 @@ Two files: `submeter.toml` for settings and `rules.toml` for attribution rules. 
 
 Move the controls to see what a sampling choice costs. The figures come from a simple model with assumed costs, not from measurements. Phase 0 replaces the assumptions with real numbers.
 
-The explorer in `brief.html` is a calculator with three sliders. It is a model with assumed costs, not a measurement. Its inputs, formulas and results are set out here.
+`brief.html` holds the calculator of the v8 brief as delivered, with three sliders, one of them for the cold interval that version 1 no longer has. That page is frozen, and this section supersedes it. The model uses assumed costs, not measurements. Its inputs, formulas and results are set out here.
 
 **Inputs**
 
-- **Active interval:** 250 ms, 500 ms, 1 s, 2 s, 5 s or 10 s. It starts at 1 s.
-- **Cold interval:** 5 s, 10 s, 30 s or 60 s. It starts at 10 s.
+- **Active interval:** 250 ms, 500 ms, 1 s, 2 s, 5 s or 10 s. It starts at 2 s.
 - **Processes running:** 100 to 1,000 in steps of 50. It starts at 300.
 
-**Formulas**, where a is the active interval in seconds, c the cold interval in seconds and P the number of processes
+**Formulas**, where a is the active interval in seconds and P the number of processes
 
 - Cost of one bulk sample, assumed: 1.5 ms plus 0.012 ms for each process.
 - **Collector overhead**, shown "of one core, limit 3% when active": the sample cost divided by a, as a percentage, plus 0.2 points for the store and the API.
-- Hot processes: 10% of P, and at least 10. Cold processes: the rest.
-- **Raw rows per 48 h**: hot × 172,800 ÷ a, plus cold × 172,800 ÷ c ÷ 3, plus 8 × 172,800 ÷ a. A cold process is assumed to change enough to be written about one time in three, and the 8 is the workload rows written each interval.
-- **Raw data on disk**, shown "of the 2 GB budget": rows × 90 bytes.
 - **Short-lived CPU that polling captures**, shown for "children averaging 300 ms. Tagged workloads get 100%": (0.3 ÷ a) × (1 − e^(−a ÷ 0.3)).
+
+Raw rows and raw data on disk are not modelled. Every process is read every tick, but a process row is written only when the process changes enough, and how often that happens is not known until the collector's rows and bytes per tick are measured.
 
 **Status line**
 
 | When | Label | Message |
 | --- | --- | --- |
-| Overhead above 3% and disk above 2 GB | Over | Over both budgets. The overhead guard would lengthen the interval, and raw retention would shrink to about N hours. |
 | Overhead above 3% | Over | Over the overhead limit. The guard would lengthen the interval until the collector is back under 3%. |
-| Disk above 2 GB | Over | Over the disk budget. Raw retention would shrink from 48 to about N hours. |
 | Overhead above 1% | Active only | Fine while active, but above the 1% idle limit, so adaptive mode matters at this setting. |
-| Otherwise | In budget | Inside both budgets. |
-
-N is 96 divided by the disk figure in GB, rounded.
+| Otherwise | In budget | Inside the overhead budget. |
 
 **Results**
 
-| Active interval | Cold interval | Processes | Collector overhead | Raw rows per 48 h | Raw data on disk | Polling captures | Status |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 250 ms | 10 s | 300 | 2.2% | 27.8 M | 2.50 GB | 68% | Over the disk budget, raw retention about 38 h |
-| 500 ms | 10 s | 300 | 1.2% | 14.7 M | 1.32 GB | 49% | Active only |
-| 1 s | 10 s | 300 | 0.7% | 8.1 M | 0.73 GB | 29% | In budget |
-| 2 s | 10 s | 300 | 0.5% | 4.8 M | 0.44 GB | 15% | In budget |
-| 5 s | 10 s | 300 | 0.3% | 2.9 M | 0.26 GB | 6% | In budget |
-| 10 s | 10 s | 300 | 0.3% | 2.2 M | 0.20 GB | 3% | In budget |
-| 1 s | 10 s | 100 | 0.5% | 3.6 M | 0.33 GB | 29% | In budget |
-| 1 s | 10 s | 1000 | 1.6% | 23.8 M | 2.15 GB | 29% | Over the disk budget, raw retention about 45 h |
-| 1 s | 5 s | 300 | 0.7% | 9.7 M | 0.87 GB | 29% | In budget |
-| 1 s | 60 s | 300 | 0.7% | 6.8 M | 0.61 GB | 29% | In budget |
-| 250 ms | 5 s | 1000 | 5.6% | 85.0 M | 7.65 GB | 68% | Over both budgets, raw retention about 13 h |
+| Active interval | Processes | Collector overhead | Polling captures | Status |
+| --- | --- | --- | --- | --- |
+| 250 ms | 300 | 2.2% | 68% | Active only |
+| 500 ms | 300 | 1.2% | 49% | Active only |
+| 1 s | 300 | 0.7% | 29% | In budget |
+| 2 s | 300 | 0.5% | 15% | In budget |
+| 5 s | 300 | 0.3% | 6% | In budget |
+| 10 s | 300 | 0.3% | 3% | In budget |
+| 1 s | 100 | 0.5% | 29% | In budget |
+| 1 s | 1000 | 1.6% | 29% | Active only |
+| 250 ms | 1000 | 5.6% | 68% | Over the overhead limit |
 
 ## Sampling settings
 
 | Setting | Default | Range | What it changes |
 | --- | --- | --- | --- |
 | `mode` | adaptive | adaptive, fixed | Adaptive moves between the active and idle intervals. Fixed always uses the active interval |
-| `active_interval` | 1s | 250ms to 10s | How often the hot set is sampled while anything is busy |
+| `active_interval` | 2s | 250ms to 10s | How often every process is sampled while anything is busy |
 | `idle_interval` | 5s | 1s to 60s | Sampling rate once the machine has been quiet |
-| `cold_interval` | 10s | 5s to 60s | How often inactive processes are checked |
 | `idle_after` | 60s | 10s to 10m | Quiet time before dropping to the idle interval |
-| `hot_cpu_threshold` | 0.5% | 0.1% to 5% | CPU use that moves a process into the hot set |
-| `uss_interval` | 30s | 10s to 5m | How often the expensive memory reading is taken |
-| `uss_top_n` | 25 | 0 to 200 | How many of the largest processes get that reading |
+| `uss_interval` | 30s | 10s to 5m | How often the costly per-process readings are taken: the expensive memory reading, working folders when a rule uses them, and command lines on Linux |
+| `uss_top_n` | 25 | 0 to 200 | How many of the largest processes get the expensive memory reading |
 | `gpu_interval` | 2s | 1s to 30s | GPU load and adapter VRAM sampling |
 | `thermal_interval` | 5s | 1s to 60s | Not used in version 1, which reads no temperatures or battery level. Frequency and the on-battery flag are read with the system counters. Later, temperature and battery sampling |
 | `network_interval` | 5s | 1s to 60s | Not used in version 1, which reads no network figures. Later, connection counts and interface bytes |
 | `on_battery_multiplier` | 2 | 1 to 10 | Stretches every interval while on battery |
 | `overhead_limit` | 1% idle, 3% active | 0.5% to 10% | When exceeded, intervals lengthen and a finding is raised |
+
+Every tick reads CPU time, I/O and memory for every process. Only the costly readings wait for the USS interval. The 2 s default active interval fits the overhead budget only with a direct reader, such as the Windows bulk snapshot. With psutil, which is the fallback on Windows and the reader on Linux in version 1, the overhead guard lengthens the intervals, as [Known limits](10-known-limits.md) states for Linux.
 
 A session can override the interval for its own duration, for example `submeter session start bench --interval 250ms`.
 
@@ -155,9 +147,8 @@ The same file is in this package as [`examples/submeter.toml`](../examples/subme
 ```toml
 [sampling]
 mode = "adaptive"
-active_interval = "1s"
+active_interval = "2s"
 idle_interval = "5s"
-cold_interval = "10s"
 idle_after = "60s"
 uss_interval = "30s"
 uss_top_n = 25

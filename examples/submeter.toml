@@ -1,8 +1,7 @@
 [sampling]
 mode = "adaptive"
-active_interval = "1s"
+active_interval = "2s"
 idle_interval = "5s"
-cold_interval = "10s"
 idle_after = "60s"
 uss_interval = "30s"
 uss_top_n = 25

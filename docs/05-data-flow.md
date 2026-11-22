@@ -9,7 +9,7 @@ flowchart TD
     run["submeter run<br/>starts a tagged tree"]
     subgraph collector["COLLECTOR PROCESS"]
         ka["Kernel accounting<br/>Job Object on Windows<br/>exact, tagged trees"]
-        bp["Bulk polling<br/>all processes at once<br/>hot 1 s · cold 10 s"]
+        bp["Bulk polling<br/>every process each tick<br/>2 s active · 5 s idle"]
         ex["Extended<br/>GPU load · adapter VRAM<br/>tiered by privilege"]
         sampler["Sampler<br/>deltas over a monotonic clock · sleep gaps recorded<br/>identity = pid + start time · overhead guard"]
         attribution["Attribution<br/>group membership, then rules.toml, then parent<br/>one workload each · secrets scrubbed here"]
@@ -38,7 +38,7 @@ flowchart TD
 The same flow in words:
 
 1. `submeter run` starts a tagged tree and registers the group with the collector.
-2. Inside the collector process, three kinds of provider return cumulative counters. Kernel accounting, through a Job Object on Windows, is exact and covers tagged trees. On Linux tagged runs are unavailable in version 1, so `submeter run` runs the command polled; the cgroup path comes after version 1. It is the provider highlighted in the drawing. Bulk polling reads all processes at once, the hot set every 1 s and the cold set every 10 s. Extended providers cover GPU load and the adapter's VRAM, tiered by privilege.
+2. Inside the collector process, three kinds of provider return cumulative counters. Kernel accounting, through a Job Object on Windows, is exact and covers tagged trees. On Linux tagged runs are unavailable in version 1, so `submeter run` runs the command polled; the cgroup path comes after version 1. It is the provider highlighted in the drawing. Bulk polling reads every process at once on each tick, by default every 2 s while anything is busy and every 5 s once the machine is quiet, and reads the costly fields, such as USS or PSS, on a slower cadence. Extended providers cover GPU load and the adapter's VRAM, tiered by privilege.
 3. The sampler turns counters into deltas over a monotonic clock, records sleep gaps, identifies a process by pid plus start time, and runs the overhead guard. It emits a Sample.
 4. Attribution gives each process one workload: by group membership, then `rules.toml`, then its parent. Secrets are scrubbed here. It emits a WorkloadSample, redacted.
 5. The store has one lifetime per file, a 2 GB cap and one writer for each file: raw files kept 48 h and a history file that is kept.
@@ -52,6 +52,7 @@ The same flow in words:
 | Method | Share of short-lived CPU time captured |
 | --- | --- |
 | Polling every 5 s | 6% |
+| Polling every 2 s, the default | 15% |
 | Polling every 1 s | 29% |
 | Polling every 250 ms | 68% |
 | Kernel accounting | 100% |
@@ -72,4 +73,4 @@ The model: children have exponentially distributed lifetimes with a mean of L, a
 | Session or run end | `session_summary`, `run` | exact totals per workload, kept for good | A row per workload |
 | Analysis | `Finding` | type, severity, confidence, workload, window, evidence | Tens |
 
-Volumes are estimates for 300 processes at a 1-second active interval.
+Volumes are estimates for 300 processes at a 1-second active interval, made with the earlier model of hot and cold sets and kept until the collector's rows per tick are measured.

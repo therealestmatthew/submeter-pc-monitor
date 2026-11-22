@@ -48,7 +48,7 @@ The chart draws lookback on a logarithmic time axis marked 1 s, 1 min, 1 h, 2 d,
 
 | Tier | Resolution | Reaches back |
 | --- | --- | --- |
-| Raw samples | 1 s | 48 h |
+| Raw samples | 2 s by default | 48 h |
 | Hourly buckets | 1 h | kept |
 | Run, session totals | one row per run or session | kept |
 
@@ -101,7 +101,7 @@ The chart draws lookback on a logarithmic time axis marked 1 s, 1 min, 1 h, 2 d,
 
 | Files | Size | Basis |
 | --- | --- | --- |
-| Raw, 2 to 3 daily files | 0.7 to 1.1 GB | 8.1 M rows per 48 hours at 90 bytes each |
+| Raw, 2 to 3 daily files | 0.7 to 1.1 GB | 8.1 M rows per 48 hours at 90 bytes each, from the earlier model of a 1 s active interval with hot and cold sets, kept until the collector's rows and bytes per tick are measured |
 | History | 0.1 GB | Hourly buckets and per-executable summaries. Grows about 0.1 GB a year |
 | Backups, 3 copies | 0.3 GB | Three copies of the history file |
 | Logs | 0.05 GB | 2 programs, 5 files of 5 MB each |
