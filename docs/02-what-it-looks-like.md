@@ -143,7 +143,7 @@ system  counters · 0.35 cores · 2.6 GB
 The System, Registry, MemCompression
 and Secure System processes, interrupts,
 deferred calls and non-process memory.
-No workload owns these.
+No rule or tagged run claims these.
 ```
 
 **Restricted**
