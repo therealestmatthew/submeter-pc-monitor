@@ -74,6 +74,8 @@ def test_an_inherited_workload_lasts_for_the_life_of_the_process() -> None:
     assert attributor.changes == [(ProcessKey(pid=23, started=123.0), "agent", "db")]
     gone = names(attributor.assign(later[:3], exited=[kids[1].key]))  # forgotten once exited
     assert (gone[21], gone[22]) == ("agent", "services")
+    attributor.assign(later[:3], {kids[0].key: "agent:run"})  # 21 joins a kernel group late
+    assert attributor.changes == [(kids[0].key, "agent", "agent:run")]
 
 
 def test_capacity_reconciles_with_a_not_seen_by_polling_term() -> None:

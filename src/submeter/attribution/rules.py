@@ -179,10 +179,11 @@ class Attributor:
     def _remembered(self, process: ProcessSample, direct: Attribution | None) -> Attribution | None:
         """Last batch's workload, unless a kernel group or, after an exec, a rule now decides."""
         before = self._known.get(process.key)
-        if before is None or (direct is not None and direct.reason == "kernel group"):
+        if before is None:
             return direct
         exe, cmdline, kept = before
-        if direct is None or (exe, cmdline) == (process.exe, process.cmdline):
+        decides = direct is not None and direct.reason == "kernel group"
+        if direct is None or (not decides and (exe, cmdline) == (process.exe, process.cmdline)):
             return kept
         if direct.workload != kept.workload:
             self.changes.append((process.key, kept.workload, direct.workload))
