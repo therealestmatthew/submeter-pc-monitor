@@ -250,7 +250,10 @@ def aggregate(
     for workload, group in kernel_workloads.items():
         total = totals.setdefault(workload, _Total())
         total.cpu_s, total.processes = group.cpu_s, group.processes
-        if group.io_read_bytes is not None:  # else the polled sum, until records can say None
+        # Unreadable group I/O keeps the polled sum. When polling saw no member, that I/O and
+        # the memory are 0 standing for unavailable, which AGENTS.md forbids, until R42 and R46
+        # (planned) let WorkloadSample say None.
+        if group.io_read_bytes is not None:
             total.io_read_bytes = group.io_read_bytes
         if group.io_write_bytes is not None:
             total.io_write_bytes = group.io_write_bytes
