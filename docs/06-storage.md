@@ -90,7 +90,7 @@ The chart draws lookback on a logarithmic time axis marked 1 s, 1 min, 1 h, 2 d,
 
 ## When two periods can be compared
 
-- An epoch is a stretch of time in which the sampling intervals, the rules file, each provider's status, the hardware and the Submeter version all stayed the same. Any change starts a new epoch and is marked on every chart.
+- An epoch is a stretch of time in which the sampling intervals, the rules file, each provider's status, the hardware and the Submeter version all stayed the same. Any change starts a new epoch and is marked on every chart. A wall-clock step that the collector detects also starts a new epoch.
 - Sums compare freely across epochs. Maxima and percentiles depend on the sampling interval, so a comparison that crosses an interval change is flagged.
 - A rules change moves processes between workloads. Stored history is not rewritten. The boundary is marked.
 - Percentages use the capacity recorded in each bucket, so new hardware does not distort old data.

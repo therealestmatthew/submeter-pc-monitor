@@ -245,6 +245,7 @@ Subtracts consecutive snapshots to find what each process did during the interva
   - An interval longer than 30 seconds, or one in which the clock that counts suspend ran more than 2 seconds ahead of the clock that does not, is a gap: deltas are zero and the batch says so.
   - Not here yet: the adaptive cadence loop and the overhead guard.
   - The fixed 30-second rule and the zeroed deltas are wrong (finding R38), and a planned task replaces them together with R39's gap handling in the store. ingest() will take the interval expected for the tick. A tick will be a gap only past three times that interval plus the 2-second slack, or when the suspend test fires, and a gap will keep its CPU and I/O deltas. Until then any interval over 30 seconds records zero CPU, and `submeter top --seconds` above 30 prints zero cores for every workload.
+  - Not here yet (finding R55, planned): stamps anchored on the interval clock, and a 'clock stepped' event when the wall clock moves away from them. Today a batch is stamped with the wall clock as read, so a step back stamps a batch earlier than the one before, and nothing records the step.
 - **Builds toward:** Core of component 07, collector.sampler
 - **Provides:** `Sampler`
 - **Imports:** [`core.models`](../src/submeter/core/models.py)
@@ -301,6 +302,7 @@ Writes the daily raw file: workload totals every interval, process rows on chang
   - Not here yet (finding R39, planned): a gap column on workload_raw and system_raw, returned by workload_samples(). Until then a gap batch's workload and system rows look like observed time to the roll-up.
   - Command lines are redacted here whatever the caller did. A test reads the file bytes to confirm the secret is absent.
   - RawStore rolls over at UTC midnight and flushes pending CPU before closing a file.
+  - Not here yet (finding R55, planned): RawStore never reopening a day earlier than the open file. Today a batch stamped on an earlier day, after a wall-clock step back across midnight, reopens that closed day's file.
 - **Builds toward:** Component 09, store.raw
 - **Provides:** `SCHEMA_VERSION`, `RawFile`, `RawStore`
 - **Imports:** [`core.models`](../src/submeter/core/models.py), [`privacy.redact`](../src/submeter/privacy/redact.py), [`store.files`](../src/submeter/store/files.py)

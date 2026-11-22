@@ -82,6 +82,7 @@ Rules for both paths:
 
 - Providers return cumulative counters. The sampler computes rates from deltas, so a change of cadence never loses or invents CPU time. Every sample records the interval it covers.
 - Detect suspend and resume. Suspend is the growth of a clock that counts sleep over one that does not: CLOCK_BOOTTIME minus CLOCK_MONOTONIC on Linux, QueryPerformanceCounter minus QueryUnbiasedInterruptTime on Windows. Neither needs administrator rights. Read the clock that stops during suspend only for this test, because on Windows it is accurate only to a system clock tick, up to 15.625 ms. A tick is also a gap, a stall, when its interval is longer than three times the interval the collector meant to wait plus 2 s of slack; no fixed length makes a gap, because the settings with the battery multiplier allow intervals up to 600 s, and the overhead guard lengthens intervals. Record a gap. A gap keeps its CPU and I/O deltas: the counters are cumulative, so the deltas are exact, and a suspended process accrues nothing. The gap flag controls only how the interval's time is counted, so a gap never shows as one giant sample.
+- Stamp each batch with the wall time read at an anchor plus the time elapsed since on the interval clock, so a suspend never makes a stamp lag, and stamps never go backwards. When the wall clock departs from the stamp by more than the 2 s slack and the suspend test does not fire, the wall clock was stepped: record a 'clock stepped' event, which starts an epoch, not a gap, so the interval keeps its CPU and its coverage. After a step forward, re-anchor. The rule after a step back, and for slow drift between the two clocks, is an open question for the owner: re-anchoring would move stamps backwards, and keeping the anchor leaves them ahead of the wall clock for the rest of the run.
 - Identify a process by pid plus start time. Treat a parent link as valid only if the parent started before the child.
 - A process the collector cannot read is counted in a Restricted bucket with whatever is visible. It is never dropped.
 - WSL2 and Docker Desktop appear on Windows as a single VM process. Show it as its own workload labelled opaque, and report its share of busy CPU time, and of capacity, in `doctor`. A collector inside the guest is not in version 1.
@@ -121,7 +122,7 @@ Data that expires together lives in a file together, so retention is always a fi
 Rules for raw files:
 
 - Workload totals are written every sample, and each workload and system row carries its batch's gap flag. Per-process rows are written only when a value changes beyond a threshold, plus a full snapshot of every live process at the start of each file and every 10 minutes, so no query looks back further than that.
-- A closed day's file is never written again and never migrated. Open closed files only for the length of a query, so they can be deleted on Windows.
+- A closed day's file is never written again and never migrated, even when the wall clock steps back across midnight. Open closed files only for the length of a query, so they can be deleted on Windows.
 - Process rows live only in raw files. Nothing keyed by pid is kept beyond 48 hours.
 
 What every hourly bucket records:
@@ -140,7 +141,7 @@ Summaries that must outlive the raw data:
 - When a session stops or a tagged run ends, store its exact totals per workload: CPU seconds, peak and mean memory, I/O, processes started and top executables. `cost` and `diff` read these.
 - Each hour, store the top 10 executables per workload by CPU time and by peak memory, keyed by executable name and never by pid. Keep these one year.
 
-Epochs. An epoch is a stretch of time in which the sampling intervals, the rules file, each provider's status, the hardware and the Submeter version all stayed the same. Any change starts a new epoch with a stated reason. The collector records such events in the raw file and the server turns them into epochs. Never rewrite stored history when rules change.
+Epochs. An epoch is a stretch of time in which the sampling intervals, the rules file, each provider's status, the hardware and the Submeter version all stayed the same. Any change starts a new epoch with a stated reason. A wall-clock step that the collector detects also starts a new epoch. The collector records such events in the raw file and the server turns them into epochs. Never rewrite stored history when rules change.
 
 Queries. Answer from raw samples, merged to wider steps, while they cover the start of the window, and otherwise from hourly buckets. Return the tier and resolution with every result. Charts draw the minimum-to-maximum envelope. Leave buckets with less than half their time covered out of baselines and trends. Work out days and weeks in my time zone at query time, from buckets stored in UTC.
 
