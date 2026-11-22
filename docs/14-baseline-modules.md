@@ -180,9 +180,10 @@ Builds one immutable Settings object from defaults, submeter.toml, environment v
 
 - **Why it exists:** The rule that values are refused and never clamped, and the config show --effective command, both need a single validated source of truth.
 - **Worth knowing:**
-  - Every default and range in the tables of `docs/08-configuration.md` was checked against this module. A value outside its range is refused, with the range in the error.
-  - Unknown keys are errors, so a typo cannot silently do nothing.
-  - Alert rules are structured fields. The TOML key "for" maps to the field duration.
+  - Every default in the tables of `docs/08-configuration.md`, and every range in its sampling table, was checked against this module. A value outside a range the module holds is refused, with the range in the error.
+  - Not here yet: most ranges in the other-settings table of docs/08. Retention, the disk budget, the memory change threshold, the leak settings, the verdict window, the cooldown and unattributed_alert take any value, a negative one or NaN included. A planned task adds their ranges, with retention.raw at least 24h (finding R111).
+  - Unknown keys are errors, so a typo cannot silently do nothing. The exception is `verdict.thresholds`, still a free mapping of names to numbers, which accepts a misspelt name; the same planned task makes it a model with one named field per signal.
+  - Alert rules are structured fields. The TOML key "for" maps to the field duration. A rule's metric is not yet checked against the seven ids in docs/08, or against the workload it applies to; the planned task adds both checks.
   - Each of `privacy.redact_patterns` must compile as a regular expression. A bad one is refused, and the error names it.
   - Environment variables look like `SUBMETER_SAMPLING__ACTIVE_INTERVAL`.
   - The sample `submeter.toml` in `examples/` loads through this module without error.
@@ -431,7 +432,7 @@ The command line, with the first five commands: doctor, top, config show, config
   - doctor, top and store status accept --json. config show accepts --effective, which is also its default.
   - doctor lists any Submeter path that other users can read, or says the check is unavailable on Windows.
   - top reads working folders only when a rule matches on cwd.
-  - A bad settings file exits with code 2 and one line per problem.
+  - A bad settings file exits with code 2 and one line per problem. Not handled yet: a named file that is missing or not UTF-8, or a `--rules` file that does not validate. For a missing file, config show uses the defaults and top uses no rules without saying so, and config check stops with an uncaught error; the other cases stop the command with an uncaught error. A planned task makes each exit with code 2 (finding R111).
 - **Builds toward:** Start of component 12, cli
 - **Provides:** `app`, `config_app`, `store_app`, `JsonFlag`, `FileOption`, `doctor`, `top`, `config_show`, `config_check`, `store_status`
 - **Imports:** [`attribution.rules`](../src/submeter/attribution/rules.py), [`collector.sampler`](../src/submeter/collector/sampler.py), [`core.config`](../src/submeter/core/config.py), [`core.units`](../src/submeter/core/units.py), [`providers.base`](../src/submeter/providers/base.py), [`providers.psutil_provider`](../src/submeter/providers/psutil_provider.py), [`store.files`](../src/submeter/store/files.py), typer

@@ -73,36 +73,38 @@ The overhead budget covers every Submeter process: the collector, the server and
 
 ## Other settings worth exposing
 
-| Group | Setting | Default | Why you would change it |
-| --- | --- | --- | --- |
-| Storage | `retention.raw` | 48h | Keep full detail longer for slow investigations |
-| Storage | `retention.executables` | 1y | How long the hourly per-executable summaries are kept |
-| Storage | `disk_budget` | 2GB | Raise on a large drive, lower on a laptop |
-| Storage | `change_threshold` | 0.5 pt CPU, 8MB | How much a process must change before a row is written |
-| Storage | `keyframe_interval` | 10m | How often every live process is written in full |
-| Storage | `backups.keep` | 3 | Copies of the history file to keep |
-| Analysis | `leak.min_duration` | 2h | Shorter catches leaks sooner and raises more false alarms |
-| Analysis | `leak.min_slope` | 50MB/h | Ignore growth too slow to matter within a day |
-| Analysis | `slow_growth.window` | 7d | Not used in version 1, which has no slow-growth check. Later, the daily minimums the slow-growth check fits: at least 7, which needs 8 days of hourly buckets |
-| Analysis | `baseline.learning_period` | 7d | Not used in version 1, which has no baseline anomaly check. Later, the days of history before anomalies are raised |
-| Analysis | `baseline.window` | 14d | Not used in version 1. Later, how far back the usual range looks |
-| Analysis | `baseline.sensitivity` | 4.0 | Not used in version 1. Later, the distance from normal, in spreads, that counts as an anomaly |
-| Verdict | `window` | 5m | How far back `submeter why` looks |
-| Verdict | `thresholds.*` | see the verdict table in [How it decides](07-analysis.md) | Tune each signal to your hardware |
-| Verdict | `min_confidence` | moderate | Below this the verdict reads Inconclusive |
-| Alerts | `rules[]` | 3 built in | Your own thresholds per workload or system-wide |
-| Alerts | `cooldown` | 15m | Minimum gap between repeats of the same alert |
-| Alerts | `quiet_hours` | off | Not used in version 1, which has no desktop notifications. Later, it holds notifications overnight |
-| Alerts | `channels` | dashboard, desktop | Not used in version 1, where every alert is a finding. Later, it says where alerts appear. Nothing is sent off the machine |
-| Attribution | `rules_file` | rules.toml | Where workload rules live |
-| Attribution | `inherit_from_parent` | true | Turn off to see helper processes on their own. A rule's `include_children` overrides it, in either direction, for the processes that rule matches |
-| Attribution | `unattributed_alert` | 10% CPU | Tells you when a rule is missing |
-| Attribution | `max_workload_names` | 200 | `doctor` warns when names multiply past this |
-| Privacy | `redaction` | exe_only | Stores the executable name and no arguments, not even the first, which a process can rewrite into a whole title. Set to `scrub` to keep the arguments with known secret shapes hidden. Scrub is best-effort: it cannot recognise every credential |
-| Privacy | `redact_patterns[]` | none | Add your own secret formats, as regular expressions, which scrub mode hides on top of its built-in shapes. A pattern that does not compile is refused by name |
-| Providers | `enabled[]` | all | Switch off anything you do not need |
-| API and UI | `port, mcp_enabled` | 8787, false | Not used in version 1, which has no API or MCP server. In version 1.1, `port` moves the API, and its default changes, because 8787 is also the default of Wrangler's dev server |
-| API and UI | `units, default_range` | GiB, 1h | Not used in version 1. In version 1.1, how the dashboard opens |
+| Group | Setting | Default | Range | Why you would change it |
+| --- | --- | --- | --- | --- |
+| Storage | `retention.raw` | 48h | 24h or more; the upper bound is not set yet | Keep full detail longer for slow investigations |
+| Storage | `retention.executables` | 1y | Not set yet | How long the hourly per-executable summaries are kept |
+| Storage | `disk_budget` | 2GB | Not set yet | Raise on a large drive, lower on a laptop |
+| Storage | `change_threshold` | 0.5 pt CPU, 8MB | 0 to 100 pt CPU; memory not set yet | How much a process must change before a row is written |
+| Storage | `keyframe_interval` | 10m | 1m to 1h | How often every live process is written in full |
+| Storage | `backups.keep` | 3 | 1 to 30 | Copies of the history file to keep |
+| Analysis | `leak.min_duration` | 2h | Not set yet | Shorter catches leaks sooner and raises more false alarms |
+| Analysis | `leak.min_slope` | 50MB/h | Not set yet | Ignore growth too slow to matter within a day |
+| Analysis | `slow_growth.window` | 7d | No range in version 1 | Not used in version 1, which has no slow-growth check. Later, the daily minimums the slow-growth check fits: at least 7, which needs 8 days of hourly buckets |
+| Analysis | `baseline.learning_period` | 7d | No range in version 1 | Not used in version 1, which has no baseline anomaly check. Later, the days of history before anomalies are raised |
+| Analysis | `baseline.window` | 14d | No range in version 1 | Not used in version 1. Later, how far back the usual range looks |
+| Analysis | `baseline.sensitivity` | 4.0 | Above 0 | Not used in version 1. Later, the distance from normal, in spreads, that counts as an anomaly |
+| Verdict | `window` | 5m | Not set yet | How far back `submeter why` looks |
+| Verdict | `thresholds.*` | see the verdict table in [How it decides](07-analysis.md) | One named field per signal in the verdict table; any other name is refused | Tune each signal to your hardware |
+| Verdict | `min_confidence` | moderate | low, moderate, high | Below this the verdict reads Inconclusive |
+| Alerts | `rules[]` | 3 built in | The metrics in [What an alert rule can name](#what-an-alert-rule-can-name) | Your own thresholds per workload or system-wide |
+| Alerts | `cooldown` | 15m | Not set yet | Minimum gap between repeats of the same alert |
+| Alerts | `quiet_hours` | off | No range in version 1 | Not used in version 1, which has no desktop notifications. Later, it holds notifications overnight |
+| Alerts | `channels` | dashboard, desktop | No range in version 1 | Not used in version 1, where every alert is a finding. Later, it says where alerts appear. Nothing is sent off the machine |
+| Attribution | `rules_file` | rules.toml | A file path | Where workload rules live |
+| Attribution | `inherit_from_parent` | true | true, false | Turn off to see helper processes on their own. A rule's `include_children` overrides it, in either direction, for the processes that rule matches |
+| Attribution | `unattributed_alert` | 10% CPU | 0% to 100% | Tells you when a rule is missing |
+| Attribution | `max_workload_names` | 200 | 1 or more | `doctor` warns when names multiply past this |
+| Privacy | `redaction` | exe_only | scrub, exe_only | Stores the executable name and no arguments, not even the first, which a process can rewrite into a whole title. Set to `scrub` to keep the arguments with known secret shapes hidden. Scrub is best-effort: it cannot recognise every credential |
+| Privacy | `redact_patterns[]` | none | Regular expressions | Add your own secret formats, as regular expressions, which scrub mode hides on top of its built-in shapes. A pattern that does not compile is refused by name |
+| Providers | `enabled[]` | all | Provider names | Switch off anything you do not need |
+| API and UI | `port, mcp_enabled` | 8787, false | `port` 1024 to 65535 | Not used in version 1, which has no API or MCP server. In version 1.1, `port` moves the API, and its default changes, because 8787 is also the default of Wrangler's dev server |
+| API and UI | `units, default_range` | GiB, 1h | `units` GiB, GB | Not used in version 1. In version 1.1, how the dashboard opens |
+
+Every duration, size, rate and fraction setting that version 1 uses has a finite range, and a value outside it is refused. Where the table says not set yet, the bounds are still to be chosen. The settings that version 1 does not use get no new range.
 
 ## How configuration behaves
 
@@ -111,6 +113,7 @@ The overhead budget covers every Submeter process: the collector, the server and
 - `submeter config check` validates a file without applying it.
 - Out-of-range values are refused with the allowed range in the message. They are never silently clamped.
 - Sizes are binary, in settings and in the acceptance checks: 1 MB is 1024 × 1024 bytes and 1 GB is 1024 cubed bytes, so `50MB/h` is 50 MiB an hour.
+- A settings or rules file named with `--file` or `--rules` that is missing, cannot be decoded or does not validate is refused: the command exits with code 2 and prints one line per problem.
 - A new epoch starts when the configured sampling settings, the rules file, a provider's status, the hardware or the Submeter version differ. The epoch is marked on every chart. A wall-clock step that the collector detects also starts a new epoch. Cadence the collector changes itself, switching between the active and idle intervals or the overhead guard lengthening them, does not start one, and neither does an edit to alert, UI or verdict settings.
 - Settings and rules are read only when a program starts. `submeter config reload` applies a change by restarting the collector and server.
 - Each machine reads its own settings file: the one in the standard location, the one under `SUBMETER_HOME`, or one named with `--file`.
@@ -126,7 +129,7 @@ The overhead budget covers every Submeter process: the collector, the server and
 
 ## What an alert rule can name
 
-An alert rule names one workload pattern and one metric from this list. A rule that names any other metric is refused when the settings are loaded. `machine` is a reserved workload name for the whole computer. A pattern uses the characters of a workload name plus `*`, and may name a reserved workload.
+An alert rule names one workload pattern and one metric from this list. A rule that names any other metric is refused when the settings are loaded, and so is a rule whose metric does not apply to its workload, such as `commit_fraction` on any workload but `machine`. `machine` is a reserved workload name for the whole computer. A pattern uses the characters of a workload name plus `*`, and may name a reserved workload.
 
 | Metric id | Applies to | Meaning | Unit |
 | --- | --- | --- | --- |
