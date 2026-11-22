@@ -58,6 +58,7 @@ def doctor(as_json: JsonFlag = False) -> None:
     provider.snapshot()
     files = FileMap.discover()
     report = capability_report([provider])
+    exposed = files.readable_by_others()
     places = {
         "settings": str(files.settings_dir),
         "data": str(files.data_dir),
@@ -65,13 +66,16 @@ def doctor(as_json: JsonFlag = False) -> None:
     }
     if as_json:
         providers = [capability.model_dump(mode="json") for capability in report]
-        typer.echo(json.dumps({"version": __version__, "providers": providers, "files": places}))
+        found = {"providers": providers, "files": places, "readable_by_others": exposed}
+        typer.echo(json.dumps({"version": __version__, **found}))
         return
     typer.echo(f"submeter {__version__}")
     for capability in report:
         typer.echo(f"{capability.name:<20}{capability.status.value:<14}{capability.note}")
     for kind, place in places.items():
         typer.echo(f"{kind:<20}{place}")
+    shown = "unavailable on Windows" if exposed is None else ", ".join(exposed) or "none"
+    typer.echo(f"{'readable by others':<20}{shown}")
 
 
 @app.command()
