@@ -225,6 +225,7 @@ A process provider built on psutil, so it is not tied to one operating system.
 - **Worth knowing:**
   - It asks about one process at a time, which is too slow for a 1-second cadence on a busy machine. On Windows it is not the hot path. On Linux in version 1 it is, so the overhead guard will hold the intervals longer there.
   - A refused read marks the process restricted, and the process is still returned. Any other failed read of I/O, the command line or the working folder leaves that field empty. A zombie is kept, because its CPU time is still readable. A process whose read fails in any other way is returned as a restricted record, so one process never costs the whole snapshot. Only a process that has already exited is left out.
+  - On Windows it skips pid 0, the System Idle Process, whose CPU time is the machine's idle time.
   - Not here yet (finding R123, planned): reading a pid again through a fresh psutil object when psutil still lists it but reports it gone. Today, when a new process takes a pid that psutil's cache holds for an earlier process, the new one is missing from two snapshots and then credited no CPU for that time.
   - Not here yet (finding R57, planned): None for a CPU time it cannot read, and no stand-in start time. Today a refused CPU read is written as 0.0 CPU-seconds, and a process that fails to read at all is returned with the start time 0.0.
   - Memory is private bytes on Windows and resident memory elsewhere. Swap is not added yet.
