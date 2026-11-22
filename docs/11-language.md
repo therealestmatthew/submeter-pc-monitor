@@ -6,7 +6,7 @@
 
 Python 3.13 is the oldest version accepted, because from 3.13 `time.monotonic()` on Windows resolves 1 microsecond instead of 15.6 ms, which matters at intervals as short as 250 ms.
 
-Once the collector takes one bulk snapshot per tick, its cost is the system call, not the interpreter. Python then gives you the strongest analysis libraries, a codebase you can review yourself, and one typed language for a coding agent to keep consistent. The system call is most of the cost only with the Windows bulk snapshot. On Linux each process is read on its own, through psutil in version 1 and /proc later, and in the baseline code measured on Linux the Python work after the snapshot (deltas, attribution and raw-store writes) was about half of each tick.
+Once the collector takes one bulk snapshot per tick, its cost is the system call, not the interpreter. Python then gives you the strongest analysis libraries, a codebase you can review yourself, and one typed language for a coding agent to keep consistent. The system call is most of the cost only with the Windows bulk snapshot. On Linux each process is read on its own, through psutil in version 1 and /proc later. With a direct /proc reader, measured on Linux with the baseline code, the Python work after the snapshot (deltas, attribution and raw-store writes) was about half of each tick, 20 of 36 ms at 300 processes. With psutil, the version 1 reader, the snapshot itself was about 75 of the 95 ms.
 
 The collector and the server share nothing but the database schema. If phase 0 shows Python missing the budget, only the collector is rewritten in Rust and nothing else changes.
 
