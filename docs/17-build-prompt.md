@@ -177,7 +177,9 @@ Operations:
 
 ### Privacy and local security
 
-Command lines often contain keys and tokens. Redact them before they are written. The default mode, exe_only, stores the executable name the provider read and no arguments. It never stores the first argument, which a process can rewrite into a whole title such as "postgres: alice appdb 10.0.0.5(5432) idle". Scrub is an opt-in mode that keeps the executable and a pattern-scrubbed argument list. It splits a first argument that holds spaces and scrubs every word after the first, and it takes a configurable list of extra patterns, each refused by name when the settings load if it does not compile. Scrub is best-effort: it hides known shapes and cannot recognise every credential. Restrict every data file to the current user. On Linux the system lets any user read other users' command lines: keep only the name of another user's process, never its command line, and count the process as Restricted.
+Command lines often contain keys and tokens. Redact them before they are written. The default mode, exe_only, stores the executable name the provider read and no arguments. It never stores the first argument, which a process can rewrite into a whole title such as "postgres: alice appdb 10.0.0.5(5432) idle". Scrub is an opt-in mode that keeps the executable and a pattern-scrubbed argument list. It splits a first argument that holds spaces and scrubs every word after the first, and it takes a configurable list of extra patterns, each refused by name when the settings load if it does not compile. Scrub is best-effort: it hides known shapes and cannot recognise every credential. On Linux the system lets any user read other users' command lines: keep only the name of another user's process, never its command line, and count the process as Restricted.
+
+Restrict every Submeter folder and file to the current user, whatever the umask. Create each folder with mode 0700, which Python 3.12.4 and later also turn into an access control list for the current user and administrators on Windows, and on Linux tighten a folder that already exists. Create each file 0600 before anything is written to it: the pid file, each raw file before SQLite opens it, so its -wal and -shm files get the same mode, and each backup.
 
 Version 1 opens no network port: the CLI reads the store files directly, and the API with its token comes in version 1.1. `submeter cost --json` and the report must never contain command lines or working directories. Nothing leaves the machine. Version 1 has no webhook, upload or update check. Both programs run as the signed-in user and never request administrator rights.
 
@@ -240,7 +242,7 @@ CLI, where every command accepts --json with a stable schema:
 - `submeter config show|check|reload`, where reload restarts the collector and server
 - `submeter store status|check|backup`
 - `submeter rules test` to show which rule claims a given process. Command-line rules match the live command line before redaction, which the collector can read only for the user's own processes, so `rules test` reads the live process and marks which arguments the store hides
-- `submeter doctor` for the capability matrix, restricted-process count, disk usage and the collector's own cost, and on Linux whether /proc is mounted with hidepid
+- `submeter doctor` for the capability matrix, restricted-process count, disk usage, the collector's own cost, any Submeter file or folder that other users can read (on Windows, where file modes do not apply, it reports that check as unavailable), and on Linux whether /proc is mounted with hidepid
 
 `submeter why` must answer in under two seconds.
 
@@ -255,7 +257,7 @@ Agents get their cost from the CLI: an agent started with `submeter run` reads i
 Not in version 1. The design is kept here for version 1.1:
 
 - Stack: FastAPI for the local API, with a WebSocket for live data. The dashboard is a static front end served by the server process, with no Node toolchain needed to run it, and uses the report's canvas chart library.
-- Security: binding to 127.0.0.1 is not enough, because any web page in my browser can reach a local port. Require a token on every HTTP and WebSocket request, reject requests whose Host is not a loopback name, and check Origin on the WebSocket. The API token lives in a file only the current user can read, and `submeter config rotate-token` replaces it. Logs never contain the token. Loopback binding and the token requirement are not configurable.
+- Security: binding to 127.0.0.1 is not enough, because any web page in my browser can reach a local port. Require a token on every HTTP and WebSocket request, reject requests whose Host is not a loopback name, and check Origin on the WebSocket. The API token lives in a file only the current user can read, created 0600 in the private state folder, and `submeter config rotate-token` replaces it. Logs never contain the token. Loopback binding and the token requirement are not configurable.
 - API, all under /api/v1 and read-only: health, capabilities, config, epochs, workloads, workloads/{id}/processes, series, verdict, findings, diff, sessions, and a WebSocket at /live. Every series response names the tier and resolution it came from.
 - Dashboard views: live overview with the verdict, load per core, a chart by workload that switches between CPU and memory, and the reconciliation bar; a workload table that shows each workload's accounting source and drills down to its process tree; a historical explorer across retention tiers with settings changes marked; a findings feed; session compare.
 - Settings: api (port) and ui (units, default_range). Version 1 accepts them and does not use them.

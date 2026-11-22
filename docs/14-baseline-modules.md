@@ -303,10 +303,11 @@ The file map: where settings, data and state live on each platform, the name of 
 - **Why it exists:** No other module builds a path by hand, so the layout can change in one place (finding R30).
 - **Worth knowing:**
   - `SUBMETER_HOME` moves everything under one folder. The tests use it.
+  - `ensure()` makes every Submeter folder with mode 0o700, which Python 3.12.4 and later turn into an access control list for the current user and administrators on Windows, and on POSIX tightens a folder that already exists to 0700. `readable_by_others()` lists every path under the settings, data and state folders that other users can read, or returns None on Windows, where mode bits mean nothing. A test runs under umask 0022.
   - Raw files are named by UTC day, minute files by ISO week.
   - A file expires only once its whole day or week ended longer ago than the retention. A raw day also waits until the server's rolled-up-until mark, which the caller passes in, has passed its end, so no day goes before its hourly buckets are built.
   - An expired raw day comes with its -wal and -shm, side files first, so a pass cut short leaves the .db to find on the next one.
-  - The lock file is only ever locked, never written. The holder's process id goes in a file beside it, NAME.pid.
+  - The lock file is only ever locked, never written. The holder's process id goes in a file beside it, NAME.pid, created 0600 before it is written.
   - A refused acquire() tries again every 100 ms for up to 5 seconds by default, because Windows may release a dead holder's lock some time after the holder dies. A caller that wants one try passes a wait of 0.
   - The lock was run on Linux with two real processes, and against a stand-in for the Windows locking call. How Windows itself answers has still to be run there.
 - **Builds toward:** Component 08, store.files
@@ -324,6 +325,7 @@ Writes the daily raw file: workload totals every interval, process rows on chang
 - **Worth knowing:**
   - CPU used between written rows is carried into the next row, so per-process sums stay exact. A test compares the stored sum with the true total.
   - A quiet process's CPU is held for at most 60 s: a row is also written once CPU has been pending that long. When a batch starts a new UTC hour, each process's pending CPU is first written at the previous batch's time, so no carried CPU is stamped in the wrong hour. A program crash therefore loses at most 60 s of a quiet process's CPU from process rows; workload rows lose nothing committed.
+  - The day file is created 0600 before SQLite opens it, so its -wal and -shm files get the same mode.
   - A keyframe writes every live process in full. One opens each file and one follows every keyframe interval.
   - A gap is recorded in its own table, and that batch is written in full.
   - Not here yet (finding R39, planned): a gap column on workload_raw and system_raw, returned by workload_samples(). Until then a gap batch's workload and system rows look like observed time to the roll-up.
@@ -405,6 +407,7 @@ The command line, with the first five commands: doctor, top, config show, config
 - **Worth knowing:**
   - submeter top takes two snapshots, attributes the difference and prints totals by workload.
   - doctor, top and store status accept --json. config show accepts --effective, which is also its default.
+  - doctor lists any Submeter path that other users can read, or says the check is unavailable on Windows.
   - top reads working folders only when a rule matches on cwd.
   - A bad settings file exits with code 2 and one line per problem.
 - **Builds toward:** Start of component 12, cli

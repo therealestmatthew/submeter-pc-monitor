@@ -75,9 +75,9 @@ This was the part most likely to be wrong, so it was redesigned before this pack
 ## 6. File locations
 
 - **Done on Linux:** the Windows paths are built and compared in a test: settings under `%APPDATA%\Submeter`, data and state under `%LOCALAPPDATA%\Submeter`.
-- **Unknown:** whether those folders are writable, redirected or synced on a managed computer. Data must not land in a synced folder, because a synced database can be corrupted and would break the rule that nothing leaves the machine.
-- **How to check:** the "file locations" line of the script, then look at where the two folders really are. Setting `SUBMETER_HOME` moves everything if they are unsuitable.
-- **Later, in version 1.1 with the API:** the API token must be readable only by its owner. On Windows that is an access control list, not a file mode, and no code for it exists yet.
+- **Unknown:** whether those folders are writable, redirected or synced on a managed computer. Data must not land in a synced folder, because a synced database can be corrupted and would break the rule that nothing leaves the machine. Also whether the folders are private: Submeter makes each one with mode 0o700, which Python documents, from 3.12.4, as an access control list that admits only the current user and administrators. `doctor` cannot check this on Windows, where mode bits mean nothing.
+- **How to check:** the "file locations" line of the script, then look at where the two folders really are. Setting `SUBMETER_HOME` moves everything if they are unsuitable. After the first run, `icacls` on `%LOCALAPPDATA%\Submeter\data` should list no other user.
+- **Later, in version 1.1 with the API:** the API token must be readable only by its owner. On Windows that is an access control list, not a file mode. The token file goes in the state folder, which is made with that list.
 
 ## 7. Design claims that are not yet in code
 
