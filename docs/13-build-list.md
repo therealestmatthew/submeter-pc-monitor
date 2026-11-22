@@ -37,7 +37,7 @@ Three programs that share only files on disk: a collector, a server and the laun
 - Raw file, one per day: `meta`, `event`, `command`, `process`, `workload_raw`, `process_raw`, `system_raw`, `gap`
 - History file: `meta`, `workload`, `epoch`, `rollup_1h`, `exe_1h`, `run`, `session`, `session_summary`, `finding`
 
-The raw file's columns are defined in [`store/raw.py`](../src/submeter/store/raw.py). The first task of phase 3 writes the history file's columns as DDL in [Storage](06-storage.md#table-columns).
+The raw file's columns start from [`store/raw.py`](../src/submeter/store/raw.py), with the gap flag, awake seconds and nullable catalogue columns that [Storage](06-storage.md#table-columns) adds to it. The first task of phase 3 writes the history file's columns as DDL in [Storage](06-storage.md#table-columns).
 
 ## Alongside the code
 

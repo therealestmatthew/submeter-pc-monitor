@@ -42,7 +42,7 @@ Setting `SUBMETER_HOME` moves everything under one folder. `submeter store statu
 
 ## Table columns
 
-[Exactly what gets built](13-build-list.md) lists the tables of each file. The raw file's columns are defined in the baseline's [`store/raw.py`](../src/submeter/store/raw.py). The history file's columns are not written yet. The first task of phase 3, with one owner, writes the DDL of every history table here, before the server writes the file or anything reads it, so that the server's writers, the analysis and the CLI are built against one definition. A `rollup_1h` row maps to one `Bucket` record from `core.models`.
+[Exactly what gets built](13-build-list.md) lists the tables of each file. The raw file's columns start from the baseline's [`store/raw.py`](../src/submeter/store/raw.py). The brief adds to them the gap flag and awake seconds on each `workload_raw` and `system_raw` row, as the rules for raw files in the [build prompt](17-build-prompt.md) say, and a nullable column for every catalogue metric version 1 collects, as [Metric catalogue](#metric-catalogue) below says. The history file's columns are not written yet. The first task of phase 3, with one owner, writes the DDL of every history table here, before the server writes the file or anything reads it, so that the server's writers, the analysis and the CLI are built against one definition. A `rollup_1h` row maps to one `Bucket` record from `core.models`.
 
 ## How commands reach the programs
 
