@@ -190,7 +190,7 @@ Each detector needs a fixture that triggers it and at least one quiet fixture th
 
 Slow growth and baseline anomaly (after version 1). Version 1 has neither, and has no spike or swap-storm check. Regressions are found by hand with `submeter diff` and the hourly history. The design kept for later:
 
-- Slow growth: on the hourly tier, fit the daily minimum of memory over at least 7 days. This catches leaks too slow for the leak check.
+- Slow growth: on the hourly tier, fit at least 7 daily minimums of memory, which needs 8 days of hourly buckets, against a minimum slope of its own below the leak check's, for example 5 MB an hour. This catches leaks too slow for the leak check; with the leak check's 50 MB an hour it would flag nothing that check misses. Its trigger fixture is a leak of 10 MB an hour over 8 days.
 - Baseline anomaly: keep baselines separately for idle and active states, using median and MAD with a floor on spread, computed from hourly buckets over a trailing 14 days. Raise nothing until a learning period has enough samples. Hold the baseline still while an anomaly is open, so a regression does not become the new normal. The history file's `baseline` table is added by a migration with this feature.
 
 ## Configuration
