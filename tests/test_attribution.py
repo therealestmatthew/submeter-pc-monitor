@@ -104,3 +104,19 @@ def test_capacity_reconciles_with_a_not_seen_by_polling_term() -> None:
     assert min(capacity, idle, workloads, system, not_seen) >= 0
     assert idle + workloads + system + not_seen == pytest.approx(capacity)
     assert not_seen == pytest.approx(0.7)
+
+
+@pytest.mark.xfail(
+    strict=True,
+    reason="R61 known breach: WorkloadSample cannot say unavailable until R42's planned task",
+)
+def test_a_group_polling_never_saw_reports_its_io_and_memory_unavailable() -> None:
+    batch = SampleBatch.model_validate(
+        {"taken_at": 1001.0, "interval_s": 1.0, "gap": False, "processes": ()}
+        | {"exited": (), "logical_cores": 4, "cpu_busy_s": 1.0, "memory_available_bytes": MB}
+    )
+    group = GroupTotals(cpu_s=0.6, io_read_bytes=None, io_write_bytes=None, processes=2)
+    (total,) = aggregate(batch, {}, kernel_workloads={"agent:run": group})
+    assert total.cpu_s == pytest.approx(0.6)
+    fields: tuple[object, ...] = (total.io_read_bytes, total.io_write_bytes, total.memory_bytes)
+    assert fields == (None, None, None)
