@@ -68,7 +68,7 @@ This was the part most likely to be wrong, so it was redesigned before this pack
 - **Unknown:**
   - The size of one step of the monotonic clock. If it is around 15 ms, intervals of 250 ms carry a few percent of error.
   - Whether the two clocks behave as documented across a real suspend on this computer. The provider's call to QueryUnbiasedInterruptTime has never run on Windows.
-- **How to check:** the "clocks" line of the script for the first. For the second, run the sampler at a 10 s expected interval across a 60 s sleep: take a snapshot with the psutil provider, put the computer to sleep for a minute, wake it, take a second snapshot, pass both to the sampler, and print the batch's `gap` and `interval_s` and how far each clock moved. It passes when `gap` is true, `interval_s` includes the minute asleep, and the clock that stops during suspend moved only by the time the computer was awake. A gap alone does not pass it, because an interval longer than 30 seconds is a gap whatever the clocks do.
+- **How to check:** the "clocks" line of the script for the first. For the second, run the sampler at a 10 s expected interval across a 60 s sleep: take a snapshot with the psutil provider, put the computer to sleep for a minute, wake it, take a second snapshot, pass both to the sampler, and print the batch's `gap` and `interval_s` and how far each clock moved. It passes when `gap` is true, `interval_s` includes the minute asleep, and the clock that stops during suspend moved only by the time the computer was awake. A gap alone does not pass it, because an interval of about 70 seconds is a gap by its length alone, whatever the clocks do.
 
 ## 6. File locations
 
