@@ -174,6 +174,8 @@ The single system call that makes the overhead budget reachable is documented as
 
 **Fix:** A psutil fallback, a provider status of partial while it is in use, and a CI test that fails if the snapshot stops parsing.
 
+Amended by R70 (21 November 2026): CPU times, start time and I/O are members Microsoft documents only as Reserved, and psutil's Windows path uses the same call for thread counts and for processes it cannot open, so the fallback reduces the dependency but does not remove it. The CI parse test is the guard. On Windows the psutil provider no longer reads thread counts, which cost one whole-system query per process, and records them as unavailable.
+
 ### R18: The sample alert rule was a sentence to be parsed
 
 A rule written as text needs its own small language, its own parser and its own error messages.
