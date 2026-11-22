@@ -188,17 +188,16 @@ Sampling settings and defaults:
 - on_battery_multiplier = 2
 - overhead_limit: idle 1%, active 3%
 
-Other settings: storage (retention for raw and executables, disk_budget, change_threshold, keyframe_interval 10m, backups to keep), analysis (leak min_duration 2h and min_slope 50MB/h), verdict (window 5m, per-signal thresholds, min_confidence), alerts (rules, cooldown 15m), attribution (rules_file, inherit_from_parent, unattributed_alert, max_workload_names 200), privacy (redaction scrub or exe_only, extra patterns), providers (enabled list), and named per-machine profiles that override any of the above.
+Other settings: storage (retention for raw and executables, disk_budget, change_threshold, keyframe_interval 10m, backups to keep), analysis (leak min_duration 2h and min_slope 50MB/h), verdict (window 5m, per-signal thresholds, min_confidence), alerts (rules, cooldown 15m), attribution (rules_file, inherit_from_parent, unattributed_alert, max_workload_names 200), privacy (redaction scrub or exe_only, extra patterns) and providers (enabled list).
 
 Alert rules are structured fields: a workload pattern, a metric, above or below, a value, a duration and a severity. Do not invent a rule language to parse. An alert rule may name only these metric ids: cpu_cores, memory_bytes, processes and io_bytes_per_s for any workload, commit_fraction and throttled for the reserved workload `machine`, and overhead_fraction for the workload `submeter`. Refuse any other. Three rules ship built in: commit_fraction above 0.90 for 2 minutes (serious), throttled for 5 minutes (warning), and overhead_fraction above 0.03 for 5 minutes (warning).
 
 Behaviour:
 
 - Reject out-of-range values with the allowed range in the error. Never clamp silently.
-- Hot reload on `submeter config reload` and on file change. Settings that need a restart must say so.
+- Settings and rules are read when a program starts, and never while it runs. `submeter config reload` restarts the collector and server: it stops them as `daemon stop` does and starts them as `daemon start` does, which on Windows runs the scheduled task.
 - `submeter config show --effective` prints every value with its source. `submeter config check FILE` validates without applying.
-- Every effective change starts a new epoch and is marked on the charts, so a shift in the data can be traced to a settings change.
-- A session may override the sampling interval for its own duration.
+- A restart starts a new epoch only if something that defines an epoch (see Epochs under Store) has changed. The epoch is marked on the charts, so a shift in the data can be traced to a settings change.
 - The overhead guard outranks the configured interval. If the limit is exceeded, lengthen intervals and raise a finding.
 
 Not configurable: observe-only behaviour, running without administrator rights, sending nothing off the machine, the rule that `submeter cost --json` and the report never contain command lines, and the rule that unavailable metrics are never estimated.
@@ -214,7 +213,7 @@ CLI, where every command accepts --json with a stable schema:
 - `submeter session start|stop|list`, where start and stop write the session's marker file
 - `submeter report` for a self-contained HTML report, which holds version 1's charts for a session or range
 - `submeter export` to JSON or CSV
-- `submeter config show|check|reload`
+- `submeter config show|check|reload`, where reload restarts the collector and server
 - `submeter store status|check|backup`
 - `submeter rules test` to show which rule claims a given process
 - `submeter doctor` for the capability matrix, restricted-process count, disk usage and the collector's own cost

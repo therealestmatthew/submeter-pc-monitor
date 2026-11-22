@@ -2,7 +2,7 @@
 
 > Submeter build brief · Part 2, the design · [Index](README.md)
 
-Two files: `submeter.toml` for settings and `rules.toml` for attribution rules. Both are validated on load, and unknown keys are rejected. Most settings reload without a restart, and every change starts a new epoch, marked on the charts, so a shift in the data can be traced to the setting that caused it.
+Two files: `submeter.toml` for settings and `rules.toml` for attribution rules. Both are validated on load, and unknown keys are rejected. Both are read when a program starts, so a change takes effect when `submeter config reload` restarts the collector and server. A restart that changes the sampling settings or the rules starts a new epoch, marked on the charts, so a shift in the data can be traced to the setting that caused it.
 
 ## Sample time explorer
 
@@ -63,8 +63,6 @@ Raw rows and raw data on disk are not modelled. Every process is read every tick
 
 Every tick reads CPU time, I/O and memory for every process. Only the costly readings wait for the USS interval. The 2 s default active interval fits the overhead budget only with a direct reader, such as the Windows bulk snapshot. With psutil, which is the fallback on Windows and the reader on Linux in version 1, the overhead guard lengthens the intervals, as [Known limits](10-known-limits.md) states for Linux.
 
-A session can override the interval for its own duration, for example `submeter session start bench --interval 250ms`.
-
 ## Other settings worth exposing
 
 | Group | Setting | Default | Why you would change it |
@@ -105,7 +103,8 @@ A session can override the interval for its own duration, for example `submeter 
 - `submeter config check` validates a file without applying it.
 - Out-of-range values are refused with the allowed range in the message. They are never silently clamped.
 - Any change to sampling, rules or providers starts a new epoch, which is marked on every chart.
-- Each machine can carry a named profile, so the desktop and the laptop share one file.
+- Settings and rules are read only when a program starts. `submeter config reload` applies a change by restarting the collector and server.
+- Each machine reads its own settings file: the one in the standard location, the one under `SUBMETER_HOME`, or one named with `--file`.
 
 ## Fixed on purpose
 
@@ -185,10 +184,6 @@ max_workload_names = 200
 
 [privacy]
 redaction = "scrub"
-
-[profile.laptop]
-sampling.active_interval = "2s"
-storage.disk_budget = "1GB"
 ```
 
 ## Sample rules.toml

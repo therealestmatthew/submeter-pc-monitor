@@ -38,7 +38,3 @@ max_workload_names = 200
 
 [privacy]
 redaction = "scrub"
-
-[profile.laptop]
-sampling.active_interval = "2s"
-storage.disk_budget = "1GB"

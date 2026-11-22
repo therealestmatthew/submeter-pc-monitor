@@ -174,7 +174,7 @@ Builds one immutable Settings object from defaults, submeter.toml, a named profi
   - Alert rules are structured fields. The TOML key "for" maps to the field duration.
   - Environment variables look like `SUBMETER_SAMPLING__ACTIVE_INTERVAL`.
   - The sample `submeter.toml` in `examples/` loads through this module without error.
-  - Not here yet: reloading while running, and the three built-in alert rules. The rules list holds only your own.
+  - Not here yet: the three built-in alert rules. The rules list holds only your own.
 - **Builds toward:** Component 02, core.config
 - **Provides:** `ENV_PREFIX`, `ActiveInterval`, `IdleInterval`, `ColdInterval`, `IdleAfter`, `SlowInterval`, `GpuInterval`, `UssInterval`, `KeyframeInterval`, `HotThreshold`, `OverheadShare`, `OverheadLimit`, `Sampling`, `Retention`, `Backups`, `ChangeThreshold`, `Storage`, `Leak`, `SlowGrowth`, `Baseline`, `Analysis`, `Verdict`, `AlertRule`, `Alerts`, `Attribution`, `Privacy`, `Providers`, `Api`, `Ui`, `Settings`, `ConfigError`, `LoadedSettings`, `load_settings`
 - **Imports:** [`core.models`](../src/submeter/core/models.py), [`core.units`](../src/submeter/core/units.py), pydantic

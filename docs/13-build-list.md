@@ -9,7 +9,7 @@ Three programs that share only files on disk: a collector, a server and the laun
 | Component | What it does | Phase |
 | --- | --- | --- |
 | 01 `core.models` | Frozen Pydantic models for counters, samples, buckets, workloads, findings [baseline](../src/submeter/core/models.py) | P0 |
-| 02 `core.config` | Loads, validates and hot-reloads submeter.toml. Tracks where each value came from [baseline](../src/submeter/core/config.py) | P0 |
+| 02 `core.config` | Loads and validates submeter.toml when a program starts. Tracks where each value came from [baseline](../src/submeter/core/config.py) | P0 |
 | 03 `providers.base` | Provider protocol and capability report [baseline](../src/submeter/providers/base.py) | P0 |
 | 04 `providers.windows.bulk` | One system-wide process snapshot per tick, with a psutil fallback | P1 |
 | 05 `providers.linux.procfs` | Direct /proc reader, plus PSI. Not in version 1: Linux runs polled through the psutil provider | After v1 |
@@ -58,7 +58,7 @@ Three programs that share only files on disk: a collector, a server and the laun
 - `session start | stop | list` start and stop write a session marker file, which the server reads
 - `report` self-contained HTML
 - `export` JSON or CSV
-- `config show | check | reload`
+- `config show | check | reload` reload restarts the collector and server
 - `rules test` which rule claims a process
 - `store status | check | backup`
 - `doctor` what this machine can measure
@@ -98,3 +98,4 @@ Not in version 1, which has no API. These are kept for the dashboard in version 
 - A minute tier. Raw samples cover the last 48 hours and hourly buckets everything older. No job's acceptance check needs 1-minute data older than 48 hours, and a third kind of file would need its own writer, retention and migrations. Windows of 34 minutes to 33 hours that start 2 to 30 days back are answered at 1-hour resolution, and per-core detail is kept for 48 hours
 - Slow growth, baseline anomaly, spike and swap-storm detectors. Slow growth and baselines need weeks of real data before they can be checked, and no job's acceptance check needs any of the four. Regressions are found by hand with `submeter diff` and the hourly history. The design of slow growth and baseline anomaly is kept for later in [How it decides](07-analysis.md) and the [build prompt](17-build-prompt.md)
 - Hot and cold sets, which sampled idle processes less often. Every process is read every tick, and only the costly fields wait for the USS interval. As specified, the sets either lost about a third of the CPU time and reported processes starting and exiting that had not, or showed more cores in use than the machine has
+- Reloading settings while a program runs, named per-machine profiles, and a sampling interval set per session. Settings and rules are read when a program starts, and `submeter config reload` restarts the collector and server. Each would need a control channel to the running programs and epoch rules for changes made mid-run. What is lost: a change without a restart, one settings file shared across machines, and a session sampled faster than the rest, such as a 250 ms benchmark
