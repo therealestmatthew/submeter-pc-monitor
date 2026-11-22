@@ -63,6 +63,7 @@ What gets made, in what order, and the prompt that starts it.
 | --- | --- |
 | `review/01-adversarial-review.md` | Findings from R38 on, from the first session |
 | `review/02-rulings.md` | My ruling on each finding |
+| `review/ground-windows/` | The output of phase 0 on my Windows machine: the checks and `scripts/platform_check.py`, the Restricted count and its share of CPU time, and the three probes |
 | `PLAN.md` | The formal plan: tasks, file ownership, waves and gates |
 | `tasks/` | One card for each task |
 | `STATUS.md` | What works, what was verified and how, and what could not be verified |

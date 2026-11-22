@@ -8,7 +8,7 @@ Start with one command from the repository root. It runs items 2 to 6 and prints
 uv run python scripts/platform_check.py
 ```
 
-Keep its full output in the review, whatever it says. A line that starts with FAIL is a finding. A crash is also reported as a FAIL, with the error.
+Keep its full output, whatever it says, under `docs/review/ground-windows/` with the rest of phase 0's output from this machine. A line that starts with FAIL is a finding. A crash is also reported as a FAIL, with the error.
 
 ## In order
 
@@ -53,7 +53,7 @@ This was the part most likely to be wrong, so it was redesigned before this pack
   - **Interrupt and DPC time.** On Windows the provider's busy time is user plus system plus psutil's interrupt and DPC fields. If Windows already counts interrupt and DPC time inside system time, they are counted twice. The script does not check this. By hand: read `psutil.cpu_times(percpu=True)` and `time.perf_counter()`, wait 10 s, and read both again. If, per core, the increase in user plus system plus idle time equals the elapsed time, interrupt and DPC time are inside system time: subtract them from the busy sum in `psutil_provider.py` (one line) and in the bulk provider, then run the busy-time check above again. If the increase equals the elapsed time only with interrupt and DPC added, the busy sum is right.
   - **Cost.** The script times 20 snapshots, with and without working folders. That is one snapshot, not the Rust trigger: the trigger in `docs/11-language.md` is the whole collector's share of one core over 10 minutes, which the bulk-snapshot probe of phase 0 measures. psutil asks about one process at a time, so expect this provider to be slow. That is the reason the bulk snapshot provider exists, not a defect in this one.
   - **Working folders.** They are read only when a rule matches on `cwd`. On Windows reading another process's working folder is slower and fails more often than on Linux. The second timing shows the cost.
-- **How to check:** the script, then `uv run submeter top --seconds 2 --rules examples/rules.toml` to see real workloads.
+- **How to check:** the script, then `uv run submeter top --seconds 2 --rules examples/rules.toml` to see real workloads. Record the Restricted count from the script and the restricted workload's share of CPU time from `top`.
 
 ## 4. SQLite files
 
