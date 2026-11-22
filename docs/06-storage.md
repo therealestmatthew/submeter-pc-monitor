@@ -10,7 +10,7 @@ Data that expires together lives in a file together, so retention is always a fi
 
 | File | Written by | Kept for | Holds | If it is lost |
 | --- | --- | --- | --- | --- |
-| `raw/2026-11-20.db` | Collector | 48 hours | One file per UTC day. Every sample at full resolution, the processes seen that day, and their scrubbed command lines stored once each | Detail for that day. Hourly history survives |
+| `raw/2026-11-20.db` | Collector | 48 hours | One file per UTC day. Every sample at full resolution, the processes seen that day, and their redacted command lines stored once each | Detail for that day. Hourly history survives |
 | `history.db` | Server | Kept | Hourly buckets, hourly summaries per executable, runs, sessions and their summaries, findings, epochs | All long-term history, which is why it is backed up daily |
 | `backups/history-*.db` | Server | Last 3 | A compacted copy of the history file | Nothing, unless the history file is lost too |
 | `runs/*.json` | Launcher | Until the server has copied its final state into the history file. The server then deletes it | One small file per tagged run: its group, its label and, for a run started inside another tagged run, its parent run, written live when the group is created, then replaced by atomic rename with the final state, the group's totals, once the group is empty. When the command left processes behind, the launcher's detached holder writes the final state. The collector never writes it | That run's exact totals, if the server had not yet copied them |

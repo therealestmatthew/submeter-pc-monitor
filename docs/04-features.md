@@ -41,7 +41,7 @@
 ## Protect
 
 - Observe only. No setting lets version 1 act on a process.
-- Command lines are scrubbed of secrets before they are stored.
+- Command lines are redacted before they are stored. By default only the executable name is kept. An opt-in scrub mode keeps the arguments with known secret shapes hidden, and is best-effort.
 - Version 1 opens no network port. The local API of version 1.1 needs a token and refuses requests from web pages.
 - Runs as the signed-in user and never asks for administrator rights.
 - Nothing leaves the machine.

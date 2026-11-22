@@ -23,7 +23,7 @@ Three programs that share only files on disk: a collector, a server and the laun
 | 13 `launcher` | `submeter run`: creates the command inside a Job Object (PROC_THREAD_ATTRIBUTE_JOB_LIST), so no descendant starts outside it, returns the command's exit code, and writes one run file with the final totals. On Linux it reports that tagged runs are unavailable and runs the command polled; the cgroup path comes after version 1 | P1 |
 | 14 `providers.group` | Reads a Job Object's totals: the final totals the launcher writes to the run file, and each live group's totals, with re-attach after a restart. cgroup totals come after version 1 | P1, P3 |
 | 15 `attribution` | Rule engine, inheritance, the four fixed buckets with the machine-level figure for CPU time not seen by polling beside them, reconciliation check [baseline](../src/submeter/attribution/rules.py) | P2 on |
-| 16 `privacy.redact` | Scrubs command lines before anything is written, logs included [baseline](../src/submeter/privacy/redact.py) | P2 |
+| 16 `privacy.redact` | Redacts command lines before anything is written, logs included: the executable name only by default, or scrubbed arguments in the opt-in scrub mode [baseline](../src/submeter/privacy/redact.py) | P2 |
 | 17 `analysis.detectors` | Leak and runaway process count [baseline](../src/submeter/analysis/growth.py) | P4 |
 | 18 `analysis.verdict` | Bottleneck classifier with confidence and evidence | P4 |
 | 19 `analysis.diff` | Session and period comparison, with epoch checks | P4 |

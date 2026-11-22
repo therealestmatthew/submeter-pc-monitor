@@ -37,4 +37,4 @@ rules_file = "rules.toml"
 max_workload_names = 200
 
 [privacy]
-redaction = "scrub"
+redaction = "exe_only"

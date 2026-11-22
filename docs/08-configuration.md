@@ -98,7 +98,7 @@ The overhead budget covers every Submeter process: the collector, the server and
 | Attribution | `inherit_from_parent` | true | Turn off to see helper processes on their own. A rule's `include_children` overrides it, in either direction, for the processes that rule matches |
 | Attribution | `unattributed_alert` | 10% CPU | Tells you when a rule is missing |
 | Attribution | `max_workload_names` | 200 | `doctor` warns when names multiply past this |
-| Privacy | `redaction` | scrub | Set to `exe_only` to store no arguments at all |
+| Privacy | `redaction` | exe_only | Stores the executable name and no arguments. Set to `scrub` to keep the arguments with known secret shapes hidden. Scrub is best-effort: it cannot recognise every credential |
 | Privacy | `redact_patterns[]` | built-in list | Add your own secret formats |
 | Providers | `enabled[]` | all | Switch off anything you do not need |
 | API and UI | `port, mcp_enabled` | 8787, false | Not used in version 1, which has no API or MCP server. In version 1.1, `port` moves the API |
@@ -194,7 +194,7 @@ rules_file = "rules.toml"
 max_workload_names = 200
 
 [privacy]
-redaction = "scrub"
+redaction = "exe_only"
 ```
 
 ## Sample rules.toml
