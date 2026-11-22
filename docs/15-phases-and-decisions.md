@@ -32,7 +32,7 @@ Gate: on Windows, a tagged tree spawning 500 sub-second children is charged with
 
 Builds the Windows bulk snapshot provider, the Windows system counters (component 06), the collector loop with adaptive cadence and the overhead guard, the raw files with command lines redacted before they are written, and the baseline attribution with its four fixed buckets, so that reconciliation can be tested.
 
-Gate: a 30-minute CI soak stays inside the budget, per-process figures are within 5% of Windows performance counters, and totals reconcile within 2%. Killing the collector mid-write loses at most 5 seconds and corrupts nothing.
+Gate: a 30-minute CI soak stays inside the budget, per-process figures are within 5% of Windows performance counters, and totals reconcile within 2%, with CPU time not seen by polling as its own term. On a quiet fixture that term stays under the share stated with the fixture. Killing the collector mid-write loses at most 5 seconds and corrupts nothing.
 
 ## P3: Attribution rules, history, sessions
 

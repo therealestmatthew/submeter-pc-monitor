@@ -104,6 +104,8 @@ Kernel time, interrupts and processes the daemon cannot read all fall outside pe
 
 **Fix:** System and Restricted are explicit buckets. Attributed, unattributed, system, restricted and idle must sum to 100% within 2%, and a test enforces it.
 
+Amended by R45 (21 November 2026): a sixth term, CPU time not seen by polling, joins the five, so CPU that polling misses is shown instead of breaking the check or hiding in System. System is read from counters, and System and Idle are defined in the glossary.
+
 ### R08: Sleep and variable cadence create false spikes
 
 A laptop that sleeps for an hour would show one giant sample on wake. Mixed 1 s and 5 s samples also bias simple averages.

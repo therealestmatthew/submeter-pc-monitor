@@ -3,6 +3,9 @@
 > Submeter build brief · Part 2, the design · [Index](README.md)
 
 - **Workload:** A named group of processes whose cost is reported together, such as one agent run or the browser.
+- **System:** CPU time the kernel spends that belongs to no workload. On Windows, the System process (pid 4), Registry, MemCompression and Secure System, plus interrupt and DPC time. On Linux, the kernel threads, plus irq and softirq time.
+- **Idle:** Time a core spends idle, from the per-core idle counters. On Linux it includes iowait. Windows also reports it as the CPU time of pid 0, the System Idle Process, which Submeter does not read.
+- **Not seen by polling:** Busy CPU time that neither the reported workload totals nor System account for. It is mostly short-lived processes that polling missed.
 - **Kernel accounting:** Totals the operating system keeps for a group of processes, including those that have exited.
 - **Job Object:** The Windows mechanism for grouping processes and accounting for them together.
 - **cgroup:** The Linux equivalent: a control group with its own usage counters.

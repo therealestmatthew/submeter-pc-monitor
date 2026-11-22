@@ -20,7 +20,7 @@ The mock models a machine with 16 logical cores, 12 on performance cores and 4 e
 4. **Four tiles**, each with a meter. They are listed in the next table.
 5. **Load per logical core.** Sixteen bars in two groups, labelled "Performance, 12 logical" and "Efficiency, 4", beside the line "frequency 100% of maximum". The percentage follows the scenario.
 6. **Chart.** "CPU by workload, last 2 minutes" is a stacked area chart with one band per workload. A switch marked CPU and Memory changes it to "Memory by workload, last 2 minutes". The unit line reads "cores in use, of 16" or "GB in use, of 32". The time axis reads "2 min ago", "1 min ago" and "now". Hovering shows each workload's value and the total for that second.
-7. **Where the CPU time went**, marked "must sum to 100%". One bar is split by workload, with idle time last. Under it is a line such as "Attributed 26% + unattributed 2% + system 2% + restricted 1% + idle 69% = 100%", which is the steady scenario.
+7. **Where the CPU time went**, marked "must sum to 100%". One bar is split by workload, with idle time last. Under it is a line such as "Attributed 26% + unattributed 2% + system 2% + restricted 1% + idle 69% = 100%", which is the steady scenario. The design adds a sixth term to that line, CPU time not seen by polling, which the mock does not model.
 8. **Workloads**, marked "select a name to see its process tree". The table's columns are Workload, CPU, Memory, Procs, CPU trend and State. Each name carries its accounting source, and CPU trend is a small line of the last 40 seconds.
 9. **Process tree** of the selected workload.
 10. **Findings**, marked "newest first". The list keeps the five most recent.
@@ -140,9 +140,10 @@ Claim them with a rule in rules.toml.
 
 ```text
 system  counters · 0.35 cores · 2.6 GB
-Kernel time, interrupts, deferred calls
-and non-process memory.
-No process owns these.
+The System, Registry, MemCompression
+and Secure System processes, interrupts,
+deferred calls and non-process memory.
+No workload owns these.
 ```
 
 **Restricted**

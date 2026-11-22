@@ -40,8 +40,8 @@ Top contributors
   builds           14%   kernel-accounted
   browser           6%   polled
 
-Reconciled  attributed 88 + unattributed 1 + system 3 + restricted 1
-            + idle 7 = 100%
+Reconciled  attributed 87 + unattributed 1 + system 3 + restricted 1
+            + not seen by polling 1 + idle 7 = 100%
 ```
 
 ## What can this machine measure?

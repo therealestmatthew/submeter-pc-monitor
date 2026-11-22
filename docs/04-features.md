@@ -14,7 +14,7 @@
 - `submeter run --as NAME -- COMMAND` tags a whole process tree at launch, on Windows. On Linux in version 1 it runs the command polled.
 - Rules claim everything else by executable, command line, parent or folder.
 - Every workload shows whether the kernel or polling measured it.
-- Unattributed, System, Restricted and Submeter itself are always shown, and the parts must sum to the whole.
+- Unattributed, System, Restricted and Submeter itself are always shown, with the CPU time that polling did not see beside them, and the parts must sum to the whole.
 
 ## Remember
 
