@@ -38,7 +38,7 @@ Gate: a 30-minute CI soak stays inside the overhead budget, per-process CPU agre
 
 Builds the server, with the history file, the hourly rollup, retention, the disk budget, backups and the copying of final run files into the history file; the attribution rules; sessions, through their marker files; and the collector's reading of each live group's totals, with re-attach after a restart.
 
-Gate: CPU-hours from the hourly tier match the raw sum within 0.1%. Deleting a day of raw data frees its space at once. On Windows, a restarted collector re-attaches to live groups. A session's cost reads the same before and after its raw data is deleted. Run with the server, the 30-minute CI soak of P2 still stays inside the overhead budget, now summed over the collector and the server.
+Gate: CPU-hours from the hourly tier match the raw sum within 0.1%. Deleting a day of raw data frees its space at once. On Windows, a restarted collector re-attaches to live groups. A session's cost reads the same before and after its raw data is deleted. Run with the server, the 30-minute CI soak of P2 still stays inside the overhead budget, now summed over every Submeter process, the server included.
 
 ## P4: Analysis
 
