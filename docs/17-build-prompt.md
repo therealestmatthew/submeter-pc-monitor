@@ -53,6 +53,8 @@ Three programs share nothing but files on disk, and each writes only its own:
 - submeter-server: rollups, retention, analysis, alerts. It writes the history file, and reads the raw files, the session marker files and the final run files, deleting each run file once it has copied it into the history file.
 - the launcher, `submeter run`: starts a tagged process tree and writes one small run file for it.
 
+`submeter session start` and `stop` write the session marker files, which the server reads. None of the three programs writes them.
+
 None of the three imports another, and every file has exactly one writer. The reason is that the collector is the hot path, and I want to be able to replace it with a Rust binary later without touching anything else. In phase 0, measure one full sample. If it takes more than 10 ms at 300 processes, or the collector holds more than 80 MB, stop and tell me, because that is my trigger for the Rust collector.
 
 ### Collection: two accounting paths

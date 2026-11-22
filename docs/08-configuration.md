@@ -18,7 +18,7 @@ Move the controls to see what a sampling choice costs. The figures come from a s
 **Formulas**, where a is the active interval in seconds and P the number of processes
 
 - Cost of one bulk sample, assumed: 1.5 ms plus 0.012 ms for each process.
-- **Collector overhead**, shown "of one core, limit 3% when active": the sample cost divided by a, as a percentage, plus 0.2 points for the store and the API.
+- **Collector overhead**, shown "of one core, limit 3% when active": the sample cost divided by a, as a percentage, plus 0.2 points for the store and the server.
 - **Short-lived CPU that polling captures**, shown for "children averaging 300 ms. Tagged workloads get 100%": (0.3 ÷ a) × (1 − e^(−a ÷ 0.3)).
 
 Raw rows and raw data on disk are not modelled. Every process is read every tick, but a process row is written only when the process changes enough, and how often that happens is not known until the collector's rows and bytes per tick are measured.

@@ -2,7 +2,7 @@
 
 > Submeter build brief · Part 2, the design · [Index](README.md)
 
-Illustrative data showing what each detector looks at. These are the views the History and Compare pages would show.
+Illustrative data showing what each detector looks at. These are the views the report's charts show in version 1, and the dashboard's History and Compare pages in version 1.1.
 
 ## Leak detection: growth without a plateau
 
