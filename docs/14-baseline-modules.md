@@ -383,7 +383,7 @@ The Theil-Sen slope, the plateau test, the usual range from median and spread, a
   - The slope is the median of the slopes between pairs of points, so one spike does not move it. A test confirms that with 20 points.
   - `check_growth` answers "not enough data yet" until it has 8 points spanning the minimum duration.
   - `usual_range` returns nothing until it has five values.
-  - `daily_minimums` feeds the slow-growth check and takes a UTC offset for local days.
+  - `daily_minimums` feeds the slow-growth check. It takes each reading's local day from the operating system's time zone rules, with no new dependency, so days stay right across a daylight-saving change.
 - **Builds toward:** Arithmetic for component 17, analysis.detectors
 - **Provides:** `theil_sen`, `plateaued`, `GrowthResult`, `check_growth`, `usual_range`, `daily_minimums`
 - **Imports:** [`core.models`](../src/submeter/core/models.py)

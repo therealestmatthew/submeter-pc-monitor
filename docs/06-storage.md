@@ -105,7 +105,7 @@ The raw and history tables hold a column for every metric in this catalogue from
 - A rules change moves processes between workloads. Stored history is not rewritten. The boundary is marked.
 - Percentages use the capacity recorded in each bucket, stored as core-seconds (covered seconds times logical cores, summed), so new hardware does not distort old data, and a bucket or a merged period that spans a change of core count keeps the right percentage.
 - Buckets with less than half their time covered are left out of baselines and trends.
-- Days and weeks are worked out in your time zone when you ask, from buckets stored in UTC. A day of 23 or 25 hours is compared per hour.
+- Days and weeks are worked out in your time zone when you ask, from buckets stored in UTC. A day of 23 or 25 hours is compared per hour. Each reading's local day comes from the operating system's rules for your zone, so a daylight-saving change moves the day boundary on the right date. In zones not a whole number of hours from UTC, local days built from hourly buckets are approximate by up to 30 minutes.
 - A workload name is stable and reused across runs. A label marks one run. Time series are kept per name and totals per run, so a new label never starts a new series.
 
 ## Disk use after a year
