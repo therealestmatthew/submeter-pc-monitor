@@ -71,7 +71,7 @@ The chart draws lookback on a logarithmic time axis marked 1 s, 1 min, 1 h, 2 d,
 
 *Figure:* How far back each tier reaches, on a logarithmic time axis, and which tier each check reads. Nothing needs raw samples older than 48 hours, which is what lets raw files be deleted on schedule.
 
-- A question is answered from raw samples, merged to wider steps, while they cover the start of its window, and otherwise from hourly buckets. Every answer states the tier and resolution it came from.
+- A question is answered from raw samples, merged to wider steps, while the raw files still on disk cover the start of its window, and otherwise from hourly buckets. Coverage is taken from the oldest raw file left and its first tick, not from the retention setting, because the disk budget can delete raw days sooner. Every answer states the tier and resolution it came from.
 - Charts draw the minimum-to-maximum envelope, so a spike survives in wider steps.
 - A session's or tagged run's totals accumulate while it runs: as each raw tick is written, the server adds it to an open summary row in the history file, and closes the row when the session stops or the run ends. Nothing is recomputed from raw at the end, so its cost stays exact however long it ran and after its raw data is gone. After a restart the server catches up from the raw data still on disk; a summary whose raw data was deleted before that is marked incomplete. For a tagged run, CPU, I/O and process counts still come from the kernel at the end.
 - Each hour keeps the top ten executables per workload by CPU time and by peak memory, for a year. That answers "what inside the browser grew last week" without keeping every process.

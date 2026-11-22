@@ -362,7 +362,7 @@ Chooses the tier and step for a time window, and explains the choice.
 
 - **Why it exists:** Without a rule, a 7-day chart could mix raw and rolled-up data without saying so (finding R33).
 - **Worth knowing:**
-  - Picks the finest tier whose retention still covers the start of the window.
+  - Picks the finest tier whose data on disk still covers the start of the window. For raw samples that is the first tick of the oldest raw file left, which the caller passes in, so a raw day the disk budget has already deleted is never chosen.
   - Moves to a coarser tier, and then to wider steps, when the answer would hold more points than a chart can use.
   - Returns the reason as text, for the CLI and the report's charts to show.
 - **Builds toward:** Component 11, store.query
