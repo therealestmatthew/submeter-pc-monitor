@@ -33,6 +33,7 @@ def test_exe_only_stores_the_executable_and_scrub_splits_a_title(tmp_path: Path)
     title = ("postgres: alice appdb 10.0.0.5(5432) idle",)
     assert b"alice" not in stored(tmp_path, title, "postgres", redaction="exe_only")
     assert redact_cmdline(title, mode="exe_only", exe="postgres") == ("postgres",)
+    assert stored(tmp_path / "a", ("tool", "--x"), "") == stored(tmp_path / "b", (), "")  # no exe
     secret = ("worker --api-key sk-abcdefghijklmnopqrstu",)
     assert redact_cmdline(secret) == ("worker", "--api-key", REDACTED)
 
