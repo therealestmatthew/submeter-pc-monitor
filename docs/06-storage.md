@@ -113,7 +113,7 @@ From their first schema version, the raw and history tables hold a nullable colu
 | Files | Size | Basis |
 | --- | --- | --- |
 | Raw, 2 to 3 daily files | 0.7 to 1.1 GB | 8.1 M rows per 48 hours at 90 bytes each, from the earlier model of a 1 s active interval with hot and cold sets, kept until the collector's rows and bytes per tick are measured |
-| History | 0.1 GB | Hourly buckets and per-executable summaries. A bucket stores only the filled bins of its histograms, about 300 bytes, so each series (one workload, or the system) adds about 2.6 MB a year: about 0.13 GB a year at 50 series and 0.53 GB at 200. The 0.1 GB here is for a few dozen series |
+| History | 0.1 GB | Hourly buckets and per-executable summaries. A bucket stores only the filled bins of its histograms, about 300 bytes, so each series (one workload, or the system) adds about 2.6 MB a year: about 0.13 GB a year at 50 series and 0.53 GB at 200. The 0.1 GB is the earlier estimate of a year's growth |
 | Backups, 3 copies | 0.3 GB | Three copies of the history file |
 | Logs | 0.05 GB | 2 programs, 5 files of 5 MB each |
 | Total | About 1.5 GB | Of the 2 GB budget |
