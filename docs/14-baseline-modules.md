@@ -327,8 +327,9 @@ Writes the daily raw file: workload totals every interval, process rows on chang
   - RawStore rolls over at UTC midnight and flushes pending CPU before closing a file.
   - Not here yet (finding R55, planned): RawStore never reopening a day earlier than the open file. Today a batch stamped on an earlier day, after a wall-clock step back across midnight, reopens that closed day's file.
   - journal_size_limit bounds the write-ahead log left after each checkpoint to 4 MiB. Only close() truncates it.
+  - Reading goes through `open_read_only`, a read-only connection that refuses a missing file, so a reader never creates a file, takes the write lock or checkpoints the collector's log. `RawFile.workload_samples` reads through it.
 - **Builds toward:** Component 09, store.raw
-- **Provides:** `SCHEMA_VERSION`, `RawFile`, `RawStore`
+- **Provides:** `SCHEMA_VERSION`, `open_read_only`, `RawFile`, `RawStore`
 - **Imports:** [`core.models`](../src/submeter/core/models.py), [`privacy.redact`](../src/submeter/privacy/redact.py), [`store.files`](../src/submeter/store/files.py)
 - **Imported by:** Nothing yet. The collector loop will, in phase 2.
 
