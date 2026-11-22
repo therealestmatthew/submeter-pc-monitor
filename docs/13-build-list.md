@@ -41,10 +41,14 @@ The raw file's columns are defined in [`store/raw.py`](../src/submeter/store/raw
 
 ## Alongside the code
 
+Each is built in the phase that first needs it: CI in P0, the load generator in P1, the fixture recorder in P2 and the synthetic store generator in P3. Each provider's and detector's recorded fixtures come with that component, and the capability matrix in `doctor` grows with each provider. The default `submeter.toml` and `rules.toml` and the brief are already in the package, and `docs/STATUS.md` is written at every gate.
+
 - CI on Windows and Linux runners with a 30-minute soak. The Linux runner runs the portable tests
 - Recorded fixtures for every provider and detector
 - A load generator: short-lived children, a controlled leak, a CPU burn. It reports its own accounting, each burner's CPU seconds and its children's summed CPU time, which the P1 and P2 gates use as their reference
 - Default `submeter.toml` and `rules.toml`
+- A fixture recorder, which saves a provider's output on a real machine as a recorded fixture
+- A synthetic store generator: raw files and a history file covering several days, written without a running collector, for the retention and disk-budget tests of P3 and the report of P5
 - Windows scheduled task
 - The brief under `docs/`, `AGENTS.md` with `CLAUDE.md`, and `docs/STATUS.md`
 - The capability matrix in `doctor`, which grows as each provider is built

@@ -40,6 +40,8 @@ Gate: a 30-minute CI soak stays inside the overhead budget, per-process CPU agre
 
 The owner also runs a 24-hour soak on the Windows machine. It passes when Submeter stays inside its overhead budget for CPU and memory throughout, the collector's memory grows by less than the limit set in the plan's gates section, `PRAGMA integrity_check` returns ok for every file, and the only gaps are those the collector recorded.
 
+This phase also builds the fixture recorder, which saves a provider's output on a real machine as a recorded fixture.
+
 ## P3: Attribution rules, history, sessions
 
 Builds the server (component 26), with the history file, its integrity check at start and a nullable column for every catalogue metric version 1 collects, the hourly rollup, retention, the disk budget, backups, the epochs built from the collector's events, and the copying of final run files into the history file; the attribution rules; sessions, through their marker files; and the collector's reading of each live group's totals, with re-attach after a restart.
@@ -49,6 +51,8 @@ The first task, with one owner, writes the DDL of every history table into [Stor
 Gate: CPU-hours from the hourly tier match the raw sum of the samples whose end times fall in each hour within 0.1%, tested with ticks at fractional seconds as well as whole ones. Deleting a day of raw data, with its -wal and -shm, frees its space once no reader holds it. On Windows, a restarted collector re-attaches to live groups. A session's cost reads the same before and after its raw data is deleted, including a session longer than raw retention, tested with an injected clock and a retention of a few minutes passed directly to the retention function. Run with the server, the 30-minute CI soak of P2 still stays inside the overhead budget, now summed over every Submeter process, the server included.
 
 The hourly 0.1% check runs on a synthetic 3-hour raw fixture.
+
+This phase also builds the synthetic store generator, which writes raw files and a history file covering several days without a running collector, for the retention and disk-budget tests here and the report in P5.
 
 ## P4: Analysis
 
