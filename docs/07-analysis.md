@@ -104,9 +104,9 @@ The chart is a bar for each workload, to either side of zero.
 
 This table is the single rule set for the verdict. `submeter why` checks every rule against the window, and the verdict is:
 
-- the one rule that matches, when exactly one matches and its ruled-out condition does not hold;
+- the one rule that matches, when exactly one matches, its ruled-out condition does not hold and the verdict's confidence is at least `verdict.min_confidence`;
 - No bottleneck, when no rule matches and the window holds at least 60 seconds of data;
-- Inconclusive, when the signals disagree or the window holds fewer than 60 seconds of data. The signals disagree when two or more rules match, or when a rule matches while its ruled-out condition holds.
+- Inconclusive, when the signals disagree, the window holds fewer than 60 seconds of data, or the verdict's confidence is below `verdict.min_confidence`. The signals disagree when two or more rules match, or when a rule matches while its ruled-out condition holds.
 
 | Verdict | Windows signals | Linux signals (after version 1) | Ruled out when |
 | --- | --- | --- | --- |
@@ -116,7 +116,7 @@ This table is the single rule set for the verdict. `submeter why` checks every r
 | GPU-bound | One engine type above 90% | Busiest DRM engine or NVML utilisation above 90% | The adapter's VRAM is full, which is reported separately |
 | Thermally throttled | Frequency below 80% of the base (nominal) frequency under load | Throttle counters rising, frequency capped | A power-saving plan is active |
 | No bottleneck | No rule above matches, with at least 60 seconds of data | The same as on Windows | Any rule above matches |
-| Inconclusive | Two or more rules match, a rule matches while its ruled-out condition holds, or fewer than 60 seconds of data | The same as on Windows | Never forced into another class |
+| Inconclusive | Two or more rules match, a rule matches while its ruled-out condition holds, fewer than 60 seconds of data, or the verdict's confidence is below `verdict.min_confidence` | The same as on Windows | Never forced into another class |
 
 The base frequency is the processor's rated (nominal) frequency, not its turbo maximum. Turbo frequencies are not sustainable, so a laptop under steady all-core load would otherwise read as throttled.
 
