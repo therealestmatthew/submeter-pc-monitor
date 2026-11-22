@@ -2,7 +2,7 @@
 
 > Submeter build brief · Part 3, the build · [Index](README.md)
 
-Three programs that share only files on disk: a collector, a server and the launcher. Together they are 25 components, 18 tables across three kinds of data file, 13 commands and 13 API routes. Each program writes only its own files, and none imports another. Twelve of the 25 components are already started as tested code under [Baseline modules](14-baseline-modules.md). Each of those carries a baseline tag that links to its module.
+Three programs that share only files on disk: a collector, a server and the launcher. Together they are 21 components in version 1 (component 05 comes after it), 16 tables across two kinds of data file, raw and history, plus one run file per tagged run, and 14 commands. Version 1 has no API routes; the routes below are kept for version 1.1. Each program writes only its own files, and none imports another. Twelve of the 21 components are already started as tested code under [Baseline modules](14-baseline-modules.md). Each of those carries a baseline tag that links to its module.
 
 ## Components
 
@@ -11,25 +11,25 @@ Three programs that share only files on disk: a collector, a server and the laun
 | 01 `core.models` | Frozen Pydantic models for counters, samples, buckets, workloads, findings [baseline](../src/submeter/core/models.py) | P0 |
 | 02 `core.config` | Loads and validates submeter.toml when a program starts. Tracks where each value came from [baseline](../src/submeter/core/config.py) | P0 |
 | 03 `providers.base` | Provider protocol and capability report [baseline](../src/submeter/providers/base.py) | P0 |
-| 04 `providers.windows.bulk` | One system-wide process snapshot per tick, with a psutil fallback | P1 |
+| 04 `providers.windows.bulk` | One system-wide process snapshot per tick, with a psutil fallback | P2 |
 | 05 `providers.linux.procfs` | Direct /proc reader, plus PSI. Not in version 1: Linux runs polled through the psutil provider | After v1 |
-| 06 `providers.system` | Per-core load, frequency and throttling, commit, paging, disk latency, run queue and the on-battery flag, on Windows. On Linux, version 1 has only psutil's per-core load, available memory and on-battery flag; the Linux counters come after version 1 | P1 |
-| 07 `collector.sampler` | Every process every tick, with the costly fields on a slower cadence. Adaptive cadence, deltas, gap detection, overhead guard [baseline](../src/submeter/collector/sampler.py) | P1 |
+| 06 `providers.system` | Per-core load, frequency and throttling, commit, paging, disk latency, run queue and the on-battery flag, on Windows. On Linux, version 1 has only psutil's per-core load, available memory and on-battery flag; the Linux counters come after version 1 | P2 |
+| 07 `collector.sampler` | Every process every tick, with the costly fields on a slower cadence. Adaptive cadence, deltas, gap detection, overhead guard [baseline](../src/submeter/collector/sampler.py) | P2 |
 | 08 `store.files` | The file map, one-instance locks, schema versions, integrity checks, backups, the disk budget [baseline](../src/submeter/store/files.py) | P1 |
-| 09 `store.raw` | Daily raw files: batched writes, change-only rows with keyframes, command lines stored once [baseline](../src/submeter/store/raw.py) | P1 |
-| 10 `store.rollup` | Hourly buckets with sums, coverage and histograms, built from raw samples. Summaries per executable, session and run [baseline](../src/submeter/store/rollup.py) | P1 on |
-| 11 `store.query` | Answers a window from raw samples merged to wider steps while they cover it, else from hourly buckets. Merges histograms and states the tier and resolution used [baseline](../src/submeter/store/query.py) | P1 |
+| 09 `store.raw` | Daily raw files: batched writes, change-only rows with keyframes, command lines stored once [baseline](../src/submeter/store/raw.py) | P2 |
+| 10 `store.rollup` | Hourly buckets with sums, coverage and histograms, built from raw samples. Summaries per executable, session and run [baseline](../src/submeter/store/rollup.py) | P3 |
+| 11 `store.query` | Answers a window from raw samples merged to wider steps while they cover it, else from hourly buckets. Merges histograms and states the tier and resolution used [baseline](../src/submeter/store/query.py) | P2 on |
 | 12 `cli` | All commands, each with JSON output [baseline](../src/submeter/cli.py) | P1 on |
 | 13 `launcher` | `submeter run`: starts a tree inside a Job Object, returns the command's exit code, and writes one run file with the final totals. On Linux it reports that tagged runs are unavailable and runs the command polled; the cgroup path comes after version 1 | P1 |
 | 14 `providers.group` | Reads a Job Object's totals: the final totals the launcher writes to the run file, and each live group's totals, with re-attach after a restart. cgroup totals come after version 1 | P1, P3 |
-| 15 `attribution` | Rule engine, inheritance, the four fixed buckets, reconciliation check [baseline](../src/submeter/attribution/rules.py) | P2 |
+| 15 `attribution` | Rule engine, inheritance, the four fixed buckets with the machine-level figure for CPU time not seen by polling beside them, reconciliation check [baseline](../src/submeter/attribution/rules.py) | P2 on |
 | 16 `privacy.redact` | Scrubs command lines before anything is written, logs included [baseline](../src/submeter/privacy/redact.py) | P2 |
-| 17 `analysis.detectors` | Leak and runaway process count [baseline](../src/submeter/analysis/growth.py) | P3 |
-| 18 `analysis.verdict` | Bottleneck classifier with confidence and evidence | P3 |
-| 19 `analysis.diff` | Session and period comparison, with epoch checks | P3 |
+| 17 `analysis.detectors` | Leak and runaway process count [baseline](../src/submeter/analysis/growth.py) | P4 |
+| 18 `analysis.verdict` | Bottleneck classifier with confidence and evidence | P4 |
+| 19 `analysis.diff` | Session and period comparison, with epoch checks | P4 |
 | 22 `alerts` | Rule evaluation and cooldowns. A firing rule raises a finding | P4 |
 | 23 `providers.extended` | GPU load by engine type, machine-wide and per process, with the busiest as the headline, and the adapter's VRAM used and total | P5 |
-| 24 `report` | Self-contained HTML report for a session or range, with a meta Content Security Policy. Version 1's charts are drawn here | P4 |
+| 24 `report` | Self-contained HTML report for a session or range, with a meta Content Security Policy. Version 1's charts are drawn here | P5 |
 
 ## Tables, by file
 

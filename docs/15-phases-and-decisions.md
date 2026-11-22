@@ -24,29 +24,45 @@ Gate: the baseline passes its checks on the Windows and Linux runners, the outpu
 
 ## P1: Tagged runs
 
-Builds the launcher, `submeter run`, with its detached holder; the reading of a Job Object's final totals (part of component 14); the run file; `submeter cost --run`, which reads run files, because the history file does not exist yet; and the load generator. No collector or store is needed. A run file holds the kernel's CPU time, I/O and process counts and the job's peak commit. A run's mean memory and top executables come from the collector's samples, so they are unavailable until the collector and the history file exist, in P2.
+Builds the launcher, `submeter run`, with its detached holder; the reading of a Job Object's final totals (part of component 14); the run file; `submeter cost --run`, which reads run files, because the history file does not exist yet; and the load generator. No collector or store is needed. A run file holds the kernel's CPU time, I/O and process counts and the job's peak commit. A run's mean memory and top executables come from the collector's samples, so they are unavailable until the collector (P2) and the server (P3) exist.
 
 Gate: on Windows, a tagged tree spawning 500 sub-second children is charged within 2% of the load generator's own accounting, its final totals survive its exit, and `submeter run` returns with the command's exit code while processes it left behind are still counted. An agent started with `submeter run` retrieves its own run's cost with `submeter cost --run "$SUBMETER_RUN" --json`, and the output holds no command line. On the Linux CI runner, `submeter run` reports that tagged runs are unavailable and runs the command polled.
 
-## P2: Collector, store, CLI
+## P2: Collector and raw store
 
-Gate: a 30-minute CI soak stays inside the budget, per-process figures are within 5% of Windows performance counters, and totals reconcile within 2%. Killing the collector mid-write loses at most 5 seconds and corrupts nothing. CPU-hours from the hourly tier match the raw sum within 0.1%. Deleting a day of raw data frees its space at once.
+Builds the Windows bulk snapshot provider, the Windows system counters (component 06), the collector loop with adaptive cadence and the overhead guard, the raw files with command lines redacted before they are written, and the baseline attribution with its four fixed buckets, so that reconciliation can be tested.
 
-## P3: Live group totals on Windows, attribution, sessions
+Gate: a 30-minute CI soak stays inside the budget, per-process figures are within 5% of Windows performance counters, and totals reconcile within 2%. Killing the collector mid-write loses at most 5 seconds and corrupts nothing.
 
-Gate: on Windows, a restarted collector re-attaches to live groups. A session's cost reads the same before and after its raw data is deleted.
+## P3: Attribution rules, history, sessions
+
+Builds the server, with the history file, the hourly rollup, retention, the disk budget and backups; the attribution rules; sessions, through their marker files; and the collector's reading of each live group's totals, with re-attach after a restart.
+
+Gate: CPU-hours from the hourly tier match the raw sum within 0.1%. Deleting a day of raw data frees its space at once. On Windows, a restarted collector re-attaches to live groups. A session's cost reads the same before and after its raw data is deleted.
 
 ## P4: Analysis
 
+Builds the bottleneck verdict and `submeter why`, the leak check, the runaway process count, the session diff, and the alert rules, whose findings `submeter findings` lists.
+
 Gate: every detector passes a trigger fixture and a quiet fixture, including a cache warm-up. `why` answers in under 2 seconds.
 
-## P5: Report
+## P5: Report and GPU load
 
-Gate: `submeter report` writes one self-contained HTML file for a session or a range, with a meta Content Security Policy. Each chart states the tier and resolution it came from, and the report holds no command line. The API and the live dashboard are not in version 1; their design and gate are kept for version 1.1 in the [build prompt](17-build-prompt.md).
+Builds `submeter report` and the extended providers: GPU load by engine type and the adapter's VRAM.
 
-## P6: GPU load and adapter VRAM
+Gate: `submeter report` writes one self-contained HTML file for a session or a range, with a meta Content Security Policy. Each chart states the tier and resolution it came from, and the report holds no command line. Each extended provider passes its recorded fixtures and degrades cleanly when its source is absent. The API and the live dashboard are not in version 1; their design and gate are kept for version 1.1 in the [build prompt](17-build-prompt.md).
 
-Gate: each provider passes its recorded fixtures and degrades cleanly when its source is absent.
+## The floor of version 1
+
+No cut may remove these, because the acceptance checks of the three jobs in [At a glance](01-overview.md), the first two priorities in the [build prompt](17-build-prompt.md) or the rules in `AGENTS.md` depend on them:
+
+- Tagged runs on Windows: tagged workloads match the load generator's own accounting within 2% (job 1). On Linux in version 1, tagged runs are unavailable.
+- The collector and the raw store, with the baseline attribution and its four fixed buckets, and beside them the machine-level figure for CPU time not seen by polling, so that reconciliation can be tested and the parts sum to the whole within 2% (job 1).
+- The bottleneck verdict and `submeter why`, which answer with their evidence in under 2 seconds and read Inconclusive when the signals disagree, and the adapter's VRAM, which the GPU-bound verdict reads to rule itself out, or a GPU-bound rule-out rewritten so that it does not need it (job 2).
+- The leak check, held to job 3's acceptance, and a CLI surface for findings: `submeter findings`, with `submeter why` and the report also showing them (job 3).
+- A path for sessions that needs no API: `submeter session start` and `stop` write marker files, which the server reads. `submeter cost` and `submeter diff` read sessions (jobs 1 and 3).
+- A metric that cannot be measured is recorded as unavailable, never as zero or an estimate, and Submeter stays inside its overhead budget (priorities 1 and 2).
+- Command lines are redacted before anything is written, as `AGENTS.md` requires.
 
 ## Decisions made
 

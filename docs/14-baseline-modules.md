@@ -2,7 +2,7 @@
 
 > Submeter build brief · Part 3, the build · [Index](README.md)
 
-Fifteen Python modules that form the platform-neutral core of Submeter, with the project file and their tests. This is working code, written and run for this brief: 2,356 lines in the modules and 20 tests. They start twelve of the 25 components in the build list. Each entry says what the module does, why it exists, what it provides, what it imports and what imports it.
+Fifteen Python modules that form the platform-neutral core of Submeter, with the project file and their tests. This is working code, written and run for this brief: 2,356 lines in the modules and 20 tests. They start twelve of the 21 components in the build list. Each entry says what the module does, why it exists, what it provides, what it imports and what imports it.
 
 In this package the files are already in place at the paths shown, 26 files in all: the 19 described here and 7 empty `__init__.py` files, one in each package folder.
 
@@ -319,7 +319,7 @@ Folds samples into buckets, and buckets into wider buckets, keeping totals exact
 - **Builds toward:** Component 10, store.rollup
 - **Provides:** `bucket_start`, `SeriesAccumulator`, `roll_up`, `merge`, `cores_percentile`, `memory_percentile`, `well_covered`
 - **Imports:** [`core.histogram`](../src/submeter/core/histogram.py), [`core.models`](../src/submeter/core/models.py)
-- **Imported by:** Nothing yet. The history writer will, in phase 2.
+- **Imported by:** Nothing yet. The history writer will, in phase 3.
 
 ### `src/submeter/store/query.py`
 
