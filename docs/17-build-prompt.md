@@ -37,7 +37,7 @@ When goals conflict, resolve them in this order:
 - Pydantic v2 for all config, sample and finding models, with extra="forbid" and frozen=True.
 - SQLite in WAL mode. Typer for the CLI.
 - Report: `submeter report` writes one self-contained HTML file, with its script and data inline and a meta Content Security Policy, so no Node toolchain is needed. Draw its charts with a canvas chart library such as uPlot.
-- psutil is the fallback and the cross-check, not the hot path.
+- psutil is the fallback and the cross-check on Windows, not the hot path there. On Linux in version 1 it is the process reader, and the overhead guard lengthens the intervals.
 - Store timestamps in UTC. Measure intervals on a monotonic clock.
 - Before using any OS API you are not certain about, check current documentation instead of relying on memory. This applies most to Job Objects, cgroup v2 delegation, Windows performance counters, NVML, and psutil, whose API has changed across major versions.
 

@@ -83,7 +83,7 @@ The chart draws lookback on a logarithmic time axis marked 1 s, 1 min, 1 h, 2 d,
 | VRAM used and total, per adapter | Gauge, bytes | Max, mean | GPU verdict |
 | Load per core and frequency | Gauge | Min, max, mean. Per core in raw samples, per core class hourly | CPU and thermal verdicts |
 | Commit, available memory, page reads and writes | Gauges and counters | Min, max, mean; sum | Memory verdict |
-| Run queue and pressure stall time | Gauge and counter | Max and mean; sum | CPU, memory and I/O verdicts |
+| Run queue, and on Linux after version 1 pressure stall time (PSI) | Gauge and counter | Max and mean; sum | CPU, memory and I/O verdicts |
 | Disk latency and queue | Gauge | Max, mean | I/O verdict |
 | Submeter's own cost | Gauge | Max, mean | Overhead guard |
 

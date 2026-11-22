@@ -218,14 +218,14 @@ The protocol every process provider implements, and the capability report that d
 
 A process provider built on psutil, so it is not tied to one operating system.
 
-- **Why it exists:** It gives a working collector on the first day, and it is the fallback and cross-check the brief requires for the faster providers.
+- **Why it exists:** It gives a working collector on the first day. It is the fallback and cross-check the brief requires for the Windows bulk snapshot, and in version 1 it is the process reader on Linux.
 - **Worth knowing:**
-  - It asks about one process at a time, which is too slow for a 1-second cadence on a busy machine. It is not the hot path.
+  - It asks about one process at a time, which is too slow for a 1-second cadence on a busy machine. On Windows it is not the hot path. On Linux in version 1 it is, so the overhead guard will hold the intervals longer there.
   - A process that cannot be read fully is still returned and marked restricted. Nothing is dropped.
   - Memory is private bytes on Windows and resident memory elsewhere. Swap is not added yet.
   - Disk I/O is left empty where psutil cannot read it, as on macOS.
   - Reading each working directory is off by default because of its cost.
-- **Builds toward:** Fallback for components 04 and 05
+- **Builds toward:** Fallback for component 04, and the Linux process reader in version 1 (component 05 comes after it)
 - **Provides:** `PsutilProvider`
 - **Imports:** [`core.models`](../src/submeter/core/models.py), psutil
 - **Imported by:** [`cli`](../src/submeter/cli.py)
