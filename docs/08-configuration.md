@@ -10,6 +10,8 @@ Move the controls to see what a sampling choice costs. The figures come from a s
 
 `brief.html` holds the calculator of the v8 brief as delivered, with three sliders, one of them for the cold interval that version 1 no longer has. That page is frozen, and this section supersedes it. The model uses assumed costs, not measurements. Its inputs, formulas and results are set out here.
 
+**Measured so far,** on Linux with the baseline code on one 8-core laptop. Windows is unmeasured until phase 0. Reading one process cost 0.025 ms from /proc stat alone and 0.052 ms from stat, statm and io, through the direct /proc reader that comes after version 1, and 0.25 ms through psutil: 2 to 21 times the assumed 0.012 ms. The Python work after the snapshot, deltas and attribution, cost about 0.033 ms per process. Raw-store writes cost about 10 ms per tick at 300 processes, which is 0.5 points of one core at a 2 s interval against the 0.2 points assumed below for the store and the server, and about 120 bytes per row.
+
 **Inputs**
 
 - **Active interval:** 250 ms, 500 ms, 1 s, 2 s, 5 s or 10 s. It starts at 2 s.
@@ -24,6 +26,8 @@ Move the controls to see what a sampling choice costs. The figures come from a s
 Raw rows and raw data on disk are not modelled. Every process is read every tick, but a process row is written only when the process changes enough, and how often that happens is not known until the collector's rows and bytes per tick are measured.
 
 **Status line**
+
+The status comes from the assumed costs, so it is not a budget check. The measured costs above are higher, and only the phase 0 measurement of the whole tick says whether a setting fits the budget.
 
 | When | Label | Message |
 | --- | --- | --- |
