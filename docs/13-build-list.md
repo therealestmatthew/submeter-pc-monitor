@@ -44,7 +44,7 @@ Three programs that share only files on disk: a collector, a server and the laun
 - Default `submeter.toml` and `rules.toml`
 - Windows scheduled task
 - The brief under `docs/`, `AGENTS.md` with `CLAUDE.md`, and `docs/STATUS.md`
-- Capability matrix written in phase 0
+- The capability matrix in `doctor`, which grows as each provider is built
 
 ## Commands
 

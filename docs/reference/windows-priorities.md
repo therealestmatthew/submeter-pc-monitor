@@ -20,7 +20,7 @@ Keep its full output in the review, whatever it says. A line that starts with FA
 | 4 | SQLite files | Deleting and closing files that Windows holds open | `src/submeter/store/raw.py` |
 | 5 | Clocks and sleep | Clock resolution, and what happens across suspend | `src/submeter/collector/sampler.py` |
 | 6 | File locations | Where the folders land on a managed work computer | `src/submeter/store/files.py` |
-| 7 | Design claims not yet in code | Job Objects, the bulk snapshot, GPU, thermal | `docs/09-telemetry.md` |
+| 7 | Design claims not yet in code | Job Objects, the bulk snapshot and autostart (the phase 0 probes), GPU, thermal | `docs/09-telemetry.md`, `docs/15-phases-and-decisions.md` |
 | 8 | Running a swarm of agents | Working copies, locks and line endings | `docs/reference/claude-code-notes.md` |
 
 ## 1. The baseline's own checks
@@ -78,10 +78,11 @@ This was the part most likely to be wrong, so it was redesigned before this pack
 
 ## 7. Design claims that are not yet in code
 
-These come from `docs/09-telemetry.md` and `docs/10-known-limits.md`. No baseline code depends on them, so they cannot fail a test today, but the plan rests on them.
+Most come from `docs/09-telemetry.md` and `docs/10-known-limits.md`. No baseline code depends on them, so they cannot fail a test today, but the plan rests on them. The first three are the probes of phase 0. [Build phases](../15-phases-and-decisions.md) lists what each probe does and the choice it decides, so the checks are not repeated here.
 
-- **Job Objects.** Whether this user can create one, whether nesting works when the terminal or Claude Code has already placed the process in a job, and whether accounting still includes children that have exited. This decides whether tagged workloads can be exact, which is the centre of the design.
-- **The bulk process snapshot.** What it returns for other users' processes without administrator rights, and what one call costs.
+- **Job Objects.** The Job Object probe. It decides whether tagged workloads can be exact, which is the centre of the design.
+- **The bulk process snapshot.** The bulk-snapshot probe.
+- **Per-user autostart.** The autostart probe.
 - **GPU.** Whether the per-process GPU engine counters and the adapter's VRAM figures are readable. Per-process VRAM, and how far its sum drifts from the adapter total, comes after version 1.
 - **Thermal.** The brief says temperature is unavailable without administrator rights and that throttling can still be seen. Confirm both.
 - **Network (after version 1).** The brief says connections are visible for the user's own processes only.

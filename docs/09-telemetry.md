@@ -2,7 +2,7 @@
 
 > Submeter build brief · Part 2, the design · [Index](README.md)
 
-Where each metric comes from. Rows marked Docs were checked against vendor documentation on 20 November 2026. The rest are confirmed by the capability probe in phase 0. A metric the system cannot deliver is shown as unavailable, never as zero. On Linux, version 1 polls through psutil, which reads the /proc files named below; a metric or Linux source marked after version 1 is not read in version 1. Version 1 reads VRAM only per adapter, used and total.
+Where each metric comes from. Rows marked Docs were checked against vendor documentation on 20 November 2026. The rest are still to be confirmed on the owner's Windows machine. The bulk-snapshot probe in phase 0 shows what a standard user can read of each process's memory and I/O, and `doctor` reports each other source when the provider that reads it is built. A metric the system cannot deliver is shown as unavailable, never as zero. On Linux, version 1 polls through psutil, which reads the /proc files named below; a metric or Linux source marked after version 1 is not read in version 1. Version 1 reads VRAM only per adapter, used and total.
 
 | Metric | Windows | Linux | Without admin | Checked |
 | --- | --- | --- | --- | --- |
@@ -14,10 +14,10 @@ Where each metric comes from. Rows marked Docs were checked against vendor docum
 | VRAM per process (after version 1) | GPU Process Memory counter. Microsoft documents over-reporting on Windows 10, so it is checked against the adapter total. NVML reports it as unavailable under the desktop driver model | NVML | Partial until validated | Docs [6](https://learn.microsoft.com/en-us/troubleshoot/windows-client/performance/gpu-process-memory-counters-report-wrong-value) [7](https://docs.nvidia.com/deploy/nvml-api/structnvmlProcessInfo__v1__t.html) |
 | Temperatures (after version 1) | No dependable source without administrator rights, and psutil offers none here | hwmon | Linux only | Docs [8](https://psutil.readthedocs.io/latest/blog/2017/sensors-support.html) |
 | CPU throttling | Processor frequency and performance counters. psutil reports only a nominal frequency here | cpufreq and `thermal_throttle` counters | Full | Docs [8](https://psutil.readthedocs.io/latest/blog/2017/sensors-support.html) |
-| Power | The on-battery flag. Battery level after version 1 | The on-battery flag. Battery level after version 1. RAPL needs root | Battery only | Phase 0 |
-| Network connections (after version 1) | Per process | Per process | Own user only | Phase 0 |
-| Network bytes per process | Needs administrator rights | Needs root for other users' sockets | Not in version 1 | Phase 0 |
-| Pressure signals | Run queue, commit, page writes, disk queue | After version 1: PSI for CPU, memory and I/O | Full | Phase 0 |
+| Power | The on-battery flag. Battery level after version 1 | The on-battery flag. Battery level after version 1. RAPL needs root | Battery only | When built |
+| Network connections (after version 1) | Per process | Per process | Own user only | When built |
+| Network bytes per process | Needs administrator rights | Needs root for other users' sockets | Not in version 1 | When built |
+| Pressure signals | Run queue, commit, page writes, disk queue | After version 1: PSI for CPU, memory and I/O | Full | When built |
 
 ## What the documentation check changed
 

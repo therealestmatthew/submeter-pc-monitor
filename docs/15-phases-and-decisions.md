@@ -4,9 +4,23 @@
 
 Each phase ends at a gate. The builder stops there, writes what it verified, and waits.
 
-## P0: Capability probe and CI
+## P0: Decision probes and CI
 
-Gate: the baseline modules pass their checks on Windows and Linux runners, and `doctor` is correct on both. The cost of one full sample is measured. The brief is saved in the repository.
+Phase 0 settles the facts that change the design of version 1 on the owner's own machine, and sets up CI, before anything is built on them.
+
+1. On the owner's Windows machine, as the signed-in standard user, run the four checks in `AGENTS.md` (ruff check, ruff format, mypy and pytest) and `scripts/platform_check.py`, and save their full output. [What to check first on Windows](reference/windows-priorities.md) explains each line.
+2. Set up CI on Windows and Linux runners for the portable tests.
+3. Write three probes that the owner runs on that machine. Each saves its output, and each decides one choice:
+
+| Probe | What it does | What it decides |
+| --- | --- | --- |
+| Job Object | Creates a job as this user, nests one job inside another, also when the terminal or Claude Code has already placed the process in a job, reads the totals after every child has exited, and reopens the job by name after the process that created it has exited | The design of the holder that keeps a tagged group open until it is empty |
+| Bulk snapshot | A prototype of the system-wide process snapshot, timed at the owner's process count. It also shows what the snapshot returns for other users' processes without administrator rights | Whether the collector stays in Python, and the default intervals |
+| Per-user autostart | Makes a program start at logon without administrator rights | How `submeter daemon install` installs on Windows |
+
+`doctor` is not built out into the full capability matrix in phase 0. It grows with each provider.
+
+Gate: the baseline passes its checks on the Windows and Linux runners, the output of step 1 and of each probe is saved, and the choice each probe decides is recorded. The brief is saved in the repository.
 
 ## P1: Collector, store, CLI
 
