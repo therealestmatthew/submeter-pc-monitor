@@ -44,7 +44,7 @@ Gate: CPU-hours from the hourly tier match the raw sum within 0.1%. Deleting a d
 
 Builds the bottleneck verdict and `submeter why`, the leak check, the runaway process count, the session diff, and the alert rules, whose findings `submeter findings` lists.
 
-Gate: every detector passes a trigger fixture and a quiet fixture, including a cache warm-up. `why` answers in under 2 seconds.
+Gate: every detector passes a trigger fixture and a quiet fixture, including a cache warm-up, and the leak check flags a leak of 75 MB an hour within 2 h 5 min. `why` answers in under 2 seconds.
 
 ## P5: Report and GPU load
 

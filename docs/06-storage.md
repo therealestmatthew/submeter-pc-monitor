@@ -59,7 +59,7 @@ The chart draws lookback on a logarithmic time axis marked 1 s, 1 min, 1 h, 2 d,
 | --- | --- | --- |
 | Report charts | Raw samples while they cover the range, else hourly buckets | the session or range asked for |
 | Verdict | Raw samples | the last 5 min |
-| Leak check | Raw workload rows, merged into 1-minute steps | 2 to 48 h back, or as far as the raw data on disk reaches |
+| Leak check | Raw workload rows, merged into 1-minute steps | from 48 h back, or from the oldest raw data on disk if that is later, to now. Nothing is judged until the data spans 2 h (`leak.min_duration`) |
 | Trend | Hourly buckets | months back, up to 1 y on the chart |
 | Cost and diff | Stored totals, and for a run not yet copied into the history file, its run file | any session or run |
 

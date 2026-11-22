@@ -15,7 +15,7 @@
 ## Job 3 · Trends: What is drifting over days and weeks?
 
 - **Where you see it:** `submeter findings`, `submeter diff` and the report's history charts
-- **It works when:** A leak of 50 MB an hour is flagged within 2 hours, and a cache warming up is not.
+- **It works when:** A leak of 75 MB an hour is flagged within 2 h 5 min, and a cache warming up is not.
 
 ## The design in eight lines
 

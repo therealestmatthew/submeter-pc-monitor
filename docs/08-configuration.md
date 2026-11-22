@@ -108,6 +108,7 @@ The expensive memory reading has a cost of its own. On Linux it costs about 25 t
 - `submeter config show --effective` prints every value and where it came from.
 - `submeter config check` validates a file without applying it.
 - Out-of-range values are refused with the allowed range in the message. They are never silently clamped.
+- Sizes are binary, in settings and in the acceptance checks: 1 MB is 1024 × 1024 bytes and 1 GB is 1024 cubed bytes, so `50MB/h` is 50 MiB an hour.
 - Any change to sampling, rules or providers starts a new epoch, which is marked on every chart. A wall-clock step that the collector detects also starts a new epoch.
 - Settings and rules are read only when a program starts. `submeter config reload` applies a change by restarting the collector and server.
 - Each machine reads its own settings file: the one in the standard location, the one under `SUBMETER_HOME`, or one named with `--file`.
