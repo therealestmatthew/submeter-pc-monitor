@@ -373,6 +373,7 @@ The Theil-Sen slope, the plateau test, the usual range from median and spread, a
 - **Why it exists:** Leak and baseline checks need statistics that one spike cannot move.
 - **Worth knowing:**
   - A leak is long enough, steep enough, and still climbing. Growth that stops is cleared.
+  - `plateaued` compares the slope of the last third of the points with a quarter of the whole series' slope. With noise of up to 40 MB either way on each 1-minute point, the browser warm-up in [How it decides](07-analysis.md) is flagged in 18 to 34 of 60 runs, depending on the window, and a leak that grows in 2-hour steps is never flagged with a 2-hour window. Phase 4 replaces it, tuned together with the leak acceptance.
   - The slope is the median of the slopes between pairs of points, so one spike does not move it. A test confirms that with 20 points.
   - `check_growth` answers "not enough data yet" until it has 8 points spanning the minimum duration.
   - `usual_range` returns nothing until it has five values.
