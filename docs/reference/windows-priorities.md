@@ -45,7 +45,7 @@ This was the part most likely to be wrong, so it was redesigned before this pack
 
 ## 3. Reading processes
 
-- **Done on Linux:** the psutil provider reads every process, marks the ones it is refused as restricted, leaves a field empty when its read fails, and drops only a process that has already exited.
+- **Done on Linux:** the psutil provider reads every process, marks the ones it is refused as restricted, leaves the I/O, command-line or working-folder field empty when that read fails, returns a process whose other reads fail as a restricted record, and drops only a process that has already exited.
 - **Unknown:**
   - **Private bytes.** On Windows memory is taken from the `private` field. That branch has never run. The script reports which field was used.
   - **How much is restricted.** On a work computer many processes belong to the system or to security software. If most of the machine's CPU time lands in Restricted, attribution is weaker than the brief assumes. The script prints the count. Compare it with the figure in `docs/03-cli-output.md`, which shows 14.
