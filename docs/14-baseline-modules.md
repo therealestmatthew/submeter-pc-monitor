@@ -299,6 +299,7 @@ The file map: where settings, data and state live on each platform, the name of 
   - Raw files are named by UTC day, minute files by ISO week.
   - A file expires only once its whole day or week ended longer ago than the retention.
   - The lock file is only ever locked, never written. The holder's process id goes in a file beside it, NAME.pid.
+  - A refused acquire() tries again every 100 ms for up to 5 seconds by default, because Windows may release a dead holder's lock some time after the holder dies. A caller that wants one try passes a wait of 0.
   - The lock was run on Linux with two real processes, and against a stand-in for the Windows locking call. How Windows itself answers has still to be run there.
 - **Builds toward:** Component 08, store.files
 - **Provides:** `HOME_VARIABLE`, `Program`, `utc_day`, `FileMap`, `InstanceLock`

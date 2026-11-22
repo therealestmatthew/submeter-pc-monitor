@@ -38,8 +38,8 @@ This was the part most likely to be wrong, so it was redesigned before this pack
 - **Done on Linux:** two real processes were run against one lock. The second was refused and could read the holder's process id. After the holder was killed, the lock was free again. A second test replaces the Windows locking module with a stand-in and confirms the calls made: one byte, at the start of the file, without waiting, and an unlock on release.
 - **Unknown:** how Windows itself answers those calls. Three things to confirm:
   1. A second process is refused while the first holds the lock.
-  2. A second attempt from the same process, through a new handle, is also refused. The test `test_file_map_names_expiry_and_lock` depends on this.
-  3. The lock is released when the holder is ended from Task Manager, not only when it exits cleanly.
+  2. A second attempt from the same process, through a new handle, is also refused. The test `test_file_map_names_expiry_and_lock` depends on this. That test and the script check that the lock file is empty from its size, without reading it, because on Windows even the locking process cannot read a locked byte through a second handle.
+  3. The lock is released when the holder is ended from Task Manager, not only when it exits cleanly. Windows may release it some time after the holder dies, so `acquire()` tries again every 100 ms for up to 5 seconds, and the script waits up to 5 seconds for the lock to come free after it kills the holder.
 - **How to check:** the first line of the script's output covers all three. To see it by hand, run `uv run pytest -k lock -v`.
 - **If it fails:** the usual cause is that opening the file fails before locking does, which the code already treats as "held". Anything else, report with the error number.
 
