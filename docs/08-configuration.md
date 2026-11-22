@@ -87,7 +87,7 @@ Every tick reads CPU time, I/O and memory for every process. Only the costly rea
 | Alerts | `quiet_hours` | off | Not used in version 1, which has no desktop notifications. Later, it holds notifications overnight |
 | Alerts | `channels` | dashboard, desktop | Not used in version 1, where every alert is a finding. Later, it says where alerts appear. Nothing is sent off the machine |
 | Attribution | `rules_file` | rules.toml | Where workload rules live |
-| Attribution | `inherit_from_parent` | true | Turn off to see helper processes on their own |
+| Attribution | `inherit_from_parent` | true | Turn off to see helper processes on their own. A rule's `include_children` overrides it, in either direction, for the processes that rule matches |
 | Attribution | `unattributed_alert` | 10% CPU | Tells you when a rule is missing |
 | Attribution | `max_workload_names` | 200 | `doctor` warns when names multiply past this |
 | Privacy | `redaction` | scrub | Set to `exe_only` to store no arguments at all |
@@ -190,7 +190,7 @@ redaction = "scrub"
 
 The same file is in this package as [`examples/rules.toml`](../examples/rules.toml).
 
-Rules claim processes that were not started with `submeter run`. The highest-priority match wins, and `submeter rules test` shows which rule claimed a process. A rule may give `exe`, `cmdline`, `cwd` and `parent`, the program that started the process, and every condition it gives must hold. Working folders are read only when some rule uses `cwd`, because reading them costs extra.
+Rules claim processes that were not started with `submeter run`. The highest-priority match wins, and `submeter rules test` shows which rule claimed a process. A rule may give `exe`, `cmdline`, `cwd` and `parent`, the program that started the process, and every condition it gives must hold. Working folders are read only when some rule uses `cwd`, because reading them costs extra. `include_children` decides whether processes started by a matched process inherit its workload. A rule that omits it follows `attribution.inherit_from_parent`.
 
 ```toml
 # Highest priority wins. Workloads started with
