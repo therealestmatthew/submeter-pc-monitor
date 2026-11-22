@@ -4,7 +4,7 @@ Not the report. These notes exist so that the session can find its place after a
 
 ## Where the session stands
 
-- Stage: the owner ruled "Accept all." on 21 November 2026; recorded in `02-rulings.md` with 94 interactions between the accepted recommendations (32 of them assumptions to confirm). Now in "After my rulings": scope findings R140 to R153 are written into the brief on `main`, one commit each; then the other findings' document changes, in eight groups on worktree branches cherry-picked onto `main`; the 46 `fix now` code changes are built in five groups on worktree branches (`fix-g1` to `fix-g5`), test first, with evidence in `docs/review/fixes/`. Then the full checks, then stage 2.
+- Stage: "After my rulings" is done. Rulings in `02-rulings.md`; every accepted finding is written into the brief, one commit per finding (scope first, then nine document groups merged onto `main`, then a consistency review whose fixes carry the finding number); 36 `fix now` code changes are on `main`, test first, with evidence in `fixes/`, and 7 moved to the plan. The four checks pass on Linux: ruff clean, format clean, mypy clean on 34 files, 61 passed and 1 strict expected failure (R61). Next: stage 2, `docs/PLAN.md`.
 - Machine: Linux (Ubuntu 24.04, kernel 7.0, 8 logical cores), **not** the Windows 11 computer the prompt assumes. Windows claims are checked against vendor documentation or marked suspected.
 - Git: `4823b09 Package as delivered`, `bfcb188 Lock dependencies`. `origin` is set and `git ls-remote origin` answers (empty, public repository). The push of `main` was refused by the session's permission system and is still owed.
 - Ground output is kept in `docs/review/ground/`. Timing probes run on a quiet machine are in `docs/review/probes/measure/`.
