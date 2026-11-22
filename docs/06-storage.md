@@ -37,7 +37,7 @@ Setting `SUBMETER_HOME` moves everything under one folder. `submeter store statu
 
 - Every data file is restricted to the current user.
 - Each SQLite file runs in WAL mode with synchronous=NORMAL. A program crash loses nothing committed. A power loss or an operating-system crash may lose the samples written since the last checkpoint, up to a few minutes, and must never corrupt a file. The few minutes were measured at a 1 s interval and are to be confirmed at the shipped cadence once the collector exists.
-- Read transactions are kept short so the write-ahead log can be checkpointed. `journal_size_limit` bounds the log left after a checkpoint. `submeter store status` and `doctor` report the size of each write-ahead log, and a finding is raised when one is larger than that limit.
+- Read transactions are kept short so the write-ahead log can be checkpointed. `journal_size_limit` bounds the log left after a checkpoint. `submeter store status` and `doctor` report the size of each write-ahead log, and warn when one is larger than that limit.
 - Every file carries a schema version, and readers accept every version still on disk.
 
 ## Table columns
