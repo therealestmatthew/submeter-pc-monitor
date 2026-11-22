@@ -301,7 +301,7 @@ Writes the daily raw file: workload totals every interval, process rows on chang
 - **Builds toward:** Component 09, store.raw
 - **Provides:** `SCHEMA_VERSION`, `RawFile`, `RawStore`
 - **Imports:** [`core.models`](../src/submeter/core/models.py), [`privacy.redact`](../src/submeter/privacy/redact.py), [`store.files`](../src/submeter/store/files.py)
-- **Imported by:** Nothing yet. The collector loop will, in phase 1.
+- **Imported by:** Nothing yet. The collector loop will, in phase 2.
 
 ### `src/submeter/store/rollup.py`
 
@@ -319,7 +319,7 @@ Folds samples into buckets, and buckets into wider buckets, keeping totals exact
 - **Builds toward:** Component 10, store.rollup
 - **Provides:** `bucket_start`, `SeriesAccumulator`, `roll_up`, `merge`, `cores_percentile`, `memory_percentile`, `well_covered`
 - **Imports:** [`core.histogram`](../src/submeter/core/histogram.py), [`core.models`](../src/submeter/core/models.py)
-- **Imported by:** Nothing yet. The history writer will, in phase 1.
+- **Imported by:** Nothing yet. The history writer will, in phase 2.
 
 ### `src/submeter/store/query.py`
 
@@ -353,7 +353,7 @@ The Theil-Sen slope, the plateau test, the usual range from median and spread, a
 - **Builds toward:** Arithmetic for component 17, analysis.detectors
 - **Provides:** `theil_sen`, `plateaued`, `GrowthResult`, `check_growth`, `usual_range`, `daily_minimums`
 - **Imports:** [`core.models`](../src/submeter/core/models.py)
-- **Imported by:** Nothing yet. The detectors will, in phase 3.
+- **Imported by:** Nothing yet. The detectors will, in phase 4.
 
 ### `src/submeter/cli.py`
 

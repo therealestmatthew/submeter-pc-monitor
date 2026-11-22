@@ -5,7 +5,7 @@
 ## Job 1 · Attribution: What does each workload cost?
 
 - **Where you see it:** `submeter cost`, `submeter top` and the report
-- **It works when:** The parts sum to the whole within 2%, and on Windows tagged workloads match the kernel's own totals within 2%. On Linux tagged runs are unavailable in version 1.
+- **It works when:** The parts sum to the whole within 2%, and on Windows tagged workloads match the load generator's own accounting within 2%. On Linux tagged runs are unavailable in version 1.
 
 ## Job 2 · Live diagnosis: Why is the machine slow right now?
 

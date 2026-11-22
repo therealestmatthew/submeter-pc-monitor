@@ -107,7 +107,7 @@ The chart draws lookback on a logarithmic time axis marked 1 s, 1 min, 1 h, 2 d,
 | Logs | 0.05 GB | 2 programs, 5 files of 5 MB each |
 | Total | About 1.5 GB | Of the 2 GB budget |
 
-These sizes are estimates, and phase 1 measures the real bytes per row. When over budget the oldest raw file goes first, never below 24 hours, then backups down to one, then a finding is raised. History is never deleted automatically.
+These sizes are estimates, and phase 2 measures the real bytes per row. When over budget the oldest raw file goes first, never below 24 hours, then backups down to one, then a finding is raised. History is never deleted automatically.
 
 ## File activity of the processes being watched
 

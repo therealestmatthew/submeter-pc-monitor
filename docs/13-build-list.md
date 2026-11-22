@@ -20,8 +20,8 @@ Three programs that share only files on disk: a collector, a server and the laun
 | 10 `store.rollup` | Hourly buckets with sums, coverage and histograms, built from raw samples. Summaries per executable, session and run [baseline](../src/submeter/store/rollup.py) | P1 on |
 | 11 `store.query` | Answers a window from raw samples merged to wider steps while they cover it, else from hourly buckets. Merges histograms and states the tier and resolution used [baseline](../src/submeter/store/query.py) | P1 |
 | 12 `cli` | All commands, each with JSON output [baseline](../src/submeter/cli.py) | P1 on |
-| 13 `launcher` | `submeter run`: starts a tree inside a Job Object, returns the command's exit code, and writes one run file with the final totals. On Linux it reports that tagged runs are unavailable and runs the command polled; the cgroup path comes after version 1 | P2 |
-| 14 `providers.group` | Reads Job Object totals for each live group and re-attaches after a restart. cgroup totals come after version 1 | P2 |
+| 13 `launcher` | `submeter run`: starts a tree inside a Job Object, returns the command's exit code, and writes one run file with the final totals. On Linux it reports that tagged runs are unavailable and runs the command polled; the cgroup path comes after version 1 | P1 |
+| 14 `providers.group` | Reads a Job Object's totals: the final totals the launcher writes to the run file, and each live group's totals, with re-attach after a restart. cgroup totals come after version 1 | P1, P3 |
 | 15 `attribution` | Rule engine, inheritance, the four fixed buckets, reconciliation check [baseline](../src/submeter/attribution/rules.py) | P2 |
 | 16 `privacy.redact` | Scrubs command lines before anything is written, logs included [baseline](../src/submeter/privacy/redact.py) | P2 |
 | 17 `analysis.detectors` | Leak and runaway process count [baseline](../src/submeter/analysis/growth.py) | P3 |

@@ -22,23 +22,29 @@ Phase 0 settles the facts that change the design of version 1 on the owner's own
 
 Gate: the baseline passes its checks on the Windows and Linux runners, the output of step 1 and of each probe is saved, and the choice each probe decides is recorded. The brief is saved in the repository.
 
-## P1: Collector, store, CLI
+## P1: Tagged runs
+
+Builds the launcher, `submeter run`, with its detached holder; the reading of a Job Object's final totals (part of component 14); the run file; `submeter cost --run`, which reads run files, because the history file does not exist yet; and the load generator. No collector or store is needed. A run file holds the kernel's CPU time, I/O and process counts and the job's peak commit. A run's mean memory and top executables come from the collector's samples, so they are unavailable until the collector and the history file exist, in P2.
+
+Gate: on Windows, a tagged tree spawning 500 sub-second children is charged within 2% of the load generator's own accounting, its final totals survive its exit, and `submeter run` returns with the command's exit code while processes it left behind are still counted. An agent started with `submeter run` retrieves its own run's cost with `submeter cost --run "$SUBMETER_RUN" --json`, and the output holds no command line. On the Linux CI runner, `submeter run` reports that tagged runs are unavailable and runs the command polled.
+
+## P2: Collector, store, CLI
 
 Gate: a 30-minute CI soak stays inside the budget, per-process figures are within 5% of Windows performance counters, and totals reconcile within 2%. Killing the collector mid-write loses at most 5 seconds and corrupts nothing. CPU-hours from the hourly tier match the raw sum within 0.1%. Deleting a day of raw data frees its space at once.
 
-## P2: Kernel accounting on Windows, attribution, sessions
+## P3: Live group totals on Windows, attribution, sessions
 
-Gate: on Windows, a tagged tree spawning 500 sub-second children is charged within 2% of the kernel total, its final totals survive its exit, a restarted collector re-attaches to live groups, and `submeter run` returns when the command does. An agent started with `submeter run` retrieves its own run's cost with `submeter cost --run "$SUBMETER_RUN" --json`, and the output holds no command line. On Linux, `submeter run` reports that tagged runs are unavailable and runs the command polled. A session's cost reads the same before and after its raw data is deleted.
+Gate: on Windows, a restarted collector re-attaches to live groups. A session's cost reads the same before and after its raw data is deleted.
 
-## P3: Analysis
+## P4: Analysis
 
 Gate: every detector passes a trigger fixture and a quiet fixture, including a cache warm-up. `why` answers in under 2 seconds.
 
-## P4: Report
+## P5: Report
 
 Gate: `submeter report` writes one self-contained HTML file for a session or a range, with a meta Content Security Policy. Each chart states the tier and resolution it came from, and the report holds no command line. The API and the live dashboard are not in version 1; their design and gate are kept for version 1.1 in the [build prompt](17-build-prompt.md).
 
-## P5: GPU load and adapter VRAM
+## P6: GPU load and adapter VRAM
 
 Gate: each provider passes its recorded fixtures and degrades cleanly when its source is absent.
 
