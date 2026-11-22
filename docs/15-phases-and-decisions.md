@@ -34,11 +34,15 @@ Builds the Windows bulk snapshot provider, the Windows system counters (componen
 
 Gate: a 30-minute CI soak stays inside the overhead budget, per-process CPU agrees with the load generator's own accounting, and totals reconcile within 2%, with CPU time not seen by polling as its own term. On a quiet fixture that term stays under the share stated with the fixture. The budget is judged on every Submeter process running in the soak, as [Configuration](08-configuration.md) defines it, not on the collector alone. Each CPU burner of the generator reports its own CPU seconds at known instants (GetProcessTimes on Windows, getrusage with RUSAGE_SELF on Linux), and over 10 minutes Submeter's stored CPU for every burner above 10% of a core agrees within 5% or 0.05 s, whichever is larger. Comparing with Windows performance counters is a parsing check only. Killing the collector mid-write loses nothing it had committed and corrupts nothing. This gate does not test power loss, which may lose the samples since the last checkpoint.
 
+The owner also runs a 24-hour soak on the Windows machine. It passes when Submeter stays inside its overhead budget for CPU and memory throughout, the collector's memory grows by less than the limit set in the plan's gates section, `PRAGMA integrity_check` returns ok for every file, and the only gaps are those the collector recorded.
+
 ## P3: Attribution rules, history, sessions
 
 Builds the server, with the history file and a nullable column for every catalogue metric version 1 collects, the hourly rollup, retention, the disk budget, backups and the copying of final run files into the history file; the attribution rules; sessions, through their marker files; and the collector's reading of each live group's totals, with re-attach after a restart.
 
 Gate: CPU-hours from the hourly tier match the raw sum of the samples whose end times fall in each hour within 0.1%, tested with ticks at fractional seconds as well as whole ones. Deleting a day of raw data, with its -wal and -shm, frees its space once no reader holds it. On Windows, a restarted collector re-attaches to live groups. A session's cost reads the same before and after its raw data is deleted, including a session longer than raw retention, tested with an injected clock and a retention of a few minutes passed directly to the retention function. Run with the server, the 30-minute CI soak of P2 still stays inside the overhead budget, now summed over every Submeter process, the server included.
+
+The hourly 0.1% check runs on a synthetic 3-hour raw fixture.
 
 ## P4: Analysis
 
