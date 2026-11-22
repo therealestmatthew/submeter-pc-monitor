@@ -149,6 +149,7 @@ The frozen records passed between layers: counters, samples, workload totals, bu
   - Not here yet: separate fields for the two memory units. memory_bytes holds the unit read every tick, and the unit for workload totals, USS or PSS with the time it was read, is a planned field.
   - Pydantic leaves the refused input out of a record's validation error, and the repr of a process record leaves out its command line and working folder, so neither can carry them into a log. A validator's own message can still name a settings value, as the redact-pattern and workload-name checks do.
   - No behaviour lives here.
+  - Not here yet: fields for most rows of the metric catalogue in `docs/06-storage.md`, busy time per core in SampleBatch, which holds one summed figure, an opaque value in Availability, and an epoch on WorkloadSample. A planned task adds them before parallel work starts, each catalogue field optional with None meaning unavailable (finding R112).
 - **Builds toward:** Component 01, core.models
 - **Provides:** `Record`, `Availability`, `AccountingSource`, `Severity`, `Confidence`, `Tier`, `Capability`, `ProcessKey`, `ProcessCounters`, `SystemCounters`, `Snapshot`, `ProcessSample`, `SampleBatch`, `WorkloadSample`, `Bucket`, `Finding`, `GroupTotals`
 - **Imports:** pydantic

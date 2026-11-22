@@ -19,7 +19,7 @@ Three programs that share only files on disk: a collector, a server and the laun
 | 09 `store.raw` | Daily raw files: batched writes, change-only rows with keyframes, command lines stored once [baseline](../src/submeter/store/raw.py) | P2 |
 | 10 `store.rollup` | Hourly buckets with sums, coverage and histograms, built from raw samples. Summaries per executable, session and run [baseline](../src/submeter/store/rollup.py) | P3 |
 | 11 `store.query` | Answers a window from raw samples merged to wider steps while they cover it, else from hourly buckets. Merges histograms and states the tier and resolution used [baseline](../src/submeter/store/query.py) | P2 on |
-| 12 `cli` | All commands, each with JSON output [baseline](../src/submeter/cli.py) | P1 on |
+| 12 `cli` | All commands, each with JSON output, in a package with one module per command group [baseline](../src/submeter/cli.py) | P1 on |
 | 13 `launcher` | `submeter run`: creates the command inside a Job Object (PROC_THREAD_ATTRIBUTE_JOB_LIST), so no descendant starts outside it, returns the command's exit code, and writes one run file with the final totals. On Linux it reports that tagged runs are unavailable and runs the command polled; the cgroup path comes after version 1 | P1 |
 | 14 `providers.group` | Reads a Job Object's totals: the final totals the launcher writes to the run file, and each live group's totals, with re-attach after a restart. cgroup totals come after version 1 | P1, P3 |
 | 15 `attribution` | Rule engine, inheritance, the four fixed buckets with the machine-level figure for CPU time not seen by polling beside them, reconciliation check [baseline](../src/submeter/attribution/rules.py) | P2 on |

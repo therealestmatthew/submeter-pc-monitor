@@ -40,6 +40,8 @@ When goals conflict, resolve them in this order:
 - Dependencies: at runtime, pydantic, psutil and typer, as in the baseline. Call Windows APIs through ctypes, with no added package. tzdata is approved for Windows only; I decide whether it goes into pyproject.toml and uv.lock before the first wave or when a feature first needs named time zones. Add no other runtime dependency to version 1 without asking me.
 - psutil is the fallback and the cross-check on Windows, not the hot path there. On Linux in version 1 it is the process reader, and the overhead guard lengthens the intervals.
 - Store timestamps in UTC. Measure intervals on a monotonic clock that keeps counting during suspend: CLOCK_BOOTTIME on Linux, and on Windows QueryPerformanceCounter, which `time.monotonic()` uses from Python 3.13.
+- New tests go in tests/test_<component>.py, one file per component, and every new package goes into the LAYER table of tests/test_layers.py, so that parallel builders do not all edit the same files.
+- A record field for a metric that may be unavailable is optional, and None means unavailable.
 - Before using any OS API you are not certain about, check current documentation instead of relying on memory. This applies most to Job Objects, cgroup v2 delegation, Windows performance counters, NVML, and psutil, whose API has changed across major versions.
 
 ## Architecture
@@ -303,7 +305,7 @@ Build these components, and tell me before adding any that are not listed:
 8. alerts
 9. providers.extended (GPU load by engine type and the adapter's VRAM)
 10. report
-11. cli, covering every command above
+11. cli, a package with one module per command group, covering every command above
 
 Tables, by file:
 
