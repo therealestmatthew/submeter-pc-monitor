@@ -221,7 +221,7 @@ Redacts command lines, and hides secrets in free text, before anything is stored
 
 - **Why it exists:** Command lines carry keys and tokens. Redacting on the way in means no later bug can expose what was never written (finding R04).
 - **Worth knowing:**
-  - Two modes. In `exe_only`, the default, only the executable name the provider read is kept, never `args[0]`, which a process can rewrite into a whole title such as "postgres: alice appdb 10.0.0.5(5432) idle". With no executable name, nothing is kept. In `scrub`, which is opt-in, the arguments are kept with secrets hidden.
+  - Two modes. In `exe_only`, the default setting (`privacy.redaction`) and the default of RawFile and RawStore, only the executable name the provider read is kept, never `args[0]`, which a process can rewrite into a whole title such as "postgres: alice appdb 10.0.0.5(5432) idle". With no executable name, nothing is kept. In `scrub`, which is opt-in, the arguments are kept with secrets hidden. redact_cmdline's own mode argument defaults to scrub, so a caller that wants exe_only passes it.
   - Scrub splits an `args[0]` that holds spaces, keeps its first word as the program and scrubs the other words like any argument.
   - Scrub hides the value after a flag one of whose words names a secret, the value of a NAME=value pair whose name does, known token shapes, URL passwords, and long opaque strings of letters and digits. A 40-character commit hash is hidden as well.
   - A secret word counts wherever it ends a word of the flag or name, at `-`, `_`, `.` or the end, so `-storepass`, `--dbpassword` and `PGPASSWORD=` are hidden while `--passes`, `--tokenizer`, `--compass` and `--bypass-cache` are kept.

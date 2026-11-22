@@ -3,7 +3,7 @@
 Command lines carry API keys, tokens and passwords. This module is applied on
 the way into the store, so no later bug can expose what was never written.
 
-The default mode, exe_only, keeps the executable name and nothing else. Scrub is
+The default setting, exe_only, keeps the executable name and nothing else. Scrub is
 opt-in and best-effort: it hides known shapes and cannot recognise every
 credential. It hides the argument after a flag one of whose words names a
 secret, the value of a NAME=value pair whose name does, known token shapes
