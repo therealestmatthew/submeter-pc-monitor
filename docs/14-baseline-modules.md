@@ -195,7 +195,8 @@ Redacts command lines, and hides secrets in free text, before anything is stored
 
 - **Why it exists:** Command lines carry keys and tokens. Redacting on the way in means no later bug can expose what was never written (finding R04).
 - **Worth knowing:**
-  - Two modes. In `exe_only`, the default, only the executable is kept. In `scrub`, which is opt-in, the arguments are kept with secrets hidden.
+  - Two modes. In `exe_only`, the default, only the executable name the provider read is kept, never `args[0]`, which a process can rewrite into a whole title such as "postgres: alice appdb 10.0.0.5(5432) idle". With no executable name, nothing is kept. In `scrub`, which is opt-in, the arguments are kept with secrets hidden.
+  - Scrub splits an `args[0]` that holds spaces, keeps its first word as the program and scrubs the other words like any argument.
   - Scrub hides the value after a secret-looking flag, the value of a secret-looking NAME=value pair, known token shapes, URL passwords, and long opaque strings of letters and digits. A 40-character commit hash is hidden as well.
   - Scrub is best-effort: it hides known shapes and cannot recognise every credential. It does not hide an attached -pPASS, -u user:pass, a header such as "Authorization: Bearer ...", a command inside bash -c, --env=NAME=value or a connection string. A test records these forms.
   - Ordinary arguments survive scrub: --max-tokens 4096 is left alone.
@@ -323,7 +324,7 @@ Writes the daily raw file: workload totals every interval, process rows on chang
   - A keyframe writes every live process in full. One opens each file and one follows every keyframe interval.
   - A gap is recorded in its own table, and that batch is written in full.
   - Not here yet (finding R39, planned): a gap column on workload_raw and system_raw, returned by workload_samples(). Until then a gap batch's workload and system rows look like observed time to the roll-up.
-  - Command lines are redacted here whatever the caller did, in `exe_only` mode unless scrub is chosen. A test reads the file bytes to confirm the secret is absent.
+  - Command lines are redacted here whatever the caller did, in `exe_only` mode unless scrub is chosen. A test reads the file bytes to confirm the secret is absent. When redaction keeps nothing, the process is stored with no command line, which reads as unavailable.
   - RawStore rolls over at UTC midnight and flushes pending CPU before closing a file.
   - Not here yet (finding R55, planned): RawStore never reopening a day earlier than the open file. Today a batch stamped on an earlier day, after a wall-clock step back across midnight, reopens that closed day's file.
   - journal_size_limit bounds the write-ahead log left after each checkpoint to 4 MiB. Only close() truncates it.
