@@ -204,11 +204,12 @@ redaction = "exe_only"
 
 The same file is in this package as [`examples/rules.toml`](../examples/rules.toml).
 
-Rules claim processes that were not started with `submeter run`. The highest-priority match wins, and `submeter rules test` shows which rule claimed a process. A rule may give `exe`, `name`, `cmdline`, `cwd` and `parent`, the program that started the process, and every condition it gives must hold. `exe` matches the executable's file name where it can be read, and otherwise the process name. `name` matches the process name, which on Linux a program can set for itself. Both accept glob patterns such as `python3*` and ignore case. Its `workload` is 1 to 64 characters of a-z, 0-9 and `. _ : -`, starting with a letter or digit, and may not be one of the names Submeter assigns: system, restricted, unattributed, submeter and machine. Working folders are read only when some rule uses `cwd`, because reading them costs extra. `include_children` decides whether processes started by a matched process inherit its workload. A rule that omits it follows `attribution.inherit_from_parent`. A `cmdline` pattern matches the live command line before redaction, which can be read only for your own processes, so write it from what `submeter rules test` shows: it reads the live process and marks which arguments the store hides.
+On Windows, rules claim processes that were not started with `submeter run`; on Linux in version 1 a command started with `submeter run` is polled and reaches the rules like any other process. The highest-priority match wins, and `submeter rules test` shows which rule claimed a process. A rule may give `exe`, `name`, `cmdline`, `cwd` and `parent`, the program that started the process, and every condition it gives must hold. `exe` matches the executable's file name where it can be read, and otherwise the process name. `name` matches the process name, which on Linux a program can set for itself. Both accept glob patterns such as `python3*` and ignore case. Its `workload` is 1 to 64 characters of a-z, 0-9 and `. _ : -`, starting with a letter or digit, and may not be one of the names Submeter assigns: system, restricted, unattributed, submeter and machine. Working folders are read only when some rule uses `cwd`, because reading them costs extra. `include_children` decides whether processes started by a matched process inherit its workload. A rule that omits it follows `attribution.inherit_from_parent`. A `cmdline` pattern matches the live command line before redaction, which can be read only for your own processes, so write it from what `submeter rules test` shows: it reads the live process and marks which arguments the store hides.
 
 ```toml
-# Highest priority wins. Workloads started with
-# "submeter run" never reach these rules.
+# Highest priority wins. On Windows, workloads started with
+# "submeter run" never reach these rules; on Linux in
+# version 1 they are polled and do.
 #
 # The exe names are Windows file names. On Linux
 # they have no .exe: chrome, firefox, code, node,

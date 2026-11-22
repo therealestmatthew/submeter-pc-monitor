@@ -1,5 +1,6 @@
-# Highest priority wins. Workloads started with
-# "submeter run" never reach these rules.
+# Highest priority wins. On Windows, workloads started with
+# "submeter run" never reach these rules; on Linux in
+# version 1 they are polled and do.
 #
 # The exe names are Windows file names. On Linux
 # they have no .exe: chrome, firefox, code, node,

@@ -136,6 +136,6 @@ Each threshold has an on value and an off value on the far side of it: lower for
 
 The Linux thresholds get on and off values in the same way when that column is built after version 1.
 
-Version 1 does not read the Linux signals: PSI and the other Linux system counters come after version 1. On Linux `why` reads Inconclusive or unavailable in version 1.
+Version 1 does not judge the Linux column: PSI and the other Linux system counters come after version 1, and the Linux GPU load that version 1 reads is not used by the verdict. On Linux `why` reads Inconclusive or unavailable in version 1.
 
 The disk queue and latency thresholds are absolute values, because version 1 learns no baselines. Thresholds are starting points for the builder to tune against fixtures. All of them are configurable.

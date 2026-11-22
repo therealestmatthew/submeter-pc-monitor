@@ -12,7 +12,7 @@ The collector and the server share nothing but the database schema. If phase 0 s
 
 | Option | Strength | Cost | Call |
 | --- | --- | --- | --- |
-| Python throughout | Fastest to build and review. Best fit for analysis, API and reports | Higher memory. Per-process loops are slow, so the bulk path is mandatory | Start here |
+| Python throughout | Fastest to build and review. Best fit for analysis, API and reports | Higher memory. Per-process loops are slow: the bulk path is mandatory on Windows, and on Linux in version 1 psutil reads each process at the longer intervals the overhead guard sets | Start here |
 | Rust collector, Python elsewhere | Lowest overhead on the hot path. Direct access to Windows and Linux kernel APIs. One small binary | Two toolchains. Slower iteration on the part that changes most early on | Fallback |
 | Rust throughout | Smallest footprint overall | Analysis, API and reports take far longer to write. Little gain off the hot path | No |
 | Go throughout | Easy deployment, good concurrency | A new language for you with no analysis advantage over Python | No |

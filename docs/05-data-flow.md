@@ -33,12 +33,13 @@ flowchart TD
     analysis -->|rollups, findings| history
     store -->|files read directly| cli
     cli -->|submeter report| report
+    style ka stroke-width:3px
 ```
 
 The same flow in words:
 
 1. `submeter run` starts a tagged tree and writes a run file for its group in the live state, which the collector reads to find the group.
-2. Inside the collector process, three kinds of provider return cumulative counters. Kernel accounting, through a Job Object on Windows, is exact and covers tagged trees. On Linux tagged runs are unavailable in version 1, so `submeter run` runs the command polled; the cgroup path comes after version 1. It is the provider highlighted in the drawing. Bulk polling reads every process at once on each tick, by default every 2 s while anything is busy and every 5 s once the machine is quiet, and reads the costly fields, such as USS or PSS, on a slower cadence. Extended providers cover GPU load and the adapter's VRAM, tiered by privilege.
+2. Inside the collector process, three kinds of provider return cumulative counters. Kernel accounting, through a Job Object on Windows, is exact and covers tagged trees. It is the provider highlighted in the drawing. On Linux tagged runs are unavailable in version 1, so `submeter run` runs the command polled; the cgroup path comes after version 1. Bulk polling reads every process at once on each tick, by default every 2 s while anything is busy and every 5 s once the machine is quiet, and reads the costly fields, such as USS or PSS, on a slower cadence. Extended providers cover GPU load and the adapter's VRAM, tiered by privilege.
 3. The sampler turns counters into deltas over a monotonic clock, records sleep gaps, identifies a process by pid plus start time, and runs the overhead guard. A tick is a gap only when its interval is longer than three times the interval the collector meant to wait plus 2 s of slack, or when the suspend test fires. A gap keeps its CPU and I/O deltas, which are exact because the counters are cumulative, and a suspended process accrues nothing; the gap flag changes only how the interval's time is counted. It emits a Sample.
 4. Attribution gives each process one workload: by group membership, then Submeter itself, then `rules.toml`, then its parent. A tagged group's members are the processes in its Job Object's process list. A tagged workload reports its group's kernel totals for CPU time, I/O and process count, and the sum of its polled processes serves only as a cross-check for those and for the process tree. Command lines are redacted here. It emits a WorkloadSample, redacted.
 5. The store has one lifetime per file, a 2 GB cap and one writer for each file: raw files kept 48 h, a history file that is kept, and run files, which the server deletes once it has copied a run's final totals into the history file.
