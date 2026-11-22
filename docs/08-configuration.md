@@ -63,6 +63,8 @@ Raw rows and raw data on disk are not modelled. Every process is read every tick
 
 Every tick reads CPU time, I/O and memory for every process. Only the costly readings wait for the USS interval. The 2 s default active interval fits the overhead budget only with a direct reader, such as the Windows bulk snapshot. With psutil, which is the fallback on Windows and the reader on Linux in version 1, the overhead guard lengthens the intervals, as [Known limits](10-known-limits.md) states for Linux.
 
+The expensive memory reading has a cost of its own. On Linux it costs about 25 to 30 ms of CPU per GB resident in the processes read; with the defaults that is about 0.8% of one core on a desktop with 8 GB in its 25 largest processes, most of the 1% idle budget. The overhead guard stretches `uss_interval` or shrinks `uss_top_n` before it lengthens the active and idle intervals.
+
 ## Other settings worth exposing
 
 | Group | Setting | Default | Why you would change it |
