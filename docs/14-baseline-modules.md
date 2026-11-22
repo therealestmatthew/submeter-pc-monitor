@@ -18,9 +18,10 @@ In this package the files are already in place at the paths shown, 27 files in a
 
 ```mermaid
 flowchart TD
-    subgraph l3["COMMAND LINE"]
+    subgraph l3["COMMAND LINE AND PROGRAMS"]
         direction TB
         cli["cli"]
+        programs["programs<br/>collector · server · launcher<br/>not written yet"]
     end
     subgraph l2["COLLECT, ATTRIBUTE, STORE, ANALYSE"]
         direction TB
@@ -51,7 +52,7 @@ flowchart TD
     l1 --> l0
 ```
 
-*Figure:* Imports point only downward. A module may import from its own package or from a lower layer, and `tests/test_layers.py` fails if one does otherwise. That rule is what lets the collector be replaced later without touching the rest.
+*Figure:* Imports point only downward. A module may import from its own package or from a lower layer, and `tests/test_layers.py` fails if one does otherwise, relative imports included. That rule is what lets the collector be replaced later without touching the rest. The running loops of the three programs live in the layer-3 package `programs`, beside `cli`: `programs.collector`, `programs.server` and `programs.launcher`, each wiring together the libraries below it. No program imports another, and `tests/test_layers.py` checks that too. Collector, attribution, store and analysis stay libraries that do not import one another.
 
 The table gives the same links module by module. "Nothing yet" means the caller is built in a later phase, and until then only the tests call that module.
 
@@ -280,7 +281,7 @@ Subtracts consecutive snapshots to find what each process did during the interva
   - A reused pid is a new process, because identity includes the start time.
   - Each snapshot carries two clocks. Intervals are measured on the one that counts suspend: CLOCK_BOOTTIME on Linux, `time.monotonic()` on Windows. The other stops during suspend, CLOCK_MONOTONIC on Linux and QueryUnbiasedInterruptTime on Windows, and is read only for the suspend test. Where it is not read, there is no suspend test.
   - An interval longer than 30 seconds, or one in which the clock that counts suspend ran more than 2 seconds ahead of the clock that does not, is a gap: deltas are zero and the batch says so.
-  - Not here yet: the adaptive cadence loop, the overhead guard, and on Linux the subtraction that stops a reaped child's CPU time and I/O being counted again in the process that reaped it. Until it is built, a Linux parent's I/O delta includes the I/O of the children it reaped.
+  - Not here yet: adaptive cadence, the overhead guard, and on Linux the subtraction that stops a reaped child's CPU time and I/O being counted again in the process that reaped it. Until it is built, a Linux parent's I/O delta includes the I/O of the children it reaped. The loop that calls the sampler each tick goes in `programs.collector`.
   - The fixed 30-second rule and the zeroed deltas are wrong (finding R38), and a planned task replaces them together with R39's gap handling in the store. ingest() will take the interval expected for the tick. A tick will be a gap only past three times that interval plus the 2-second slack, or when the suspend test fires, and a gap will keep its CPU and I/O deltas. Until then any interval over 30 seconds records zero CPU, and `submeter top --seconds` above 30 prints zero cores for every workload.
   - Not here yet (finding R57, planned): no CPU baseline when either reading is None, and a cap on each credited CPU delta at the interval times the logical cores, with a count of the capped samples. Today a stand-in 0.0 becomes the next interval's baseline and credits a process's whole lifetime of CPU to one interval.
   - Not here yet (finding R55, planned): stamps anchored on the interval clock, and a 'clock stepped' event when the wall clock moves away from them. Today a batch is stamped with the wall clock as read, so a step back stamps a batch earlier than the one before, and nothing records the step.
@@ -360,7 +361,7 @@ Writes the daily raw file: workload totals every interval, process rows on chang
 - **Builds toward:** Component 09, store.raw
 - **Provides:** `SCHEMA_VERSION`, `HELD_CPU_LIMIT_S`, `open_read_only`, `RawFile`, `RawStore`
 - **Imports:** [`core.models`](../src/submeter/core/models.py), [`privacy.redact`](../src/submeter/privacy/redact.py), [`store.files`](../src/submeter/store/files.py)
-- **Imported by:** Nothing yet. The collector loop will, in phase 2.
+- **Imported by:** Nothing yet. The collector loop in `programs.collector` will, in phase 2.
 
 ### `src/submeter/store/rollup.py`
 
@@ -397,7 +398,7 @@ Chooses the tier and step for a time window, and explains the choice.
 - **Builds toward:** Component 11, store.query
 - **Provides:** `TierChoice`, `choose_tier`
 - **Imports:** [`core.models`](../src/submeter/core/models.py)
-- **Imported by:** Nothing yet. The commands that read history, and the report, will.
+- **Imported by:** Nothing yet. The server in `programs.server`, the commands that read history, and the report will. The detectors in `analysis` do not import it: the server reads each window and passes the numbers in.
 
 ### `src/submeter/analysis/growth.py`
 
@@ -450,11 +451,13 @@ Nineteen tests covering every module above, including one that runs the command 
 
 ### `tests/test_layers.py`
 
-43 lines · [open the file](../tests/test_layers.py)
+82 lines · [open the file](../tests/test_layers.py)
 
-One rule, checked from the source itself: a module may import only from its own package or from a lower layer.
+Two rules, checked from the source itself: a module may import only from its own package or from a lower layer, and no program imports another.
 
 - **Why it exists:** This is what keeps the collector replaceable and the core reusable.
 - **Worth knowing:**
-  - Add a new package to the LAYER table when you create one.
+  - A relative import is resolved against the module's own package, and `from submeter import x` counts as importing `submeter.x`, so neither form slips past the rule.
+  - `programs` sits at layer 3 beside `cli`. The PROGRAMS set names its three programs, collector, server and launcher, and a package under `programs` that is not in it fails the test.
+  - Add a new package to the LAYER table when you create one, and a new program to PROGRAMS.
 - **Builds toward:** Tests

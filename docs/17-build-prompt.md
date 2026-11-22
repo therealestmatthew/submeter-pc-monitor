@@ -43,7 +43,7 @@ When goals conflict, resolve them in this order:
 
 ## Architecture
 
-Five layers with data flowing one way: providers, sampler, attribution, store, analysis. The CLI and the report are thin readers over store and analysis. Each layer must be testable in isolation from recorded fixtures.
+Data flows one way: providers, sampler, attribution, store, analysis. Imports point only downward, through four layers: core; then privacy and providers; then store, collector, attribution and analysis, which are libraries and do not import one another; then cli and `programs`. The running loops live in `programs`, beside cli: `programs.collector`, `programs.server` and `programs.launcher` each wire the libraries together, and no program imports another. tests/test_layers.py checks both rules, relative imports included. The CLI and the report are thin readers over store and analysis. Each layer must be testable in isolation from recorded fixtures.
 
 ### Three programs, one contract
 
