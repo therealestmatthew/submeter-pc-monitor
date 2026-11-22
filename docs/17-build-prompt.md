@@ -310,6 +310,8 @@ Tables, by file:
 
 Also deliver: CI on Windows and Linux, where the Linux runner runs the portable tests; recorded fixtures for every provider and detector; a load generator that can spawn short-lived children, leak memory at a set rate and burn CPU, and that reports its own accounting (each burner's CPU seconds at known instants, and its children's summed CPU time), because the gates below depend on it; default submeter.toml and rules.toml; a Windows scheduled task (the systemd user unit comes after version 1); and docs/STATUS.md.
 
+A recorded fixture is anonymised before it is written: user name, host name and home folder replaced; executable names outside an allow-list replaced with stable placeholders; command lines in exe_only form; working folders dropped. A test fails if any fixture contains the current user or host name. This rule is also in `AGENTS.md`.
+
 ## How to work
 
 A baseline already exists in the repository: pyproject.toml and sixteen tested modules under src/submeter (core.units, core.models, core.histogram, core.config, core.names, privacy.redact, providers.base, providers.psutil_provider, collector.sampler, attribution.rules, store.files, store.raw, store.rollup, store.query, analysis.growth and cli), with tests in tests/. Read them before writing anything. Extend them instead of rewriting them, keep their interfaces unless you tell me why a change is needed, and keep the rule that imports only point downward, which tests/test_layers.py enforces. If the repository is empty, stop and tell me, because I have not added them yet.
