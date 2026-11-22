@@ -159,7 +159,8 @@ A 64-bin histogram that merges by adding bins and returns percentiles.
 - **Why it exists:** A percentile of percentiles is not a percentile. Keeping a histogram in every bucket is what makes a weekly 95th percentile valid (finding R27).
 - **Worth knowing:**
   - Two scales are defined: cores from 0.01 to 256, and memory from 16 MiB to 256 GiB.
-  - A reported percentile is within one bin of the true value, a factor of about 1.17. The test checks that bound.
+  - A reported percentile is within one bin of the true value, a factor of about 1.17. The test checks that bound. The factor holds only inside the scale: a value below the low edge reads as somewhere between 0 and the low edge, and a value at or above the high edge reads as the high edge.
+  - The 100th percentile is the upper edge of the highest bin that holds any time. With float weights the running sum can fall short of the total, so a percentile that the walk through the bins never reaches also returns that edge, not the top of the scale.
   - Weights are seconds, so the histogram is time-weighted.
   - merge can check only the bin count, and both scales have the same count. Keeping cores and memory histograms apart is the caller's job.
 - **Builds toward:** Part of component 10, store.rollup
