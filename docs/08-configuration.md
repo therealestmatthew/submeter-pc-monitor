@@ -102,7 +102,7 @@ Every tick reads CPU time, I/O and memory for every process. Only the costly rea
 - `submeter config show --effective` prints every value and where it came from.
 - `submeter config check` validates a file without applying it.
 - Out-of-range values are refused with the allowed range in the message. They are never silently clamped.
-- Any change to sampling, rules or providers starts a new epoch, which is marked on every chart.
+- Any change to sampling, rules or providers starts a new epoch, which is marked on every chart. A wall-clock step that the collector detects also starts a new epoch.
 - Settings and rules are read only when a program starts. `submeter config reload` applies a change by restarting the collector and server.
 - Each machine reads its own settings file: the one in the standard location, the one under `SUBMETER_HOME`, or one named with `--file`.
 
