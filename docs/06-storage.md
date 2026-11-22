@@ -76,7 +76,7 @@ The chart draws lookback on a logarithmic time axis marked 1 s, 1 min, 1 h, 2 d,
 | --- | --- | --- | --- |
 | CPU time | Counter, seconds | Sum, plus a histogram of cores in use | Cost, verdict, trend |
 | Memory for growth: private bytes, or RSS plus swap | Gauge, bytes | Min, max, mean, last, histogram | Leak |
-| Memory for totals: USS or PSS, read for the largest processes only, so a workload's total is partial when some of its processes have no reading | Gauge, bytes | Max, mean, age of the reading | Workload totals |
+| Memory for totals: USS or PSS, read for the largest processes only, so a workload's total is partial when some of its processes have no reading. After version 1, a Linux tagged group uses `memory.stat` anon plus swap, the cgroup figure comparable with USS | Gauge, bytes | Max, mean, age of the reading | Workload totals |
 | Disk bytes read and written | Counter, bytes | Sum | Cost, I/O verdict |
 | Processes alive and started | Gauge and counter | Max and mean; sum | Process-count check, cost |
 | Threads and handles | Gauge | Max | Process tree view |
