@@ -60,7 +60,7 @@ The chart draws lookback on a logarithmic time axis marked 1 s, 1 min, 1 h, 2 d,
 | Verdict | Raw samples | the last 5 min |
 | Leak check | Raw workload rows, merged into 1-minute steps | 2 to 48 h back, or as far as the raw data on disk reaches |
 | Trend | Hourly buckets | months back, up to 1 y on the chart |
-| Cost and diff | Stored totals | any session |
+| Cost and diff | Stored totals, and for a run not yet copied into the history file, its run file | any session or run |
 
 *Figure:* How far back each tier reaches, on a logarithmic time axis, and which tier each check reads. Nothing needs raw samples older than 48 hours, which is what lets raw files be deleted on schedule.
 

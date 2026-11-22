@@ -24,7 +24,7 @@ Gate: the baseline passes its checks on the Windows and Linux runners, the outpu
 
 ## P1: Tagged runs
 
-Builds the launcher, `submeter run`, with its detached holder; the reading of a Job Object's final totals (part of component 14); the run file; `submeter cost --run`, which reads run files, because the history file does not exist yet; and the load generator. No collector or store is needed. A run file holds the kernel's CPU time, I/O and process counts and the job's peak commit. A run's mean memory and top executables come from the collector's samples, so they are unavailable until the collector (P2) and the server (P3) exist.
+Builds the launcher, `submeter run`, with its detached holder; the reading of a Job Object's final totals (part of component 14); the run file; `submeter cost --run`, which reads run files only, because the history file does not exist yet; and the load generator. No collector or store is needed. A run file holds the kernel's CPU time, I/O and process counts and the job's peak commit. A run's mean memory and top executables come from the collector's samples, so they are unavailable until the collector (P2) and the server (P3) exist.
 
 Gate: on Windows, a tagged tree spawning 500 sub-second children is charged within 2% of the load generator's own accounting, its final totals survive its exit, and `submeter run` returns with the command's exit code while processes it left behind are still counted. An agent started with `submeter run` retrieves its own run's cost with `submeter cost --run "$SUBMETER_RUN" --json`, and the output holds no command line. On the Linux CI runner, `submeter run` reports that tagged runs are unavailable and runs the command polled.
 
@@ -36,7 +36,7 @@ Gate: a 30-minute CI soak stays inside the budget, per-process figures are withi
 
 ## P3: Attribution rules, history, sessions
 
-Builds the server, with the history file, the hourly rollup, retention, the disk budget and backups; the attribution rules; sessions, through their marker files; and the collector's reading of each live group's totals, with re-attach after a restart.
+Builds the server, with the history file, the hourly rollup, retention, the disk budget, backups and the copying of final run files into the history file; the attribution rules; sessions, through their marker files; and the collector's reading of each live group's totals, with re-attach after a restart.
 
 Gate: CPU-hours from the hourly tier match the raw sum within 0.1%. Deleting a day of raw data frees its space at once. On Windows, a restarted collector re-attaches to live groups. A session's cost reads the same before and after its raw data is deleted.
 
