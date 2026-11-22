@@ -9,7 +9,7 @@ Each phase ends at a gate. The builder stops there, writes what it verified, and
 Phase 0 settles the facts that change the design of version 1 on the owner's own machine, and sets up CI, before anything is built on them.
 
 1. On the owner's Windows machine, as the signed-in standard user, run the four checks in `AGENTS.md` (ruff check, ruff format, mypy and pytest) and `scripts/platform_check.py`, and save their full output. [What to check first on Windows](reference/windows-priorities.md) explains each line. Item 3 of that file also has a check of interrupt and DPC time that the script does not run; run it by hand and save its output.
-2. Set up CI on Windows and Linux runners for the portable tests.
+2. Set up CI on Windows and Linux runners for the portable tests. On the Linux runner, also measure the per-tick cost of reading `cpu.stat` in every leaf cgroup, which decides whether Linux places CPU time not seen by polling by cgroup (P2).
 3. Write three probes that the owner runs on that machine. Each saves its output, and each decides one choice:
 
 | Probe | What it does | What it decides |
@@ -30,7 +30,7 @@ Gate: on Windows, a tagged tree spawning 500 sub-second children is charged with
 
 ## P2: Collector and raw store
 
-Builds the Windows bulk snapshot provider, the Windows system counters (component 06), the collector loop with adaptive cadence and the overhead guard, the raw files with command lines redacted before they are written, and the baseline attribution with its four fixed buckets, so that reconciliation can be tested.
+Builds the Windows bulk snapshot provider, the Windows system counters (component 06), the collector loop with adaptive cadence and the overhead guard, the raw files with command lines redacted before they are written, and the baseline attribution with its four fixed buckets, so that reconciliation can be tested. On Linux it also places CPU time not seen by polling by cgroup, unless phase 0 showed that reading every leaf cgroup's `cpu.stat` each tick breaks the overhead budget.
 
 Gate: a 30-minute CI soak stays inside the budget, per-process figures are within 5% of Windows performance counters, and totals reconcile within 2%, with CPU time not seen by polling as its own term. On a quiet fixture that term stays under the share stated with the fixture. Killing the collector mid-write loses at most 5 seconds and corrupts nothing.
 
