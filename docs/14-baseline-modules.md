@@ -318,6 +318,7 @@ Writes the daily raw file: workload totals every interval, process rows on chang
 - **Why it exists:** This is the redesigned raw store from the storage audit (findings R23, R25 and R31).
 - **Worth knowing:**
   - CPU used between written rows is carried into the next row, so per-process sums stay exact. A test compares the stored sum with the true total.
+  - A quiet process's CPU is held for at most 60 s: a row is also written once CPU has been pending that long. When a batch starts a new UTC hour, each process's pending CPU is first written at the previous batch's time, so no carried CPU is stamped in the wrong hour. A program crash therefore loses at most 60 s of a quiet process's CPU from process rows; workload rows lose nothing committed.
   - A keyframe writes every live process in full. One opens each file and one follows every keyframe interval.
   - A gap is recorded in its own table, and that batch is written in full.
   - Not here yet (finding R39, planned): a gap column on workload_raw and system_raw, returned by workload_samples(). Until then a gap batch's workload and system rows look like observed time to the roll-up.

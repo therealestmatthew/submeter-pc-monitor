@@ -137,7 +137,7 @@ Data that expires together lives in a file together, so retention is always a fi
 
 Rules for raw files:
 
-- Workload totals are written every sample, and each workload and system row carries its batch's gap flag and awake seconds. Per-process rows are written only when a value changes beyond a threshold, plus a full snapshot of every live process at the start of each file and every 10 minutes, so no query looks back further than that.
+- Workload totals are written every sample, and each workload and system row carries its batch's gap flag and awake seconds. Per-process rows are written only when a value changes beyond a threshold, plus a full snapshot of every live process at the start of each file and every 10 minutes, so no query looks back further than that. CPU time carried between rows is written once it has been held 60 seconds, and when a tick starts a new UTC hour, each process's held CPU is first written at the previous tick's time, so it is never stamped in the wrong hour. A program crash loses at most 60 seconds of a quiet process's CPU from process rows, and nothing committed from workload rows.
 - A closed day's file is never written again and never migrated, even when the wall clock steps back across midnight. Open closed files only for the length of a query, so they can be deleted on Windows.
 - Process rows live only in raw files. Nothing keyed by pid is kept beyond 48 hours.
 
