@@ -190,11 +190,16 @@ redaction = "scrub"
 
 The same file is in this package as [`examples/rules.toml`](../examples/rules.toml).
 
-Rules claim processes that were not started with `submeter run`. The highest-priority match wins, and `submeter rules test` shows which rule claimed a process. A rule may give `exe`, `cmdline`, `cwd` and `parent`, the program that started the process, and every condition it gives must hold. Working folders are read only when some rule uses `cwd`, because reading them costs extra. `include_children` decides whether processes started by a matched process inherit its workload. A rule that omits it follows `attribution.inherit_from_parent`.
+Rules claim processes that were not started with `submeter run`. The highest-priority match wins, and `submeter rules test` shows which rule claimed a process. A rule may give `exe`, `name`, `cmdline`, `cwd` and `parent`, the program that started the process, and every condition it gives must hold. `exe` matches the executable's file name where it can be read, and otherwise the process name. `name` matches the process name, which on Linux a program can set for itself. Both accept glob patterns such as `python3*` and ignore case. Working folders are read only when some rule uses `cwd`, because reading them costs extra. `include_children` decides whether processes started by a matched process inherit its workload. A rule that omits it follows `attribution.inherit_from_parent`.
 
 ```toml
 # Highest priority wins. Workloads started with
 # "submeter run" never reach these rules.
+#
+# The exe names are Windows file names. On Linux
+# they have no .exe: chrome, firefox, code, node,
+# cargo. A pattern such as python3* matches every
+# Python 3 version.
 
 [[rule]]
 workload = "opaque:wsl"

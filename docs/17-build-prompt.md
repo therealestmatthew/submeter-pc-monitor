@@ -106,7 +106,7 @@ Other extended providers (after version 1). No job's acceptance check or verdict
 
 Every process maps to exactly one workload, in this order: kernel group membership, then rules, then inheritance from a valid parent, then Unattributed.
 
-- Rules live in rules.toml and match on executable, command-line pattern, parent chain or working directory, with explicit priority. Do not match on environment variables, because reading another process's environment is unreliable.
+- Rules live in rules.toml and match on executable file name, process name, command-line pattern, parent chain or working directory, with explicit priority. Do not match on environment variables, because reading another process's environment is unreliable.
 - A process keeps the workload it was given for its whole life, so an inherited workload survives the exit of the parent it came from. Rules are tried again only when a later reading shows that its executable or command line changed, as after an exec. A rule that then matches the process itself wins, and the change of workload is recorded as an event in the raw file. Kernel group membership and Submeter's own processes still come first. When the collector starts, it seeds what it remembers from the open raw file's process table and workload-change events, for processes still running, and then runs the rules again.
 - A tagged workload reports its group's kernel totals for CPU time, I/O and process count, not the sum of its polled processes. That sum is kept only as a cross-check and for the process tree.
 - System, Restricted, Unattributed and Submeter itself are always-visible workloads.

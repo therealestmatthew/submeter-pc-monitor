@@ -1,5 +1,10 @@
 # Highest priority wins. Workloads started with
 # "submeter run" never reach these rules.
+#
+# The exe names are Windows file names. On Linux
+# they have no .exe: chrome, firefox, code, node,
+# cargo. A pattern such as python3* matches every
+# Python 3 version.
 
 [[rule]]
 workload = "opaque:wsl"

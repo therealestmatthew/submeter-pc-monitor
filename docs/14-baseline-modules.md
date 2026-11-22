@@ -139,6 +139,7 @@ The frozen records passed between layers: counters, samples, workload totals, bu
   - Not here yet (finding R57, planned): ProcessCounters.cpu_s as float or None, where None means unreadable, and a Snapshot count of processes whose start time could not be read. Such a process gets no ProcessKey and appears only in that count.
   - Not here yet (finding R56, planned): the start time as the platform's integer stamp, ticks since boot with the boot id on Linux and CreateTime as a FILETIME integer on Windows. Today it is psutil's wall-clock float, so a clock step can cut a child from its parent's workload, and a provider that does not cache start times would re-key every process.
   - ProcessCounters holds running totals as a provider read them. ProcessSample holds what happened in one interval.
+  - Both carry exe, the executable's file name where it can be read, and name, the process name, apart.
   - ProcessCounters has an optional children_cpu_s, for the Linux child time of children a process has reaped. No provider fills it yet.
   - Bucket carries everything needed to merge buckets exactly: sums, extremes, a time-weighted mean, two histograms and covered seconds.
   - GroupTotals holds what the kernel counted for one tagged group over one interval: CPU time, I/O (None when the group cannot report it) and process count.
@@ -228,6 +229,7 @@ A process provider built on psutil, so it is not tied to one operating system.
   - It asks about one process at a time, which is too slow for a 1-second cadence on a busy machine. On Windows it is not the hot path. On Linux in version 1 it is, so the overhead guard will hold the intervals longer there.
   - A refused read marks the process restricted, and the process is still returned. Any other failed read of I/O, the command line or the working folder leaves that field empty. A zombie is kept, because its CPU time is still readable. A process whose read fails in any other way is returned as a restricted record, so one process never costs the whole snapshot. Only a process that has already exited is left out.
   - On Windows it skips pid 0, the System Idle Process, whose CPU time is the machine's idle time.
+  - exe is the file name of psutil's exe(), or name() when exe() cannot be read. name() is stored as name, because on Linux it is the program's own title.
   - Not here yet (finding R123, planned): reading a pid again through a fresh psutil object when psutil still lists it but reports it gone. Today, when a new process takes a pid that psutil's cache holds for an earlier process, the new one is missing from two snapshots and then credited no CPU for that time.
   - Not here yet (finding R57, planned): None for a CPU time it cannot read, and no stand-in start time. Today a refused CPU read is written as 0.0 CPU-seconds, and a process that fails to read at all is returned with the start time 0.0.
   - Memory is private bytes on Windows and resident memory elsewhere. Swap is not added yet.
@@ -272,7 +274,7 @@ Gives every process exactly one workload, with the reason, and totals a batch by
   - A parent link counts only if the parent started no later than the child.
   - Attributor remembers each process's workload across batches and forgets it when assign() is told the process exited, so an inherited workload lasts for the life of the process. A remembered process moves only when a kernel group or a Submeter pid claims it, or when its executable or command line has changed and a rule matches it. Each move is listed in `changes`, for the caller to record as an event in the raw file.
   - Not here yet: seeding what Attributor remembers from the open raw file when the collector starts.
-  - A rule may match on exe, cmdline, cwd and parent, the program that started the process. Every condition it gives must hold. Program names match on file name, ignoring case.
+  - A rule may match on exe, name, cmdline, cwd and parent, the program that started the process. Every condition it gives must hold. exe and name match as glob patterns, and parent on the parent's executable file name, all ignoring case.
   - A rule's include_children decides whether the children of a process it matches inherit its workload. A rule that omits it follows inherit_from_parent.
   - `needs_cwd` tells the caller whether any rule uses the working folder, so that folders are read only then.
   - aggregate takes each tagged workload's group totals and reports the group's CPU time, process count and, when the group can report it, I/O, in place of the sum of its polled processes. It labels those workloads kernel, Restricted partial and the rest polled.
