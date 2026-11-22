@@ -2,9 +2,9 @@
 
 > Submeter build brief · Part 3, the build · [Index](README.md)
 
-Fifteen Python modules that form the platform-neutral core of Submeter, with the project file and their tests. This is working code, written and run for this brief: 2,356 lines in the modules and 20 tests. They start twelve of the 21 components in the build list. Each entry says what the module does, why it exists, what it provides, what it imports and what imports it.
+Sixteen Python modules that form the platform-neutral core of Submeter, with the project file and their tests. This is working code, written and run for this brief: 2,356 lines in the modules and 20 tests. They start twelve of the 21 components in the build list. Each entry says what the module does, why it exists, what it provides, what it imports and what imports it.
 
-In this package the files are already in place at the paths shown, 26 files in all: the 19 described here and 7 empty `__init__.py` files, one in each package folder.
+In this package the files are already in place at the paths shown, 27 files in all: the 20 described here and 7 empty `__init__.py` files, one in each package folder.
 
 ## What was checked, and what was not
 
@@ -44,6 +44,7 @@ flowchart TD
         models["core.models"]
         histogram["core.histogram"]
         config["core.config"]
+        names["core.names"]
     end
     l3 -->|imports| l2
     l2 --> l1
@@ -59,12 +60,13 @@ The table gives the same links module by module. "Nothing yet" means the caller 
 | [`core.units`](../src/submeter/core/units.py) | 140 | nothing in the package | cli, core.config |
 | [`core.models`](../src/submeter/core/models.py) | 187 | nothing in the package | analysis.growth, attribution.rules, collector.sampler, core.config, providers.base, providers.psutil_provider, store.query, store.raw, store.rollup |
 | [`core.histogram`](../src/submeter/core/histogram.py) | 92 | nothing in the package | store.rollup |
-| [`core.config`](../src/submeter/core/config.py) | 318 | core.models, core.units | cli |
+| [`core.config`](../src/submeter/core/config.py) | 318 | core.models, core.names, core.units | cli |
+| [`core.names`](../src/submeter/core/names.py) | 31 | nothing in the package | attribution.rules, core.config |
 | [`privacy.redact`](../src/submeter/privacy/redact.py) | 83 | nothing in the package | store.raw |
 | [`providers.base`](../src/submeter/providers/base.py) | 36 | core.models | cli |
 | [`providers.psutil_provider`](../src/submeter/providers/psutil_provider.py) | 129 | core.models | cli |
 | [`collector.sampler`](../src/submeter/collector/sampler.py) | 112 | core.models | cli |
-| [`attribution.rules`](../src/submeter/attribution/rules.py) | 233 | core.models | cli |
+| [`attribution.rules`](../src/submeter/attribution/rules.py) | 233 | core.models, core.names | cli |
 | [`store.files`](../src/submeter/store/files.py) | 260 | nothing in the package | cli, store.raw |
 | [`store.raw`](../src/submeter/store/raw.py) | 287 | core.models, privacy.redact, store.files | nothing yet |
 | [`store.rollup`](../src/submeter/store/rollup.py) | 173 | core.histogram, core.models | nothing yet |
@@ -186,8 +188,25 @@ Builds one immutable Settings object from defaults, submeter.toml, environment v
   - Not here yet: the three built-in alert rules. The rules list holds only your own.
 - **Builds toward:** Component 02, core.config
 - **Provides:** `ENV_PREFIX`, `ActiveInterval`, `IdleInterval`, `IdleAfter`, `SlowInterval`, `GpuInterval`, `UssInterval`, `KeyframeInterval`, `OverheadShare`, `OverheadLimit`, `Sampling`, `Retention`, `Backups`, `ChangeThreshold`, `Storage`, `Leak`, `SlowGrowth`, `Baseline`, `Analysis`, `Verdict`, `AlertRule`, `Alerts`, `Attribution`, `Privacy`, `Providers`, `Api`, `Ui`, `Settings`, `ConfigError`, `LoadedSettings`, `load_settings`
-- **Imports:** [`core.models`](../src/submeter/core/models.py), [`core.units`](../src/submeter/core/units.py), pydantic
+- **Imports:** [`core.models`](../src/submeter/core/models.py), [`core.names`](../src/submeter/core/names.py), [`core.units`](../src/submeter/core/units.py), pydantic
 - **Imported by:** [`cli`](../src/submeter/cli.py)
+
+### `src/submeter/core/names.py`
+
+31 lines · [open the file](../src/submeter/core/names.py)
+
+Checks workload names, and keeps the names Submeter assigns for Submeter alone.
+
+- **Why it exists:** A rule that names a workload "system" would merge your processes into the System row and the reconciliation's system term, and a name ends up in run files and group names (finding R106).
+- **Worth knowing:**
+  - A workload name is 1 to 64 characters of a-z, 0-9 and `. _ : -`, starting with a letter or digit. `agent:refactor` and `opaque:wsl` fit. Markup and paths do not.
+  - system, restricted, unattributed, submeter and machine are reserved. A rule that claims one is refused.
+  - An alert rule's workload pattern may also use `*`, and may name a reserved workload, because an alert reads a workload and does not claim it.
+  - `submeter run --as` is not built yet. It will use the same type.
+- **Builds toward:** Supports component 02, core.config, and component 15, attribution
+- **Provides:** `RESERVED`, `WorkloadName`, `WorkloadPattern`
+- **Imports:** pydantic
+- **Imported by:** [`attribution.rules`](../src/submeter/attribution/rules.py), [`core.config`](../src/submeter/core/config.py)
 
 ### `src/submeter/privacy/redact.py`
 
@@ -284,6 +303,7 @@ Gives every process exactly one workload, with the reason, and totals a batch by
   - Attributor remembers each process's workload across batches and forgets it when assign() is told the process exited, so an inherited workload lasts for the life of the process. A remembered process moves only when a kernel group or a Submeter pid claims it, or when its executable or command line has changed and a rule matches it. Each move is listed in `changes`, for the caller to record as an event in the raw file.
   - Not here yet: seeding what Attributor remembers from the open raw file when the collector starts.
   - A rule may match on exe, name, cmdline, cwd and parent, the program that started the process. Every condition it gives must hold. exe and name match as glob patterns, and parent on the parent's executable file name, all ignoring case.
+  - A rule's workload must be a valid workload name that is not reserved (see core.names).
   - A rule's include_children decides whether the children of a process it matches inherit its workload. A rule that omits it follows inherit_from_parent.
   - `needs_cwd` tells the caller whether any rule uses the working folder, so that folders are read only then.
   - aggregate takes each tagged workload's group totals and reports the group's CPU time, process count and, when the group can report it, I/O, in place of the sum of its polled processes. It labels those workloads kernel, Restricted partial and the rest polled.
@@ -291,7 +311,7 @@ Gives every process exactly one workload, with the reason, and totals a batch by
   - The sample `rules.toml` in `examples/` loads through this module without error.
 - **Builds toward:** Component 15, attribution
 - **Provides:** `UNATTRIBUTED`, `RESTRICTED`, `SYSTEM`, `SELF`, `Rule`, `RuleSet`, `Attribution`, `Attributor`, `aggregate`
-- **Imports:** [`core.models`](../src/submeter/core/models.py), pydantic
+- **Imports:** [`core.models`](../src/submeter/core/models.py), [`core.names`](../src/submeter/core/names.py), pydantic
 - **Imported by:** [`cli`](../src/submeter/cli.py)
 
 ### `src/submeter/store/files.py`
