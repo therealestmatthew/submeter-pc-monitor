@@ -107,8 +107,9 @@ The chart is a bar for each workload, to either side of zero.
 This table is the single rule set for the verdict. `submeter why` checks every rule against the window, and the verdict is:
 
 - the one rule that matches, when exactly one matches, its ruled-out condition does not hold and the verdict's confidence is at least `verdict.min_confidence`;
-- No bottleneck, when no rule matches and the window holds at least 60 seconds of data;
+- No bottleneck, when no rule matches and the window holds at least 60 seconds of data, on a system whose column of signals version 1 judges;
 - Inconclusive, when the signals disagree, the window holds fewer than 60 seconds of data, or the verdict's confidence is below `verdict.min_confidence`. The signals disagree when two or more rules match, or when a rule matches while its ruled-out condition holds.
+- On Linux in version 1, whose column is not judged, `why` reads Inconclusive or unavailable, never No bottleneck.
 
 | Verdict | Windows signals | Linux signals (after version 1) | Ruled out when |
 | --- | --- | --- | --- |

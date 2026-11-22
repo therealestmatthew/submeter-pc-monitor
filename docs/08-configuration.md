@@ -88,7 +88,7 @@ The overhead budget covers every Submeter process: the collector, the server and
 | Analysis | `baseline.window` | 14d | No range in version 1 | Not used in version 1. Later, how far back the usual range looks |
 | Analysis | `baseline.sensitivity` | 4.0 | Above 0 | Not used in version 1. Later, the distance from normal, in spreads, that counts as an anomaly |
 | Verdict | `window` | 5m | Not set yet | How far back `submeter why` looks |
-| Verdict | `thresholds.*` | see the verdict table in [How it decides](07-analysis.md) | One named field per signal in the verdict table; any other name is refused | Tune each signal to your hardware |
+| Verdict | `thresholds.*` | see the verdict table in [How it decides](07-analysis.md) | One named field per threshold in the settings table under the verdict table in [How it decides](07-analysis.md); any other name is refused | Tune each signal to your hardware |
 | Verdict | `min_confidence` | moderate | low, moderate, high | Below this the verdict reads Inconclusive |
 | Alerts | `rules[]` | 3 built in | The metrics in [What an alert rule can name](#what-an-alert-rule-can-name) | Your own thresholds per workload or system-wide |
 | Alerts | `cooldown` | 15m | Not set yet | Minimum gap between repeats of the same alert |
