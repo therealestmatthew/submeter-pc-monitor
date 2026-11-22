@@ -34,11 +34,17 @@ Legend: IDE, daily peak memory; Outside the usual range.
 
 The chart shows the IDE's daily peak memory in GB over 30 days. The data is synthetic: about 3.4 GB until day 22, then about 4.25 GB, with noise of up to 0.1 GB either way.
 
+The value compared with the usual range is one per local day, built from hourly buckets: the daily peak, which is the highest hourly maximum of the day for memory and the highest hourly 95th percentile of cores in use for CPU.
+
 - Days 1 to 7 are the learning period, so no range is drawn and nothing is raised.
-- From day 8 the usual range is the median of the last 14 values that were not flagged, plus or minus 4 × 1.4826 × the median absolute deviation. The deviation is never taken as less than 0.03 GB.
+- From day 8 the usual range is the median of the last 14 values that were not flagged, plus or minus 4 × 1.4826 × the median absolute deviation.
+- The floor bounds the median absolute deviation before it is scaled. It is never taken as less than 0.03 GB for memory or 0.05 cores for CPU, so a series that barely moves, such as an idle workload, still gets a range of non-zero width. `usual_range` applies its `floor` argument to the scaled spread, so the detector passes it 1.4826 times these values.
 - A value outside the range is flagged and left out of later ranges, so one anomaly does not widen the band.
+- An anomaly is raised only when 3 values in a row are outside the range, so one odd day raises nothing.
 - A vertical line at day 12 is marked "settings changed".
-- The first flag is "raised on day 23".
+- Day 23 is the first value outside the range, and the anomaly is raised on day 25, the third day in a row outside it.
+
+The ranges in the table are approximate. They were drawn from unrounded data, so recomputing them from the rounded peaks shown moves some ends by a few hundredths of a GB.
 
 | Day | Peak, GB | Usual range, GB | Status |
 | --- | --- | --- | --- |
@@ -73,7 +79,7 @@ The chart shows the IDE's daily peak memory in GB over 30 days. The data is synt
 | 29 | 4.20 | 3.09 to 3.73 | outside usual range |
 | 30 | 4.17 | 3.09 to 3.73 | outside usual range |
 
-*Figure:* Thirty days of one workload. Nothing is raised during the 7-day learning period. After that the usual range is the median plus or minus four spreads, and it holds still while an anomaly is open. The jump on day 23 is flagged. The settings change on day 12 is marked so it can be ruled out as the cause.
+*Figure:* Thirty days of one workload. Nothing is raised during the 7-day learning period. After that the usual range is the median plus or minus four spreads, and it holds still while an anomaly is open. The jump on day 23 is flagged, and raised as an anomaly on day 25, once three days in a row are outside the range. The settings change on day 12 is marked so it can be ruled out as the cause.
 
 ## Session diff: what changed between two days
 
