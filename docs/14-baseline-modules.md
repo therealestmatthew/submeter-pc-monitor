@@ -139,6 +139,7 @@ The frozen records passed between layers: counters, samples, workload totals, bu
   - Not here yet (finding R57, planned): ProcessCounters.cpu_s as float or None, where None means unreadable, and a Snapshot count of processes whose start time could not be read. Such a process gets no ProcessKey and appears only in that count.
   - Not here yet (finding R56, planned): the start time as the platform's integer stamp, ticks since boot with the boot id on Linux and CreateTime as a FILETIME integer on Windows. Today it is psutil's wall-clock float, so a clock step can cut a child from its parent's workload, and a provider that does not cache start times would re-key every process.
   - ProcessCounters holds running totals as a provider read them. ProcessSample holds what happened in one interval.
+  - ProcessCounters has an optional children_cpu_s, for the Linux child time of children a process has reaped. No provider fills it yet.
   - Bucket carries everything needed to merge buckets exactly: sums, extremes, a time-weighted mean, two histograms and covered seconds.
   - No behaviour lives here.
 - **Builds toward:** Component 01, core.models
@@ -247,7 +248,7 @@ Subtracts consecutive snapshots to find what each process did during the interva
   - A reused pid is a new process, because identity includes the start time.
   - Each snapshot carries two clocks. Intervals are measured on the one that counts suspend: CLOCK_BOOTTIME on Linux, `time.monotonic()` on Windows. The other stops during suspend, CLOCK_MONOTONIC on Linux and QueryUnbiasedInterruptTime on Windows, and is read only for the suspend test. Where it is not read, there is no suspend test.
   - An interval longer than 30 seconds, or one in which the clock that counts suspend ran more than 2 seconds ahead of the clock that does not, is a gap: deltas are zero and the batch says so.
-  - Not here yet: the adaptive cadence loop and the overhead guard.
+  - Not here yet: the adaptive cadence loop, the overhead guard, and on Linux the subtraction that stops a reaped child's CPU time and I/O being counted again in the process that reaped it. Until it is built, a Linux parent's I/O delta includes the I/O of the children it reaped.
   - The fixed 30-second rule and the zeroed deltas are wrong (finding R38), and a planned task replaces them together with R39's gap handling in the store. ingest() will take the interval expected for the tick. A tick will be a gap only past three times that interval plus the 2-second slack, or when the suspend test fires, and a gap will keep its CPU and I/O deltas. Until then any interval over 30 seconds records zero CPU, and `submeter top --seconds` above 30 prints zero cores for every workload.
   - Not here yet (finding R57, planned): no CPU baseline when either reading is None, and a cap on each credited CPU delta at the interval times the logical cores, with a count of the capped samples. Today a stand-in 0.0 becomes the next interval's baseline and credits a process's whole lifetime of CPU to one interval.
   - Not here yet (finding R55, planned): stamps anchored on the interval clock, and a 'clock stepped' event when the wall clock moves away from them. Today a batch is stamped with the wall clock as read, so a step back stamps a batch earlier than the one before, and nothing records the step.
