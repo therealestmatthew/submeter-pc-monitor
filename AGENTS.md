@@ -38,7 +38,7 @@ To run one test: `uv run pytest tests/test_baseline.py -k NAME`.
 - Records passed between layers are frozen Pydantic models that refuse unknown fields. Subclass `Record` in `core/models.py`.
 - A process is identified by pid plus start time (`ProcessKey`), never by pid alone.
 - Providers return cumulative counters, never rates. Only the sampler turns counters into deltas.
-- A command line is redacted before it is stored, logged, put in a finding or written into a test fixture.
+- A command line is redacted before it is stored, logged or written into a test fixture.
 - A setting outside its range is refused with the range in the message. It is never clamped.
 - Each data file has one writer: the collector writes raw files, the server writes minute and history files, and the launcher writes one file per run.
 - A metric the system cannot deliver is reported as unavailable, never as zero and never as an estimate.
