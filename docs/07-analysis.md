@@ -124,13 +124,13 @@ Each threshold has an on value and an off value on the far side of it: lower for
 
 | Setting | Signal | On | Off |
 | --- | --- | --- | --- |
-| `run_queue` | Run queue, per logical core | above 1.0 | below 0.8 |
+| `run_queue` | Run queue, per logical core | above 1.0 | set in phase 4 |
 | `cpu_time` | CPU time, share of capacity | above 85% | below 80% |
 | `commit` | Commit, share of the commit limit | above 85% | below 82% |
 | `disk_queue` | Disk queue length | absolute value, set in phase 4 | set in phase 4 |
 | `disk_latency` | Disk latency | absolute value, set in phase 4 | set in phase 4 |
-| `gpu_engine` | Busiest GPU engine type | above 90% | below 85% |
-| `frequency` | Frequency under load, share of the base frequency | below 80% | above 85% |
+| `gpu_engine` | Busiest GPU engine type | above 90% | set in phase 4 |
+| `frequency` | Frequency under load, share of the base frequency | below 80% | set in phase 4 |
 
 The Linux thresholds get on and off values in the same way when that column is built after version 1.
 
