@@ -127,7 +127,7 @@ An alert rule names one workload pattern and one metric from this list. A rule t
 | `memory_bytes` | Any workload | Memory for totals | Bytes |
 | `processes` | Any workload | Live processes | Count |
 | `io_bytes_per_s` | Any workload | Disk bytes read plus written | Bytes per second |
-| `commit_fraction` | `machine` | Memory commit as a share of the commit limit. Read on Windows, and on Linux only when `vm.overcommit_memory` is 2; otherwise unavailable | 0 to 1 |
+| `commit_fraction` | `machine` | Memory commit as a share of the commit limit. Read on Windows. On Linux unavailable in version 1, which reads no Linux commit counter; after version 1 it is read only when `vm.overcommit_memory` is 2, otherwise unavailable | 0 to 1 |
 | `throttled` | `machine` | 1 while frequency is held down under load, otherwise 0 | 0 or 1 |
 | `overhead_fraction` | `submeter` | The collector's CPU time as a share of one core | 0 to 1 |
 
@@ -141,7 +141,7 @@ These ship switched on, and your own rules are added to them. They obey the same
 | thermal throttling | `machine` | `throttled` | above 0 | 5m | warning |
 | submeter over budget | `submeter` | `overhead_fraction` | above 0.03 | 5m | warning |
 
-On Linux the kernel enforces the commit limit only when `vm.overcommit_memory` is 2. Under the default setting committed memory commonly exceeds the limit, so an ordinary desktop would read well above 1 and the rule would never clear. `commit_fraction` is therefore unavailable on Linux unless that setting is 2, and memory nearly full then reads unavailable instead of firing. After version 1, when Linux pressure stall information is read, a machine metric `memory_pressure_full` (Linux only) joins the list above, and on Linux the built-in rule uses memory pressure (PSI memory full) instead.
+On Linux the kernel enforces the commit limit only when `vm.overcommit_memory` is 2. Under the default setting committed memory commonly exceeds the limit, so an ordinary desktop would read well above 1 and the rule would never clear. Version 1 reads no Linux commit counter, so `commit_fraction` is unavailable on Linux in version 1, and memory nearly full reads unavailable there instead of firing. After version 1, `commit_fraction` is read on Linux only when that setting is 2, because only then does the kernel enforce the limit, and is unavailable otherwise. After version 1, when Linux pressure stall information is read, a machine metric `memory_pressure_full` (Linux only) joins the list above, and on Linux the built-in rule uses memory pressure (PSI memory full) instead.
 
 ## Sample submeter.toml
 
