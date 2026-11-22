@@ -19,7 +19,7 @@ What you would see and type once it is running.
 | File | What it holds |
 | --- | --- |
 | [`02-what-it-looks-like.md`](02-what-it-looks-like.md) | The live dashboard planned for version 1.1: its layout, the seven workloads, the four scenarios, how the verdict is chosen, and the process trees |
-| [`03-cli-output.md`](03-cli-output.md) | Sample output of `cost`, `why`, `doctor` and `store status` |
+| [`03-cli-output.md`](03-cli-output.md) | Sample output of `cost`, `why`, `doctor` and `store status`, and the --json envelope |
 | [`04-features.md`](04-features.md) | What it does, in six groups: measure, attribute, remember, explain, show, protect |
 
 **Part 2 · The design**
@@ -29,7 +29,7 @@ How the numbers are produced, and how far each one can be trusted.
 | File | What it holds |
 | --- | --- |
 | [`05-data-flow.md`](05-data-flow.md) | The three programs and the path of one sample, how commands reach the programs, why tagged workloads use kernel accounting, and what one sample becomes |
-| [`06-storage.md`](06-storage.md) | Files and lifetimes, where they live, durability, access and schema versions, the control files, what a bucket records, which tier answers which question, the metric catalogue, and disk use |
+| [`06-storage.md`](06-storage.md) | Files and lifetimes, where they live, durability, access and schema versions, the table columns, the control files, what a bucket records, which tier answers which question, the metric catalogue, and disk use |
 | [`07-analysis.md`](07-analysis.md) | Leak detection, the session diff and the bottleneck verdict, with the data behind each chart, and the baseline anomaly check kept for after version 1 |
 | [`08-configuration.md`](08-configuration.md) | Every setting with its default and range, the sample-time model, how configuration behaves, what is fixed on purpose, and both sample files |
 | [`09-telemetry.md`](09-telemetry.md) | Where each metric comes from on Windows and Linux, what works without administrator rights, and the sources |
