@@ -53,10 +53,10 @@ process.bulk        full
 group.accounting    full          nested jobs available
 memory.uss          partial       own-user processes only
 gpu.load            full          per engine type
-gpu.memory          partial       per-process sum drifts from adapter total
+gpu.memory          full          adapter total only
 thermal.temp        unavailable   no source without administrator rights
 thermal.throttle    full
-net.connections     partial       own-user processes only
+net.connections     unavailable   not in version 1
 net.bytes           unavailable   not in version 1
 vm.guest            opaque        WSL2 VM holds 3% of CPU time, under the 10% rule
 

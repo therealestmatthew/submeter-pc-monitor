@@ -10,7 +10,7 @@ flowchart TD
     subgraph collector["COLLECTOR PROCESS"]
         ka["Kernel accounting<br/>Job Object on Windows<br/>exact, tagged trees"]
         bp["Bulk polling<br/>all processes at once<br/>hot 1 s · cold 10 s"]
-        ex["Extended<br/>GPU · thermal · net<br/>tiered by privilege"]
+        ex["Extended<br/>GPU load · adapter VRAM<br/>tiered by privilege"]
         sampler["Sampler<br/>deltas over a monotonic clock · sleep gaps recorded<br/>identity = pid + start time · overhead guard"]
         attribution["Attribution<br/>group membership, then rules.toml, then parent<br/>one workload each · secrets scrubbed here"]
     end
@@ -38,7 +38,7 @@ flowchart TD
 The same flow in words:
 
 1. `submeter run` starts a tagged tree and registers the group with the collector.
-2. Inside the collector process, three kinds of provider return cumulative counters. Kernel accounting, through a Job Object on Windows, is exact and covers tagged trees. On Linux tagged runs are unavailable in version 1, so `submeter run` runs the command polled; the cgroup path comes after version 1. It is the provider highlighted in the drawing. Bulk polling reads all processes at once, the hot set every 1 s and the cold set every 10 s. Extended providers cover GPU, thermal and network, tiered by privilege.
+2. Inside the collector process, three kinds of provider return cumulative counters. Kernel accounting, through a Job Object on Windows, is exact and covers tagged trees. On Linux tagged runs are unavailable in version 1, so `submeter run` runs the command polled; the cgroup path comes after version 1. It is the provider highlighted in the drawing. Bulk polling reads all processes at once, the hot set every 1 s and the cold set every 10 s. Extended providers cover GPU load and the adapter's VRAM, tiered by privilege.
 3. The sampler turns counters into deltas over a monotonic clock, records sleep gaps, identifies a process by pid plus start time, and runs the overhead guard. It emits a Sample.
 4. Attribution gives each process one workload: by group membership, then `rules.toml`, then its parent. Secrets are scrubbed here. It emits a WorkloadSample, redacted.
 5. The store has one lifetime per file, a 2 GB cap and one writer for each file: raw files kept 48 h and a history file that is kept.

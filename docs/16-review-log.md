@@ -162,6 +162,8 @@ Microsoft documents a fault in which the GPU Process Memory counter appears to l
 
 **Fix:** Phase 0 compares the per-process sum with the adapter total. If they drift, the provider is marked partial and leak detection stays off per-process VRAM.
 
+Amended by R148 (21 November 2026): per-process VRAM is not in version 1, so phase 0 no longer runs this check. Version 1 reads the adapter's VRAM used and total, which the GPU-bound verdict needs. The check applies when per-process VRAM is built.
+
 ### R17: The bulk snapshot relies on a call Microsoft may change
 
 The single system call that makes the overhead budget reachable is documented as subject to change.

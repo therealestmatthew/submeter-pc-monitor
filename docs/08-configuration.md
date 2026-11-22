@@ -65,9 +65,9 @@ N is 96 divided by the disk figure in GB, rounded.
 | `hot_cpu_threshold` | 0.5% | 0.1% to 5% | CPU use that moves a process into the hot set |
 | `uss_interval` | 30s | 10s to 5m | How often the expensive memory reading is taken |
 | `uss_top_n` | 25 | 0 to 200 | How many of the largest processes get that reading |
-| `gpu_interval` | 2s | 1s to 30s | GPU and VRAM sampling |
-| `thermal_interval` | 5s | 1s to 60s | Temperature, frequency and power sampling |
-| `network_interval` | 5s | 1s to 60s | Connection counts and interface bytes |
+| `gpu_interval` | 2s | 1s to 30s | GPU load and adapter VRAM sampling |
+| `thermal_interval` | 5s | 1s to 60s | Not used in version 1, which reads no temperatures or battery level. Frequency and the on-battery flag are read with the system counters. Later, temperature and battery sampling |
+| `network_interval` | 5s | 1s to 60s | Not used in version 1, which reads no network figures. Later, connection counts and interface bytes |
 | `on_battery_multiplier` | 2 | 1 to 10 | Stretches every interval while on battery |
 | `overhead_limit` | 1% idle, 3% active | 0.5% to 10% | When exceeded, intervals lengthen and a finding is raised |
 

@@ -20,7 +20,7 @@
 ## The design in eight lines
 
 - **Interface:** Background service, CLI and self-contained HTML report on one data store. The live web dashboard comes in version 1.1
-- **Extra telemetry:** GPU and VRAM, thermals and power, network per process
+- **Extra telemetry:** GPU load by engine type and the adapter's VRAM. Per-process VRAM, temperatures, battery level and network per process come after version 1
 - **Control:** Observe only. No process is ever changed in version 1
 - **Platforms:** Windows 11 gets everything. Linux runs polled from the same codebase and is tested in CI. Its tagged runs, system counters and autostart come after version 1
 - **Language:** Python 3.12 throughout, with the collector as its own process

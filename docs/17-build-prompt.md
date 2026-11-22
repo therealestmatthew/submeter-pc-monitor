@@ -82,14 +82,18 @@ Rules for both paths:
 
 Memory: collect units that can be added across processes. Workload totals use USS (or PSS on Linux) so shared pages are not counted twice. USS is expensive, so read it on a slow cadence and only for the largest processes, and show the age of the reading. For growth and leak detection use private bytes on Windows and RSS plus swap on Linux, because Windows trims working sets under pressure and USS then falls for a process that is still leaking.
 
-System-wide, on Windows: per-core load and frequency, commit and available memory, paging split into reads and writes, disk latency and run queue. On Linux, version 1 reads only per-core load and available memory, through psutil. PSI and the other Linux system counters come after version 1. A CPU-second is not a fixed amount of work, because efficiency cores and reduced frequency do less with it. Report CPU time as measured and show processor frequency beside it. Do not normalise workload figures in version 1.
+System-wide, on Windows: per-core load and frequency, commit and available memory, paging split into reads and writes, disk latency, run queue and the on-battery flag. Detect throttling from processor frequency and performance counters. Do not use psutil for frequency on Windows, where it reports only a nominal value. On Linux, version 1 reads only per-core load, available memory and the on-battery flag, through psutil. PSI and the other Linux system counters come after version 1. A CPU-second is not a fixed amount of work, because efficiency cores and reduced frequency do less with it. Report CPU time as measured and show processor frequency beside it. Do not normalise workload figures in version 1.
 
-Extended providers, each declaring its capability at the current privilege level (full, partial with what is missing, or unavailable with why):
+Extended providers, each declaring its capability at the current privilege level (full, partial with what is missing, or unavailable with why). Version 1 has two:
 
 - GPU load per process. On Windows use the GPU Engine counters. Engine percentages do not add across engine types, so report per engine type and use the busiest as the headline. Open counters by their English names so a localised Windows does not break them. On Linux use NVML and sysfs.
-- VRAM per process. On Windows the GPU Process Memory counter is the only per-process source, because NVML reports the figure as unavailable under the desktop driver model. Microsoft documents a fault in which that counter over-reports. In phase 0, compare the sum of per-process values with the adapter total over time. If they drift, mark the provider partial and keep leak detection off per-process VRAM.
-- Thermals and power. Temperatures through hwmon on Linux. Windows has no dependable unprivileged temperature source, so detect throttling from processor frequency and performance counters. Do not use psutil for frequency on Windows, where it reports only a nominal value. Battery on both.
-- Network per process. Connection counts and remote endpoints per process, and bytes per interface. Per-process byte counts need administrator rights and are not part of version 1.
+- VRAM per adapter, used and total. The GPU-bound verdict reads it to rule itself out when VRAM is full.
+
+Other extended providers (after version 1). No job's acceptance check or verdict reads them, so version 1 does not build them. The design kept for later:
+
+- VRAM per process. On Windows the GPU Process Memory counter is the only per-process source, because NVML reports the figure as unavailable under the desktop driver model. Microsoft documents a fault in which that counter over-reports. Before it is used, compare the sum of per-process values with the adapter total over time. If they drift, mark the provider partial and keep leak detection off per-process VRAM.
+- Temperatures and battery level. Temperatures through hwmon on Linux. Windows has no dependable unprivileged temperature source. Battery level on both.
+- Network per process. Connection counts and remote endpoints per process, and bytes per interface. Per-process byte counts need administrator rights.
 
 ### Attribution
 
@@ -178,7 +182,7 @@ Sampling settings and defaults:
 - idle_after = 60s
 - hot_cpu_threshold = 0.5%
 - uss_interval = 30s, uss_top_n = 25
-- gpu_interval = 2s, thermal_interval = 5s, network_interval = 5s
+- gpu_interval = 2s
 - on_battery_multiplier = 2
 - overhead_limit: idle 1%, active 3%
 
@@ -259,7 +263,7 @@ Build these components, and tell me before adding any that are not listed:
 6. attribution and privacy.redact
 7. analysis.detectors, analysis.verdict, analysis.diff
 8. alerts
-9. providers.extended (GPU load and VRAM, throttling and battery, connections)
+9. providers.extended (GPU load by engine type and the adapter's VRAM)
 10. report
 11. cli, covering every command above
 
@@ -280,11 +284,11 @@ These are decided, so do not ask about them again: both programs run as the sign
 
 Work in phases. Set up CI on Windows and Linux runners in phase 0, because you can only run one OS yourself. At the end of each phase run ruff, mypy strict and pytest, confirm the gate, and write a short status to docs/STATUS.md: what works, what was verified and how, and what you could not verify. Then stop and wait for me.
 
-- Phase 0, baseline check, capability probe and CI: get the baseline passing ruff, mypy strict and pytest on both runners (it has only been run on Linux, so tell me what needed fixing on Windows), then build `submeter doctor` out into the full capability matrix, and report the measured cost of one full sample, the per-process VRAM check, and a written matrix of what each OS delivers with and without elevation.
+- Phase 0, baseline check, capability probe and CI: get the baseline passing ruff, mypy strict and pytest on both runners (it has only been run on Linux, so tell me what needed fixing on Windows), then build `submeter doctor` out into the full capability matrix, and report the measured cost of one full sample and a written matrix of what each OS delivers with and without elevation.
 - Phase 1, collector, store and CLI: the Windows bulk snapshot provider behind the existing protocol, the collector loop with adaptive cadence and the overhead guard around the existing sampler, the history file built on the existing rollup functions, retention and backups, and the full `top` and `store status`. Gate: a 30-minute CI soak stays inside the budget, per-process figures agree with Windows performance counters within 5%, and totals reconcile within 2%. Killing the collector mid-write loses at most 5 seconds and corrupts nothing. CPU-hours from the hourly tier match the raw sum within 0.1%. Deleting a day of raw data frees its space at once. Do not use Task Manager as a reference; its CPU figure has changed basis between Windows builds. I will run a 24-hour soak myself.
 - Phase 2, kernel accounting on Windows, attribution and sessions. Gate: on Windows, a tagged tree that spawns 500 sub-second children is charged within 2% of the kernel's total, its final totals survive its exit, a restarted collector re-attaches to live groups, and `submeter run` returns with the command's exit code while background processes it left behind are still accounted for. An agent started with `submeter run` retrieves its own run's cost with `submeter cost --run "$SUBMETER_RUN" --json`, and the output holds no command line. On Linux, `submeter run` reports that tagged runs are unavailable and runs the command polled. A session's cost must read the same before and after its raw data is deleted.
 - Phase 3, analysis. Gate: every detector passes its trigger and quiet fixtures, and `why` answers in under two seconds.
 - Phase 4, HTML reports. Gate: `submeter report` writes one self-contained HTML file for a session or a range, with a meta Content Security Policy. Each chart names the tier and resolution it came from, and the report holds no command line.
-- Phase 5, extended providers. Hardware you do not have is tested from recorded fixtures. Say plainly which providers were never run on real hardware.
+- Phase 5, extended providers: GPU load and the adapter's VRAM. Hardware you do not have is tested from recorded fixtures. Say plainly which providers were never run on real hardware.
 
 Start with phase 0. Before writing code, tell me in a few sentences how you plan to extend the existing layout and any part of this brief or the baseline you think is wrong or underspecified. If something here conflicts with what an OS can really do, say so and propose the closest honest alternative instead of working around it quietly.

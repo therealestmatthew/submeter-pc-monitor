@@ -7,7 +7,7 @@
 - Exact totals for tagged workloads on Windows, kept by the kernel, including processes that exit between samples. On Linux tagged runs come after version 1.
 - Everything else from one bulk snapshot per tick: busy processes every second, idle ones every ten.
 - Memory in units that sum across processes, with separate units for spotting growth.
-- GPU load, VRAM, frequency, throttling, battery and connections, each marked full, partial or unavailable.
+- GPU load, the adapter's VRAM, frequency and throttling, each marked full, partial or unavailable. Per-process VRAM, connections, battery level and temperatures come after version 1.
 
 ## Attribute
 

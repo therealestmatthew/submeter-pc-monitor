@@ -6,7 +6,7 @@ Each phase ends at a gate. The builder stops there, writes what it verified, and
 
 ## P0: Capability probe and CI
 
-Gate: the baseline modules pass their checks on Windows and Linux runners, and `doctor` is correct on both. The cost of one full sample is measured. Per-process VRAM is checked against the adapter total. The brief is saved in the repository.
+Gate: the baseline modules pass their checks on Windows and Linux runners, and `doctor` is correct on both. The cost of one full sample is measured. The brief is saved in the repository.
 
 ## P1: Collector, store, CLI
 
@@ -24,7 +24,7 @@ Gate: every detector passes a trigger fixture and a quiet fixture, including a c
 
 Gate: `submeter report` writes one self-contained HTML file for a session or a range, with a meta Content Security Policy. Each chart states the tier and resolution it came from, and the report holds no command line. The API and the live dashboard are not in version 1; their design and gate are kept for version 1.1 in the [build prompt](17-build-prompt.md).
 
-## P5: GPU, throttling, battery, connections
+## P5: GPU load and adapter VRAM
 
 Gate: each provider passes its recorded fixtures and degrades cleanly when its source is absent.
 

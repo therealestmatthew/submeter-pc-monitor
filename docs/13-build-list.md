@@ -13,7 +13,7 @@ Three programs that share only files on disk: a collector, a server and the laun
 | 03 `providers.base` | Provider protocol and capability report [baseline](../src/submeter/providers/base.py) | P0 |
 | 04 `providers.windows.bulk` | One system-wide process snapshot per tick, with a psutil fallback | P1 |
 | 05 `providers.linux.procfs` | Direct /proc reader, plus PSI. Not in version 1: Linux runs polled through the psutil provider | After v1 |
-| 06 `providers.system` | Per-core load, frequency, commit, paging, disk latency, run queue, on Windows. On Linux, version 1 has only psutil's per-core load and available memory; the Linux counters come after version 1 | P1 |
+| 06 `providers.system` | Per-core load, frequency and throttling, commit, paging, disk latency, run queue and the on-battery flag, on Windows. On Linux, version 1 has only psutil's per-core load, available memory and on-battery flag; the Linux counters come after version 1 | P1 |
 | 07 `collector.sampler` | Hot and cold sets, adaptive cadence, deltas, gap detection, overhead guard [baseline](../src/submeter/collector/sampler.py) | P1 |
 | 08 `store.files` | The file map, one-instance locks, schema versions, integrity checks, backups, the disk budget [baseline](../src/submeter/store/files.py) | P1 |
 | 09 `store.raw` | Daily raw files: batched writes, change-only rows with keyframes, command lines stored once [baseline](../src/submeter/store/raw.py) | P1 |
@@ -28,7 +28,7 @@ Three programs that share only files on disk: a collector, a server and the laun
 | 18 `analysis.verdict` | Bottleneck classifier with confidence and evidence | P3 |
 | 19 `analysis.diff` | Session and period comparison, with epoch checks | P3 |
 | 22 `alerts` | Rule evaluation and cooldowns. A firing rule raises a finding | P4 |
-| 23 `providers.extended` | GPU load and VRAM, throttling and battery, connections per process | P5 |
+| 23 `providers.extended` | GPU load by engine type, machine-wide and per process, with the busiest as the headline, and the adapter's VRAM used and total | P5 |
 | 24 `report` | Self-contained HTML report for a session or range, with a meta Content Security Policy. Version 1's charts are drawn here | P4 |
 
 ## Tables, by file
@@ -94,5 +94,6 @@ Not in version 1, which has no API. These are kept for the dashboard in version 
 - Parquet export. It needs a large new dependency, pyarrow, and no job, gate or report reads an export. JSON and CSV need only the standard library
 - The HTTP API with its WebSocket and token (component 20), and the live dashboard (component 21). No job's acceptance check needs them, and they would bring version 1's only network listener, a token system and four or more new dependencies. Version 1 draws its charts in `submeter report`, lists findings with `submeter findings` and records sessions in marker files. Both come in version 1.1
 - Desktop notifications. A firing alert rule raises a finding instead, which `submeter findings`, `submeter why` and the report show. Delivery would need a subprocess or a new dependency, and hosted CI, which has no user session, could not test it
+- Per-process VRAM, network connections and bytes per interface, battery level and temperatures. No job's acceptance check or verdict reads them, and most would be built and tested only from recorded fixtures. Version 1 keeps the adapter's VRAM, which the GPU-bound verdict reads, and the on-battery flag, which stretches the intervals
 - A minute tier. Raw samples cover the last 48 hours and hourly buckets everything older. No job's acceptance check needs 1-minute data older than 48 hours, and a third kind of file would need its own writer, retention and migrations. Windows of 34 minutes to 33 hours that start 2 to 30 days back are answered at 1-hour resolution, and per-core detail is kept for 48 hours
 - Slow growth, baseline anomaly, spike and swap-storm detectors. Slow growth and baselines need weeks of real data before they can be checked, and no job's acceptance check needs any of the four. Regressions are found by hand with `submeter diff` and the hourly history. The design of slow growth and baseline anomaly is kept for later in [How it decides](07-analysis.md) and the [build prompt](17-build-prompt.md)
