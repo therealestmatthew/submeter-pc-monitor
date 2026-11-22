@@ -50,7 +50,7 @@ Five layers with data flowing one way: providers, sampler, attribution, store, a
 Three programs share nothing but files on disk, and each writes only its own:
 
 - submeter-collector: providers, sampler, attribution, redaction. It writes the raw files and nothing else.
-- submeter-server: rollups, retention, analysis, alerts. It writes the history file, and reads the raw files and the session marker files.
+- submeter-server: rollups, retention, analysis, alerts. It writes the history file, and reads the raw files, the session marker files and the final run files, deleting each run file once it has copied it into the history file.
 - the launcher, `submeter run`: starts a tagged process tree and writes one small run file for it.
 
 None of the three imports another, and every file has exactly one writer. The reason is that the collector is the hot path, and I want to be able to replace it with a Rust binary later without touching anything else. In phase 0, measure one full sample. If it takes more than 10 ms at 300 processes, or the collector holds more than 80 MB, stop and tell me, because that is my trigger for the Rust collector.
@@ -63,9 +63,9 @@ Kernel accounting, for tagged workloads. `submeter run --as NAME [--label LABEL]
 
 A group's counters disappear when the group does, so:
 
-- The launcher holds the group open while the command runs, passes the command's exit code through, and writes the group's totals to its run file when the command ends. A tagged run is therefore accounted for even if the collector was not running.
-- `submeter run` must return when the command returns, even if the command left background processes behind. Those processes stay in the group, so something has to keep the group open until it is empty and then save the final totals: a small detached holder, or the collector. Choose one and test it.
-- The collector finds live groups from the run files and reads their totals each tick. After a restart it re-attaches to every live group.
+- The launcher writes the run file when it creates the group, in the live state. It holds the group open while the command runs and passes the command's exit code through. When the group is empty, the launcher, or its detached holder below, replaces the run file by atomic rename with the final state, which holds the group's totals. A tagged run is therefore accounted for even if the collector was not running.
+- `submeter run` must return when the command returns, even if the command left background processes behind. Those processes stay in the group, so something has to keep the group open until it is empty and then save the final totals: a small detached holder, which is the launcher's own detached part. It writes the final state by atomic rename only after the launcher's last write, so the run file keeps one writer. The collector never writes a run file.
+- The collector finds live groups from the run files in the live state and reads their totals each tick. After a restart it re-attaches to every live group.
 - Set no limits on the group. Do not allow breakaway and do not set kill-on-close.
 
 Linux tagged runs (after version 1). Version 1 builds kernel accounting on Windows only. On Linux, `submeter run` reports that tagged runs are unavailable and runs the command polled, so its workload is labelled polled. The design kept for later: the launcher starts the command inside a cgroup v2 and records the group in the run file. `cpu.stat` is always readable, and the memory and io files only where those controllers are delegated. The holder, final-totals and re-attach rules above apply to the cgroup in the same way.
@@ -113,7 +113,7 @@ Data that expires together lives in a file together, so retention is always a fi
 
 - Raw files, one per UTC day, written by the collector: every sample at full resolution, the processes seen that day, and their redacted command lines stored once each. Kept 48 hours.
 - One history file, written by the server and kept: hourly buckets, hourly summaries per workload and executable, runs, sessions and their summaries, findings and epochs.
-- Run files, one small JSON file per tagged run, written by the launcher with an atomic rename and read by the server.
+- Run files, one small JSON file per tagged run, written by the launcher with an atomic rename: live when the group is created, and final, with the group's totals, once the group is empty. The collector reads the live ones. The server copies each final run file into the history file's run table and then deletes it.
 - Session marker files, one small file per session, written by `submeter session start` and `stop` with an atomic rename and read by the server. They replace an API call, because version 1 has no API.
 
 Rules for raw files:

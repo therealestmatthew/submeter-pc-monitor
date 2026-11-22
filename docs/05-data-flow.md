@@ -23,7 +23,7 @@ flowchart TD
     end
     cli["CLI<br/>every command --json"]
     report["Report<br/>one self-contained HTML file"]
-    run -->|registers the group| ka
+    run -->|run file names the live group| ka
     ka -->|cumulative counters| sampler
     bp -->|cumulative counters| sampler
     ex -->|cumulative counters| sampler
@@ -37,11 +37,11 @@ flowchart TD
 
 The same flow in words:
 
-1. `submeter run` starts a tagged tree and registers the group with the collector.
+1. `submeter run` starts a tagged tree and writes a run file for its group in the live state, which the collector reads to find the group.
 2. Inside the collector process, three kinds of provider return cumulative counters. Kernel accounting, through a Job Object on Windows, is exact and covers tagged trees. On Linux tagged runs are unavailable in version 1, so `submeter run` runs the command polled; the cgroup path comes after version 1. It is the provider highlighted in the drawing. Bulk polling reads every process at once on each tick, by default every 2 s while anything is busy and every 5 s once the machine is quiet, and reads the costly fields, such as USS or PSS, on a slower cadence. Extended providers cover GPU load and the adapter's VRAM, tiered by privilege.
 3. The sampler turns counters into deltas over a monotonic clock, records sleep gaps, identifies a process by pid plus start time, and runs the overhead guard. It emits a Sample.
 4. Attribution gives each process one workload: by group membership, then `rules.toml`, then its parent. Secrets are scrubbed here. It emits a WorkloadSample, redacted.
-5. The store has one lifetime per file, a 2 GB cap and one writer for each file: raw files kept 48 h and a history file that is kept.
+5. The store has one lifetime per file, a 2 GB cap and one writer for each file: raw files kept 48 h, a history file that is kept, and run files, which the server deletes once it has copied a run's final totals into the history file.
 6. In the server process, analysis reads windows from the store and writes rollups and findings back: rollups, detectors, verdict, session diff and alerts. Hourly buckets are built from raw data.
 7. The CLI reads the store files directly, and every command takes `--json`. `submeter report` writes the charts for a session or range into one self-contained HTML file. `submeter session start` and `stop` write a session marker file with an atomic rename, which the server reads. Agents read their own run's cost through the CLI, with `submeter cost --run "$SUBMETER_RUN" --json`, whose output never holds a command line. Version 1 opens no network port: the API and the live dashboard come in version 1.1, and there is no MCP server.
 

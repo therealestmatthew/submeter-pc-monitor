@@ -13,7 +13,7 @@ Data that expires together lives in a file together, so retention is always a fi
 | `raw/2026-11-20.db` | Collector | 48 hours | One file per UTC day. Every sample at full resolution, the processes seen that day, and their scrubbed command lines stored once each | Detail for that day. Hourly history survives |
 | `history.db` | Server | Kept | Hourly buckets, hourly summaries per executable, runs, sessions and their summaries, findings, epochs | All long-term history, which is why it is backed up daily |
 | `backups/history-*.db` | Server | Last 3 | A compacted copy of the history file | Nothing, unless the history file is lost too |
-| `runs/*.json` | Launcher | Until read | One small file per tagged run: its group, its label and its final totals | That run's exact totals |
+| `runs/*.json` | Launcher | Until the server has copied its final state into the history file. The server then deletes it | One small file per tagged run: its group and its label, written live when the group is created, then replaced by atomic rename with the final state, the group's totals, once the group is empty. When the command left processes behind, the launcher's detached holder writes the final state. The collector never writes it | That run's exact totals, if the server had not yet copied them |
 | `submeter.toml`, `rules.toml` | You | Kept | Settings and attribution rules | Defaults apply until you restore them |
 | `logs/*.log` | Each program | 5 files of 5 MB | Each program's own diagnostics, with the same redaction as the store | Nothing that was measured |
 | `*.lock` | Each program | While the program runs | One lock per program, so two copies cannot run. The API token file comes with the API in version 1.1 | Nothing that was measured |
