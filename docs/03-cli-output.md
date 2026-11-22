@@ -73,15 +73,10 @@ file                    writer      size     covers
 raw/2026-11-20.db       collector   212 MB   today, open
 raw/2026-11-19.db       collector   371 MB   yesterday
 raw/2026-11-18.db       collector   358 MB   expires in 15 h
-minute/2026-W47.db      server       19 MB   this week, open
-minute/2026-W46.db      server       23 MB
-minute/2026-W45.db      server       22 MB
-minute/2026-W44.db      server       23 MB
-minute/2026-W43.db      server       22 MB   expires in 5 d
 history.db              server       31 MB   since 2026-08-02
 backups/ (3 copies)     server       93 MB   latest 02:10 today
 logs/ (2 programs)      each         18 MB
 
-Total   1.19 GB of 2 GB    integrity ok    1 writer per file
+Total   1.08 GB of 2 GB    integrity ok    1 writer per file
 Epoch   14, since 2026-11-12: active_interval 1s to 2s
 ```

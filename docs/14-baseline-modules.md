@@ -81,7 +81,7 @@ The table gives the same links module by module. "Nothing yet" means the caller 
 
 - The Windows bulk snapshot and the Job Object launcher. They call Windows APIs and must be written and tested on Windows.
 - The Linux /proc reader and cgroup accounting. They come after version 1, behind the same provider protocol. Version 1 runs Linux polled through the psutil provider.
-- The writers for the minute and history files, the detectors that call the growth arithmetic, the server and the report. Each depends on decisions made in its own phase.
+- The writer for the history file, the detectors that call the growth arithmetic, the server and the report. Each depends on decisions made in its own phase.
 
 ## Module by module
 
@@ -315,11 +315,11 @@ Folds samples into buckets, and buckets into wider buckets, keeping totals exact
   - Each bucket records covered seconds and active seconds.
   - An hour merged from 60 minute buckets equals the hour built directly from samples. A test checks the sum, the mean, the extremes and the 95th percentile.
   - Merging buckets from different series is refused.
-  - Pure functions with no files. The writers for the minute and history files are still to build.
+  - Pure functions with no files. The writer for the history file is still to build.
 - **Builds toward:** Component 10, store.rollup
 - **Provides:** `bucket_start`, `SeriesAccumulator`, `roll_up`, `merge`, `cores_percentile`, `memory_percentile`, `well_covered`
 - **Imports:** [`core.histogram`](../src/submeter/core/histogram.py), [`core.models`](../src/submeter/core/models.py)
-- **Imported by:** Nothing yet. The minute and history writers will, in phase 1.
+- **Imported by:** Nothing yet. The history writer will, in phase 1.
 
 ### `src/submeter/store/query.py`
 

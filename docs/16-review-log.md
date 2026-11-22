@@ -208,6 +208,8 @@ Raw samples churn by the million each day beside history meant to last years. De
 
 **Fix:** Daily raw files, weekly minute files and one small history file. Retention is a file delete, and every file has one writer.
 
+Amended by R145 (21 November 2026): the minute files are cut. Daily raw files and one history file remain. Hourly buckets are built from raw data, and a window the raw data still covers is answered from raw samples merged to wider steps.
+
 ### R24: Rollups could not reproduce totals
 
 Buckets stored means, extremes and a percentile, with no sums and no record of how much time they covered. A week's CPU-hours could only be approximated, and a gap looked like idle time.

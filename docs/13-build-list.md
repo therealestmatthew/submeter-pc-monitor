@@ -17,8 +17,8 @@ Three programs that share only files on disk: a collector, a server and the laun
 | 07 `collector.sampler` | Hot and cold sets, adaptive cadence, deltas, gap detection, overhead guard [baseline](../src/submeter/collector/sampler.py) | P1 |
 | 08 `store.files` | The file map, one-instance locks, schema versions, integrity checks, backups, the disk budget [baseline](../src/submeter/store/files.py) | P1 |
 | 09 `store.raw` | Daily raw files: batched writes, change-only rows with keyframes, command lines stored once [baseline](../src/submeter/store/raw.py) | P1 |
-| 10 `store.rollup` | Minute and hourly buckets with sums, coverage and histograms. Summaries per executable, session and run [baseline](../src/submeter/store/rollup.py) | P1 on |
-| 11 `store.query` | Picks the tier for a window, merges histograms, states the resolution used [baseline](../src/submeter/store/query.py) | P1 |
+| 10 `store.rollup` | Hourly buckets with sums, coverage and histograms, built from raw samples. Summaries per executable, session and run [baseline](../src/submeter/store/rollup.py) | P1 on |
+| 11 `store.query` | Answers a window from raw samples merged to wider steps while they cover it, else from hourly buckets. Merges histograms and states the tier and resolution used [baseline](../src/submeter/store/query.py) | P1 |
 | 12 `cli` | All commands, each with JSON output [baseline](../src/submeter/cli.py) | P1 on |
 | 13 `launcher` | `submeter run`: starts a tree inside a Job Object, returns the command's exit code, and writes one run file with the final totals. On Linux it reports that tagged runs are unavailable and runs the command polled; the cgroup path comes after version 1 | P2 |
 | 14 `providers.group` | Reads Job Object totals for each live group and re-attaches after a restart. cgroup totals come after version 1 | P2 |
@@ -34,7 +34,6 @@ Three programs that share only files on disk: a collector, a server and the laun
 ## Tables, by file
 
 - Raw file, one per day: `meta`, `event`, `command`, `process`, `workload_raw`, `process_raw`, `system_raw`, `gap`
-- Minute file, one per week: `meta`, `rollup_1m`
 - History file: `meta`, `workload`, `epoch`, `rollup_1h`, `exe_1h`, `run`, `session`, `session_summary`, `finding`
 
 ## Alongside the code
@@ -95,4 +94,5 @@ Not in version 1, which has no API. These are kept for the dashboard in version 
 - Parquet export. It needs a large new dependency, pyarrow, and no job, gate or report reads an export. JSON and CSV need only the standard library
 - The HTTP API with its WebSocket and token (component 20), and the live dashboard (component 21). No job's acceptance check needs them, and they would bring version 1's only network listener, a token system and four or more new dependencies. Version 1 draws its charts in `submeter report`, lists findings with `submeter findings` and records sessions in marker files. Both come in version 1.1
 - Desktop notifications. A firing alert rule raises a finding instead, which `submeter findings`, `submeter why` and the report show. Delivery would need a subprocess or a new dependency, and hosted CI, which has no user session, could not test it
+- A minute tier. Raw samples cover the last 48 hours and hourly buckets everything older. No job's acceptance check needs 1-minute data older than 48 hours, and a third kind of file would need its own writer, retention and migrations. Windows of 34 minutes to 33 hours that start 2 to 30 days back are answered at 1-hour resolution, and per-core detail is kept for 48 hours
 - Slow growth, baseline anomaly, spike and swap-storm detectors. Slow growth and baselines need weeks of real data before they can be checked, and no job's acceptance check needs any of the four. Regressions are found by hand with `submeter diff` and the hourly history. The design of slow growth and baseline anomaly is kept for later in [How it decides](07-analysis.md) and the [build prompt](17-build-prompt.md)

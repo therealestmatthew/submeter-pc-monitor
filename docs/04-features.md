@@ -18,7 +18,7 @@
 
 ## Remember
 
-- Three lifetimes in three kinds of file: 48 hours of full detail, 30 days by the minute, hourly history kept.
+- Two lifetimes in two kinds of file: 48 hours of full detail, and hourly history kept.
 - Retention is a file delete, under a 2 GB cap that is enforced exactly.
 - Sessions and tagged runs are summarised when they end, so their cost stays exact for good.
 - Every change of settings, rules or hardware starts a new epoch, marked on the charts.

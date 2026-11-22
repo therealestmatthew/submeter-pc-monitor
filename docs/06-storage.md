@@ -4,14 +4,13 @@
 
 This section is the outcome of an audit of the store and of every metric that is compared across time. The audit found 15 problems, listed as the third pass in the review log. The design below replaces the single database of earlier versions.
 
-## Three lifetimes, three kinds of file
+## Two lifetimes, two kinds of file
 
 Data that expires together lives in a file together, so retention is always a file delete: instant, exact, and with nothing left behind to compact. Each program writes only its own files, so every file has one writer.
 
 | File | Written by | Kept for | Holds | If it is lost |
 | --- | --- | --- | --- | --- |
-| `raw/2026-11-20.db` | Collector | 48 hours | One file per UTC day. Every sample at full resolution, the processes seen that day, and their scrubbed command lines stored once each | Detail for that day. Minute and hourly history survive |
-| `minute/2026-W47.db` | Server | 30 days | One file per week. One bucket per workload, and one for the system, per minute | Minute detail for that week. Hourly history survives |
+| `raw/2026-11-20.db` | Collector | 48 hours | One file per UTC day. Every sample at full resolution, the processes seen that day, and their scrubbed command lines stored once each | Detail for that day. Hourly history survives |
 | `history.db` | Server | Kept | Hourly buckets, hourly summaries per executable, runs, sessions and their summaries, findings, epochs | All long-term history, which is why it is backed up daily |
 | `backups/history-*.db` | Server | Last 3 | A compacted copy of the history file | Nothing, unless the history file is lost too |
 | `runs/*.json` | Launcher | Until read | One small file per tagged run: its group, its label and its final totals | That run's exact totals |
@@ -41,7 +40,7 @@ Setting `SUBMETER_HOME` moves everything under one folder. `submeter store statu
 
 ## Which data answers which question
 
-Legend: Raw samples; Minute buckets; Hourly buckets; Stored totals.
+Legend: Raw samples; Hourly buckets; Stored totals.
 
 The chart draws lookback on a logarithmic time axis marked 1 s, 1 min, 1 h, 2 d, 30 d and 1 y. Its two halves are these tables.
 
@@ -50,7 +49,6 @@ The chart draws lookback on a logarithmic time axis marked 1 s, 1 min, 1 h, 2 d,
 | Tier | Resolution | Reaches back |
 | --- | --- | --- |
 | Raw samples | 1 s | 48 h |
-| Minute buckets | 1 min | 30 d |
 | Hourly buckets | 1 h | kept |
 | Run, session totals | one row per run or session | kept |
 
@@ -58,16 +56,16 @@ The chart draws lookback on a logarithmic time axis marked 1 s, 1 min, 1 h, 2 d,
 
 | Check | Reads | Looks at |
 | --- | --- | --- |
-| Live chart | Raw samples | the last 2 min |
+| Report charts | Raw samples while they cover the range, else hourly buckets | the session or range asked for |
 | Verdict | Raw samples | the last 5 min |
-| Leak check | Minute buckets | 2 to 48 h back |
+| Leak check | Raw workload rows, merged into 1-minute steps | 2 to 48 h back, or as far as the raw data on disk reaches |
 | Trend | Hourly buckets | months back, up to 1 y on the chart |
 | Cost and diff | Stored totals | any session |
 
 *Figure:* How far back each tier reaches, on a logarithmic time axis, and which tier each check reads. Nothing needs raw samples older than 48 hours, which is what lets raw files be deleted on schedule.
 
-- A question is answered from the finest tier that covers its whole window, and every answer states the tier and resolution it came from.
-- Charts draw the minimum-to-maximum envelope, so a spike survives in coarser tiers.
+- A question is answered from raw samples, merged to wider steps, while they cover the start of its window, and otherwise from hourly buckets. Every answer states the tier and resolution it came from.
+- Charts draw the minimum-to-maximum envelope, so a spike survives in wider steps.
 - A session or tagged run is summarised when it ends, so its cost stays exact after its raw data is gone.
 - Each hour keeps the top ten executables per workload by CPU time and by peak memory, for a year. That answers "what inside the browser grew last week" without keeping every process.
 
@@ -84,7 +82,7 @@ The chart draws lookback on a logarithmic time axis marked 1 s, 1 min, 1 h, 2 d,
 | GPU load by engine type | Gauge, percent | Max, mean | GPU verdict |
 | VRAM | Gauge, bytes | Max, mean | GPU verdict. Leak checks only once validated |
 | Connections | Gauge | Max, mean | Workload table |
-| Load per core and frequency | Gauge | Min, max, mean. Per core in the raw and minute tiers, per core class hourly | CPU and thermal verdicts |
+| Load per core and frequency | Gauge | Min, max, mean. Per core in raw samples, per core class hourly | CPU and thermal verdicts |
 | Commit, available memory, page reads and writes | Gauges and counters | Min, max, mean; sum | Memory verdict |
 | Run queue and pressure stall time | Gauge and counter | Max and mean; sum | CPU, memory and I/O verdicts |
 | Disk latency and queue | Gauge | Max, mean | I/O verdict |
@@ -105,11 +103,10 @@ The chart draws lookback on a logarithmic time axis marked 1 s, 1 min, 1 h, 2 d,
 | Files | Size | Basis |
 | --- | --- | --- |
 | Raw, 2 to 3 daily files | 0.7 to 1.1 GB | 8.1 M rows per 48 hours at 90 bytes each |
-| Minute, 5 to 6 weekly files | 0.1 GB | 9 series, 1,440 buckets a day, 250 bytes each |
 | History | 0.1 GB | Hourly buckets and per-executable summaries. Grows about 0.1 GB a year |
 | Backups, 3 copies | 0.3 GB | Three copies of the history file |
 | Logs | 0.05 GB | 2 programs, 5 files of 5 MB each |
-| Total | About 1.6 GB | Of the 2 GB budget |
+| Total | About 1.5 GB | Of the 2 GB budget |
 
 These sizes are estimates, and phase 1 measures the real bytes per row. When over budget the oldest raw file goes first, never below 24 hours, then backups down to one, then a finding is raised. History is never deleted automatically.
 

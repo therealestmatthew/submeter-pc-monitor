@@ -78,7 +78,6 @@ A session can override the interval for its own duration, for example `submeter 
 | Group | Setting | Default | Why you would change it |
 | --- | --- | --- | --- |
 | Storage | `retention.raw` | 48h | Keep full detail longer for slow investigations |
-| Storage | `retention.minute` | 30d | Extend for month-over-month comparisons |
 | Storage | `retention.executables` | 1y | How long the hourly per-executable summaries are kept |
 | Storage | `disk_budget` | 2GB | Raise on a large drive, lower on a laptop |
 | Storage | `change_threshold` | 0.5 pt CPU, 8MB | How much a process must change before a row is written |
@@ -171,7 +170,7 @@ active = "3%"
 [storage]
 disk_budget = "2GB"
 keyframe_interval = "10m"
-retention = { raw = "48h", minute = "30d", executables = "1y" }
+retention = { raw = "48h", executables = "1y" }
 backups = { keep = 3 }
 
 [analysis.leak]

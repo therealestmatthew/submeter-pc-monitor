@@ -15,7 +15,7 @@ active = "3%"
 [storage]
 disk_budget = "2GB"
 keyframe_interval = "10m"
-retention = { raw = "48h", minute = "30d", executables = "1y" }
+retention = { raw = "48h", executables = "1y" }
 backups = { keep = 3 }
 
 [analysis.leak]
