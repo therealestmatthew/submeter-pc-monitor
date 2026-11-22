@@ -99,7 +99,7 @@ The overhead budget covers every Submeter process: the collector, the server and
 | Attribution | `unattributed_alert` | 10% CPU | Tells you when a rule is missing |
 | Attribution | `max_workload_names` | 200 | `doctor` warns when names multiply past this |
 | Privacy | `redaction` | exe_only | Stores the executable name and no arguments, not even the first, which a process can rewrite into a whole title. Set to `scrub` to keep the arguments with known secret shapes hidden. Scrub is best-effort: it cannot recognise every credential |
-| Privacy | `redact_patterns[]` | built-in list | Add your own secret formats |
+| Privacy | `redact_patterns[]` | none | Add your own secret formats, as regular expressions, which scrub mode hides on top of its built-in shapes. A pattern that does not compile is refused by name |
 | Providers | `enabled[]` | all | Switch off anything you do not need |
 | API and UI | `port, mcp_enabled` | 8787, false | Not used in version 1, which has no API or MCP server. In version 1.1, `port` moves the API |
 | API and UI | `units, default_range` | GiB, 1h | Not used in version 1. In version 1.1, how the dashboard opens |

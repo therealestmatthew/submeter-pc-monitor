@@ -179,6 +179,7 @@ Builds one immutable Settings object from defaults, submeter.toml, environment v
   - Every default and range in the tables of `docs/08-configuration.md` was checked against this module. A value outside its range is refused, with the range in the error.
   - Unknown keys are errors, so a typo cannot silently do nothing.
   - Alert rules are structured fields. The TOML key "for" maps to the field duration.
+  - Each of `privacy.redact_patterns` must compile as a regular expression. A bad one is refused, and the error names it.
   - Environment variables look like `SUBMETER_SAMPLING__ACTIVE_INTERVAL`.
   - The sample `submeter.toml` in `examples/` loads through this module without error.
   - Not here yet: the three built-in alert rules. The rules list holds only your own.
@@ -325,6 +326,7 @@ Writes the daily raw file: workload totals every interval, process rows on chang
   - A gap is recorded in its own table, and that batch is written in full.
   - Not here yet (finding R39, planned): a gap column on workload_raw and system_raw, returned by workload_samples(). Until then a gap batch's workload and system rows look like observed time to the roll-up.
   - Command lines are redacted here whatever the caller did, in `exe_only` mode unless scrub is chosen. A test reads the file bytes to confirm the secret is absent. When redaction keeps nothing, the process is stored with no command line, which reads as unavailable.
+  - RawFile and RawStore take the extra redact patterns, compile them once, and apply them in scrub mode.
   - Text that is not valid UTF-8 is stored with backslash escapes, so an undecodable byte in a command line, an executable name, a workload name or an event detail is written as an escape such as `\udce9` and never fails the write. If a write fails anyway, the in-memory state goes back to what it was before the call, so it matches the file and the next write registers every process again. A test covers both.
   - RawStore rolls over at UTC midnight and flushes pending CPU before closing a file.
   - Not here yet (finding R55, planned): RawStore never reopening a day earlier than the open file. Today a batch stamped on an earlier day, after a wall-clock step back across midnight, reopens that closed day's file.
