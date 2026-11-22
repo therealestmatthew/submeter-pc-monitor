@@ -122,6 +122,8 @@ def test_windows_threads_are_unavailable(monkeypatch: pytest.MonkeyPatch, tmp_pa
 
 def test_another_users_command_line_is_not_kept_on_linux(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(sys, "platform", "linux")
+    # A Windows host has no clock_gettime, so the Linux clocks get a stand-in.
+    monkeypatch.setattr("submeter.providers.psutil_provider._clocks", lambda: (0.0, None))
     monkeypatch.setattr(os, "getuid", lambda: 1000, raising=False)
     own, other = (
         fake_process(pid, uids=SimpleNamespace(real=uid)) for pid, uid in [(1, 1000), (2, 0)]
