@@ -19,7 +19,7 @@
 ## Remember
 
 - Two lifetimes in two kinds of file: 48 hours of full detail, and hourly history kept.
-- Retention is a file delete, under a 2 GB cap that the server enforces while it runs. If the store is still over the cap once raw is down to 24 hours and backups to one, a finding is raised, and history is never deleted. The server deletes no raw day before it is rolled up into hourly history. While the server is down, the collector deletes raw files older than 7 days, or older than the raw retention if that is longer.
+- Retention is a file delete, under a 2 GB cap that the server enforces while it runs. If the store is still over the cap once raw is down to 24 hours and backups to one, a finding is raised, and history is never deleted. The server deletes no raw day before it is rolled up into hourly history. As a safety cap, the collector deletes its own raw files older than 7 days, or older than the raw retention if that is longer, so a stopped server cannot fill the disk.
 - Sessions and tagged runs are summarised as they run, and the summary is closed when they end, so their cost stays exact for good, however long they ran.
 - A change of sampling settings, rules, provider status, hardware or Submeter version starts a new epoch, marked on the charts. A wall-clock step that the collector detects also starts a new epoch. Cadence the collector changes itself, and edits to alert, UI or verdict settings, do not.
 
