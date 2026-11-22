@@ -306,13 +306,13 @@ Build these components, and tell me before adding any that are not listed:
 2. providers.base, providers.windows.bulk and providers.system (Windows counters; providers.linux.procfs and the Linux system counters come after version 1)
 3. collector.sampler (every process every tick with the costly fields on a slower cadence, adaptive cadence, deltas, gap detection, overhead guard)
 4. store.files, store.raw, store.rollup, store.query
-5. launcher (`submeter run`) and providers.group (Job Object totals; cgroup totals come after version 1)
+5. programs.launcher (`submeter run`) and providers.group (Job Object totals; cgroup totals come after version 1)
 6. attribution and privacy.redact
 7. analysis.detectors, analysis.verdict, analysis.diff
 8. alerts
 9. providers.extended (GPU load by engine type and the adapter's VRAM)
 10. report
-11. server, the `submeter-server` program: the integrity check, rollups, retention, backups, the copying of run files and session markers into the history file, epochs, and running analysis and alerts
+11. programs.server, the `submeter-server` program: the integrity check, rollups, retention, backups, the copying of run files and session markers into the history file, epochs, and running analysis and alerts
 12. cli, a package with one module per command group, covering every command above, each reading the store files directly
 
 Tables, by file:
