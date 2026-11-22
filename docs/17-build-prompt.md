@@ -103,7 +103,7 @@ System-wide, on Windows: per-core load and frequency, commit and available memor
 
 Extended providers, each declaring its capability at the current privilege level (full, partial with what is missing, or unavailable with why). Version 1 has two:
 
-- GPU load per process. On Windows use the GPU Engine counters. Engine percentages do not add across engine types, so report per engine type and use the busiest as the headline. Open counters by their English names so a localised Windows does not break them. On Linux use NVML and sysfs.
+- GPU load per process. On Windows use the GPU Engine counters. Engine percentages do not add across engine types, so report per engine type and use the busiest as the headline. Open counters by their English names so a localised Windows does not break them. On Linux use NVML for NVIDIA, and per process the DRM fdinfo engine counters (`drm-engine-*`) where the driver provides them, which the kernel documents for i915 and xe; they show the user's own processes only. amdgpu's `gpu_busy_percent` gives load for the whole device, not per process.
 - VRAM per adapter, used and total. The GPU-bound verdict reads it to rule itself out when VRAM is full.
 
 Other extended providers (after version 1). No job's acceptance check or verdict reads them, so version 1 does not build them. The design kept for later:

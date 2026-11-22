@@ -99,7 +99,7 @@ The chart is a bar for each workload, to either side of zero.
 | CPU-bound | Run queue above 1 per core, CPU time above 85% | CPU pressure (PSI) some above 20% | Frequency is being held down |
 | Memory-bound | Commit above 85% of limit, page writes rising | Memory pressure full above 5%, swap-out rising | Page reads only, with no writes |
 | I/O-bound | Disk queue length and latency above absolute thresholds | I/O pressure full above 10% | CPU is saturated too |
-| GPU-bound | One engine type above 90% | NVML utilisation above 90% | The adapter's VRAM is full, which is reported separately |
+| GPU-bound | One engine type above 90% | Busiest DRM engine or NVML utilisation above 90% | The adapter's VRAM is full, which is reported separately |
 | Thermally throttled | Frequency below 80% of maximum under load | Throttle counters rising, frequency capped | A power-saving plan is active |
 | Inconclusive | Signals disagree, or fewer than 60 seconds of data | Signals disagree, or fewer than 60 seconds of data | Never forced into another class |
 
