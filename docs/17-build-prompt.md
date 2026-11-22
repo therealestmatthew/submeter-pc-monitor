@@ -250,7 +250,7 @@ Not in version 1. The design is kept here for version 1.1:
 Version 1 cannot measure some things. Say so in the CLI output, in the report and in `doctor`, beside the numbers they affect, instead of leaving a gap that looks like a zero:
 
 - Work done for a workload by another process, such as the Docker daemon, a shared language server or a browser that was already open, is charged to that other process.
-- Polled workloads on Windows undercount short-lived children.
+- Polled workloads undercount short-lived children on Windows, and on Linux for children that are orphaned, not yet reaped, or whose parent ignores SIGCHLD.
 - On Linux, tagged runs are unavailable in version 1: `submeter run` runs the command polled. PSI and the other Linux system counters are not read either, so `why` on Linux reads Inconclusive or unavailable.
 - The WSL2 and Docker Desktop VM is opaque: version 1 has no guest collector.
 - Workload memory totals can lag by up to the USS interval.
