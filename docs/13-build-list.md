@@ -24,7 +24,7 @@ Three programs that share only files on disk: a collector, a server and the laun
 | 14 `providers.group` | Reads Job Object totals for each live group and re-attaches after a restart. cgroup totals come after version 1 | P2 |
 | 15 `attribution` | Rule engine, inheritance, the four fixed buckets, reconciliation check [baseline](../src/submeter/attribution/rules.py) | P2 |
 | 16 `privacy.redact` | Scrubs command lines before anything is written, logs included [baseline](../src/submeter/privacy/redact.py) | P2 |
-| 17 `analysis.detectors` | Leak, slow growth, baseline anomaly, spike, swap storm, process count [baseline](../src/submeter/analysis/growth.py) | P3 |
+| 17 `analysis.detectors` | Leak and runaway process count [baseline](../src/submeter/analysis/growth.py) | P3 |
 | 18 `analysis.verdict` | Bottleneck classifier with confidence and evidence | P3 |
 | 19 `analysis.diff` | Session and period comparison, with epoch checks | P3 |
 | 22 `alerts` | Rule evaluation and cooldowns. A firing rule raises a finding | P4 |
@@ -35,7 +35,7 @@ Three programs that share only files on disk: a collector, a server and the laun
 
 - Raw file, one per day: `meta`, `event`, `command`, `process`, `workload_raw`, `process_raw`, `system_raw`, `gap`
 - Minute file, one per week: `meta`, `rollup_1m`
-- History file: `meta`, `workload`, `epoch`, `rollup_1h`, `exe_1h`, `run`, `session`, `session_summary`, `finding`, `baseline`
+- History file: `meta`, `workload`, `epoch`, `rollup_1h`, `exe_1h`, `run`, `session`, `session_summary`, `finding`
 
 ## Alongside the code
 
@@ -95,3 +95,4 @@ Not in version 1, which has no API. These are kept for the dashboard in version 
 - Parquet export. It needs a large new dependency, pyarrow, and no job, gate or report reads an export. JSON and CSV need only the standard library
 - The HTTP API with its WebSocket and token (component 20), and the live dashboard (component 21). No job's acceptance check needs them, and they would bring version 1's only network listener, a token system and four or more new dependencies. Version 1 draws its charts in `submeter report`, lists findings with `submeter findings` and records sessions in marker files. Both come in version 1.1
 - Desktop notifications. A firing alert rule raises a finding instead, which `submeter findings`, `submeter why` and the report show. Delivery would need a subprocess or a new dependency, and hosted CI, which has no user session, could not test it
+- Slow growth, baseline anomaly, spike and swap-storm detectors. Slow growth and baselines need weeks of real data before they can be checked, and no job's acceptance check needs any of the four. Regressions are found by hand with `submeter diff` and the hourly history. The design of slow growth and baseline anomaly is kept for later in [How it decides](07-analysis.md) and the [build prompt](17-build-prompt.md)

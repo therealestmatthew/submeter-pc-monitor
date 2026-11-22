@@ -26,7 +26,9 @@ The chart shows private bytes in GB over six hours, one point every 5 minutes. B
 
 *Figure:* The IDE grows 0.38 GB per hour for five hours with no levelling off, so it is flagged. The browser grows faster at first but flattens within the hour, which is a cache warming up, so it is cleared.
 
-## Baseline anomaly: a regression against the usual range
+## Baseline anomaly: a regression against the usual range (after version 1)
+
+Not in version 1. Version 1 has no baseline anomaly or slow-growth check: regressions are found by hand with the session diff and the hourly history. The design below is kept for later.
 
 Legend: IDE, daily peak memory; Outside the usual range.
 
@@ -96,11 +98,11 @@ The chart is a bar for each workload, to either side of zero.
 | --- | --- | --- | --- |
 | CPU-bound | Run queue above 1 per core, CPU time above 85% | CPU pressure (PSI) some above 20% | Frequency is being held down |
 | Memory-bound | Commit above 85% of limit, page writes rising | Memory pressure full above 5%, swap-out rising | Page reads only, with no writes |
-| I/O-bound | Disk queue and latency above baseline | I/O pressure full above 10% | CPU is saturated too |
+| I/O-bound | Disk queue length and latency above absolute thresholds | I/O pressure full above 10% | CPU is saturated too |
 | GPU-bound | One engine type above 90% | NVML utilisation above 90% | VRAM is full, which is reported separately |
 | Thermally throttled | Frequency below 80% of maximum under load | Throttle counters rising, frequency capped | A power-saving plan is active |
 | Inconclusive | Signals disagree, or fewer than 60 seconds of data | Signals disagree, or fewer than 60 seconds of data | Never forced into another class |
 
 Version 1 does not read the Linux signals: PSI and the other Linux system counters come after version 1. On Linux `why` reads Inconclusive or unavailable in version 1.
 
-Thresholds are starting points for the builder to tune against fixtures. All of them are configurable.
+The disk queue and latency thresholds are absolute values, because version 1 learns no baselines. Thresholds are starting points for the builder to tune against fixtures. All of them are configurable.

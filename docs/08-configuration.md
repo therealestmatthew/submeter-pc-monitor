@@ -86,10 +86,10 @@ A session can override the interval for its own duration, for example `submeter 
 | Storage | `backups.keep` | 3 | Copies of the history file to keep |
 | Analysis | `leak.min_duration` | 2h | Shorter catches leaks sooner and raises more false alarms |
 | Analysis | `leak.min_slope` | 50MB/h | Ignore growth too slow to matter within a day |
-| Analysis | `slow_growth.window` | 7d | Days of daily minimums used to catch leaks too slow for the hourly check |
-| Analysis | `baseline.learning_period` | 7d | Days of history before anomalies are raised |
-| Analysis | `baseline.window` | 14d | How far back the usual range looks |
-| Analysis | `baseline.sensitivity` | 4.0 | Distance from normal, in spreads, that counts as an anomaly |
+| Analysis | `slow_growth.window` | 7d | Not used in version 1, which has no slow-growth check. Later, the days of daily minimums used to catch leaks too slow for the leak check |
+| Analysis | `baseline.learning_period` | 7d | Not used in version 1, which has no baseline anomaly check. Later, the days of history before anomalies are raised |
+| Analysis | `baseline.window` | 14d | Not used in version 1. Later, how far back the usual range looks |
+| Analysis | `baseline.sensitivity` | 4.0 | Not used in version 1. Later, the distance from normal, in spreads, that counts as an anomaly |
 | Verdict | `window` | 5m | How far back `submeter why` looks |
 | Verdict | `thresholds.*` | see verdict table | Tune each signal to your hardware |
 | Verdict | `min_confidence` | moderate | Below this the verdict reads Inconclusive |
@@ -177,14 +177,6 @@ backups = { keep = 3 }
 [analysis.leak]
 min_duration = "2h"
 min_slope = "50MB/h"
-
-[analysis.slow_growth]
-window = "7d"
-
-[analysis.baseline]
-learning_period = "7d"
-window = "14d"
-sensitivity = 4.0
 
 [alerts]
 cooldown = "15m"

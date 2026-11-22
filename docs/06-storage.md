@@ -12,7 +12,7 @@ Data that expires together lives in a file together, so retention is always a fi
 | --- | --- | --- | --- | --- |
 | `raw/2026-11-20.db` | Collector | 48 hours | One file per UTC day. Every sample at full resolution, the processes seen that day, and their scrubbed command lines stored once each | Detail for that day. Minute and hourly history survive |
 | `minute/2026-W47.db` | Server | 30 days | One file per week. One bucket per workload, and one for the system, per minute | Minute detail for that week. Hourly history survives |
-| `history.db` | Server | Kept | Hourly buckets, hourly summaries per executable, runs, sessions and their summaries, findings, epochs, baselines | All long-term history, which is why it is backed up daily |
+| `history.db` | Server | Kept | Hourly buckets, hourly summaries per executable, runs, sessions and their summaries, findings, epochs | All long-term history, which is why it is backed up daily |
 | `backups/history-*.db` | Server | Last 3 | A compacted copy of the history file | Nothing, unless the history file is lost too |
 | `runs/*.json` | Launcher | Until read | One small file per tagged run: its group, its label and its final totals | That run's exact totals |
 | `submeter.toml`, `rules.toml` | You | Kept | Settings and attribution rules | Defaults apply until you restore them |
@@ -59,11 +59,8 @@ The chart draws lookback on a logarithmic time axis marked 1 s, 1 min, 1 h, 2 d,
 | Check | Reads | Looks at |
 | --- | --- | --- |
 | Live chart | Raw samples | the last 2 min |
-| Spike check | Raw samples | the last 10 s |
 | Verdict | Raw samples | the last 5 min |
 | Leak check | Minute buckets | 2 to 48 h back |
-| Baseline | Minute buckets | 14 d back |
-| Slow growth | Hourly buckets | 7 to 90 d back |
 | Trend | Hourly buckets | months back, up to 1 y on the chart |
 | Cost and diff | Stored totals | any session |
 
@@ -78,8 +75,8 @@ The chart draws lookback on a logarithmic time axis marked 1 s, 1 min, 1 h, 2 d,
 
 | Metric | Kind | Kept per bucket | Feeds |
 | --- | --- | --- | --- |
-| CPU time | Counter, seconds | Sum, plus a histogram of cores in use | Cost, verdict, baseline, trend |
-| Memory for growth: private bytes, or RSS plus swap | Gauge, bytes | Min, max, mean, last, histogram | Leak, slow growth, baseline |
+| CPU time | Counter, seconds | Sum, plus a histogram of cores in use | Cost, verdict, trend |
+| Memory for growth: private bytes, or RSS plus swap | Gauge, bytes | Min, max, mean, last, histogram | Leak |
 | Memory for totals: USS or PSS | Gauge, bytes | Max, mean, age of the reading | Workload totals |
 | Disk bytes read and written | Counter, bytes | Sum | Cost, I/O verdict |
 | Processes alive and started | Gauge and counter | Max and mean; sum | Process-count check, cost |

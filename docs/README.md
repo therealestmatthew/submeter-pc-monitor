@@ -30,7 +30,7 @@ How the numbers are produced, and how far each one can be trusted.
 | --- | --- |
 | [`05-data-flow.md`](05-data-flow.md) | The three programs and the path of one sample, why tagged workloads use kernel accounting, and what one sample becomes |
 | [`06-storage.md`](06-storage.md) | Files and lifetimes, where they live, what a bucket records, which tier answers which question, the metric catalogue, and disk use |
-| [`07-analysis.md`](07-analysis.md) | Leak detection, baseline anomalies, the session diff and the bottleneck verdict, with the data behind each chart |
+| [`07-analysis.md`](07-analysis.md) | Leak detection, the session diff and the bottleneck verdict, with the data behind each chart, and the baseline anomaly check kept for after version 1 |
 | [`08-configuration.md`](08-configuration.md) | Every setting with its default and range, the sample-time model, how configuration behaves, what is fixed on purpose, and both sample files |
 | [`09-telemetry.md`](09-telemetry.md) | Where each metric comes from on Windows and Linux, what works without administrator rights, and the sources |
 | [`10-known-limits.md`](10-known-limits.md) | What version 1 cannot measure, and what it does about each |

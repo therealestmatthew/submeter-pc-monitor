@@ -12,7 +12,7 @@ The whole specification in one prompt, with all three review passes, the storage
 
 ## What this is and why
 
-I run many AI coding agents and heavy desktop apps at the same time, and I can't tell which of them is costing me what. I want a monitor I trust enough to make decisions from. It has three jobs of equal weight, all served from one data set:
+I run many AI coding agents and heavy desktop apps at the same time, and I can't tell which of them is costing me what. I want a monitor I trust enough to make decisions from. It has three jobs, all served from one data set. When something has to be cut, they rank in this order, attribution highest:
 
 1. Attribution: what does each workload (an agent run, a browser, an IDE, a build) cost in CPU, memory, I/O and GPU?
 2. Live diagnosis: why is the machine slow right now?
@@ -105,7 +105,7 @@ Data that expires together lives in a file together, so retention is always a fi
 
 - Raw files, one per UTC day, written by the collector: every sample at full resolution, the processes seen that day, and their redacted command lines stored once each. Kept 48 hours.
 - Minute files, one per ISO week, written by the server: one bucket per minute for each workload and for the system. Kept 30 days.
-- One history file, written by the server and kept: hourly buckets, hourly summaries per workload and executable, runs, sessions and their summaries, findings, epochs and baselines.
+- One history file, written by the server and kept: hourly buckets, hourly summaries per workload and executable, runs, sessions and their summaries, findings and epochs.
 - Run files, one small JSON file per tagged run, written by the launcher with an atomic rename and read by the server.
 - Session marker files, one small file per session, written by `submeter session start` and `stop` with an atomic rename and read by the server. They replace an API call, because version 1 has no API.
 
@@ -155,13 +155,16 @@ Version 1 opens no network port: the CLI reads the store files directly, and the
 Detectors emit findings: type, severity, confidence, workload, time window, and the evidence that triggered them.
 
 - Leak: sustained growth by a robust slope such as Theil-Sen, over a minimum duration, with no plateau. Growth that levels off is a warm-up and must be cleared. Track growth at workload level too, so a leak that spans short-lived processes is still seen. With default settings, growth of 50 MB an hour must be flagged within two hours. Run this check on the minute tier.
-- Slow growth: on the hourly tier, fit the daily minimum of memory over at least 7 days. This catches leaks too slow for the check above.
-- Baseline anomaly: keep baselines separately for idle and active states, using median and MAD with a floor on spread, computed from minute buckets over a trailing 14 days. Raise nothing until a learning period has enough samples. Hold the baseline still while an anomaly is open, so a regression does not become the new normal.
 - Bottleneck verdict for a window: CPU-bound, memory-bound, I/O-bound, GPU-bound, thermally throttled or inconclusive. Always include a confidence level and the evidence. Inconclusive is a correct answer when signals disagree. On Windows judge memory pressure from commit and page writes, not from hard faults alone.
-- Spike, swap storm, runaway process count.
+- Runaway process count.
 - Session diff: compare two sessions or periods and rank what changed. Read the stored summaries, and flag any comparison of maxima or percentiles that crosses a change of sampling interval.
 
 Each detector needs a fixture that triggers it and at least one quiet fixture that must not, including a cache warm-up for the leak detector.
+
+Slow growth and baseline anomaly (after version 1). Version 1 has neither, and has no spike or swap-storm check. Regressions are found by hand with `submeter diff` and the hourly history. The design kept for later:
+
+- Slow growth: on the hourly tier, fit the daily minimum of memory over at least 7 days. This catches leaks too slow for the leak check.
+- Baseline anomaly: keep baselines separately for idle and active states, using median and MAD with a floor on spread, computed from minute buckets over a trailing 14 days. Raise nothing until a learning period has enough samples. Hold the baseline still while an anomaly is open, so a regression does not become the new normal. The history file's `baseline` table is added by a migration with this feature.
 
 ## Configuration
 
@@ -180,7 +183,7 @@ Sampling settings and defaults:
 - on_battery_multiplier = 2
 - overhead_limit: idle 1%, active 3%
 
-Other settings: storage (retention for raw, minute and executables, disk_budget, change_threshold, keyframe_interval 10m, backups to keep), analysis (leak min_duration 2h and min_slope 50MB/h, slow_growth window 7d, baseline learning_period 7d, window 14d and sensitivity 4.0), verdict (window 5m, per-signal thresholds, min_confidence), alerts (rules, cooldown 15m), attribution (rules_file, inherit_from_parent, unattributed_alert, max_workload_names 200), privacy (redaction scrub or exe_only, extra patterns), providers (enabled list), and named per-machine profiles that override any of the above.
+Other settings: storage (retention for raw, minute and executables, disk_budget, change_threshold, keyframe_interval 10m, backups to keep), analysis (leak min_duration 2h and min_slope 50MB/h), verdict (window 5m, per-signal thresholds, min_confidence), alerts (rules, cooldown 15m), attribution (rules_file, inherit_from_parent, unattributed_alert, max_workload_names 200), privacy (redaction scrub or exe_only, extra patterns), providers (enabled list), and named per-machine profiles that override any of the above.
 
 Alert rules are structured fields: a workload pattern, a metric, above or below, a value, a duration and a severity. Do not invent a rule language to parse. An alert rule may name only these metric ids: cpu_cores, memory_bytes, processes and io_bytes_per_s for any workload, commit_fraction and throttled for the reserved workload `machine`, and overhead_fraction for the workload `submeter`. Refuse any other. Three rules ship built in: commit_fraction above 0.90 for 2 minutes (serious), throttled for 5 minutes (warning), and overhead_fraction above 0.03 for 5 minutes (warning).
 
@@ -265,7 +268,7 @@ Tables, by file:
 
 - raw file: meta, event, command, process, workload_raw, process_raw, system_raw, gap
 - minute file: meta, rollup_1m
-- history file: meta, workload, epoch, rollup_1h, exe_1h, run, session, session_summary, finding, baseline
+- history file: meta, workload, epoch, rollup_1h, exe_1h, run, session, session_summary, finding
 
 Also deliver: CI on Windows and Linux, where the Linux runner runs the portable tests; recorded fixtures for every provider and detector; a load generator that can spawn short-lived children, leak memory at a set rate and burn CPU, because the gates below depend on it; default submeter.toml and rules.toml; a Windows scheduled task (the systemd user unit comes after version 1); and docs/STATUS.md.
 
@@ -282,7 +285,7 @@ Work in phases. Set up CI on Windows and Linux runners in phase 0, because you c
 - Phase 0, baseline check, capability probe and CI: get the baseline passing ruff, mypy strict and pytest on both runners (it has only been run on Linux, so tell me what needed fixing on Windows), then build `submeter doctor` out into the full capability matrix, and report the measured cost of one full sample, the per-process VRAM check, and a written matrix of what each OS delivers with and without elevation.
 - Phase 1, collector, store and CLI: the Windows bulk snapshot provider behind the existing protocol, the collector loop with adaptive cadence and the overhead guard around the existing sampler, the minute and history files built on the existing rollup functions, retention and backups, and the full `top` and `store status`. Gate: a 30-minute CI soak stays inside the budget, per-process figures agree with Windows performance counters within 5%, and totals reconcile within 2%. Killing the collector mid-write loses at most 5 seconds and corrupts nothing. CPU-hours from the hourly tier match the raw sum within 0.1%. Deleting a day of raw data frees its space at once. Do not use Task Manager as a reference; its CPU figure has changed basis between Windows builds. I will run a 24-hour soak myself.
 - Phase 2, kernel accounting on Windows, attribution and sessions. Gate: on Windows, a tagged tree that spawns 500 sub-second children is charged within 2% of the kernel's total, its final totals survive its exit, a restarted collector re-attaches to live groups, and `submeter run` returns with the command's exit code while background processes it left behind are still accounted for. An agent started with `submeter run` retrieves its own run's cost with `submeter cost --run "$SUBMETER_RUN" --json`, and the output holds no command line. On Linux, `submeter run` reports that tagged runs are unavailable and runs the command polled. A session's cost must read the same before and after its raw data is deleted.
-- Phase 3, analysis. Gate: every detector passes its trigger and quiet fixtures, including a leak too slow for the hourly check, and `why` answers in under two seconds.
+- Phase 3, analysis. Gate: every detector passes its trigger and quiet fixtures, and `why` answers in under two seconds.
 - Phase 4, HTML reports. Gate: `submeter report` writes one self-contained HTML file for a session or a range, with a meta Content Security Policy. Each chart names the tier and resolution it came from, and the report holds no command line.
 - Phase 5, extended providers. Hardware you do not have is tested from recorded fixtures. Say plainly which providers were never run on real hardware.
 

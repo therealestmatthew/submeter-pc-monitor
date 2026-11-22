@@ -128,6 +128,8 @@ A slope test flags any cache warming up. A baseline built from idle hours has ne
 
 **Fix:** A leak needs sustained growth with no plateau. Baselines are kept separately for idle and active states, with a learning period before any anomaly is raised.
 
+Amended by R146 (21 November 2026): baselines and the anomaly check are not in version 1; their design is kept for later. The leak check with its plateau test stays. Regressions are found by hand with `submeter diff` and the hourly history.
+
 ### R12: The bottleneck verdict claimed too much
 
 The classifier always returned an answer. On Windows, hard faults include harmless file mapping.
@@ -277,6 +279,8 @@ A 7-day chart could mix raw and rolled-up data without saying so.
 A leak slower than 50 MB an hour was invisible however long it ran.
 
 **Fix:** A second check fits the daily minimum over at least 7 days on the hourly tier.
+
+Amended by R146 (21 November 2026): the slow-growth check is not in version 1; its design is kept for later. A leak slower than the leak check's minimum slope is not flagged automatically in version 1.
 
 ### R35: Days and weeks were undefined
 

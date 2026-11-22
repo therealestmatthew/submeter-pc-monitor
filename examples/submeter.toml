@@ -22,14 +22,6 @@ backups = { keep = 3 }
 min_duration = "2h"
 min_slope = "50MB/h"
 
-[analysis.slow_growth]
-window = "7d"
-
-[analysis.baseline]
-learning_period = "7d"
-window = "14d"
-sensitivity = 4.0
-
 [alerts]
 cooldown = "15m"
 

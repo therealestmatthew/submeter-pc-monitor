@@ -18,7 +18,7 @@ Gate: on Windows, a tagged tree spawning 500 sub-second children is charged with
 
 ## P3: Analysis
 
-Gate: every detector passes a trigger fixture and a quiet fixture, including a cache warm-up and a leak too slow for the hourly check. `why` answers in under 2 seconds.
+Gate: every detector passes a trigger fixture and a quiet fixture, including a cache warm-up. `why` answers in under 2 seconds.
 
 ## P4: Report
 

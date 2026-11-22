@@ -29,7 +29,7 @@ $ submeter why
 Verdict    CPU-bound     confidence: high     window: last 5 min
 
 Evidence
-  run queue        2.3 per core    baseline 0.4
+  run queue        2.3 per core
   cpu time         91% of capacity
   frequency        98% of maximum  not throttled
   commit           71% of limit

@@ -27,7 +27,7 @@
 
 - A bottleneck verdict with confidence and evidence, or Inconclusive.
 - Leak detection that waits for growth with no plateau.
-- Baselines learned separately for idle and active use.
+- Regressions shown by `submeter diff` and the hourly history. Baseline anomalies and slow growth come after version 1.
 - Session diffs ranked by size of change.
 
 ## Show
