@@ -134,7 +134,6 @@ class SampleBatch(Record):
     logical_cores: int
     cpu_busy_s: float
     memory_available_bytes: int
-    clock_step_s: float = 0.0  # how far the wall clock stepped this tick; the loop logs an event
 
 
 class WorkloadSample(Record):

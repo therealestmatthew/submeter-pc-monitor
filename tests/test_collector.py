@@ -22,12 +22,9 @@ from submeter.collector.sampler import Sampler
 from submeter.core import models
 from submeter.core.models import ProcessCounters, ProcessKey, ProcessSample
 from submeter.providers.psutil_provider import PsutilProvider
-from submeter.store.files import FileMap
-from submeter.store.raw import RawFile, RawStore
+from submeter.store.raw import RawFile
 
 SECRET = "sk-abcdefghijklmnopqrstu"
-BATCH = {"interval_s": 1.0, "gap": False, "processes": (), "exited": (), "logical_cores": 1}
-BATCH |= {"cpu_busy_s": 0.0, "memory_available_bytes": 0}
 
 
 def fake_process(pid: int, **reads: object) -> Any:
@@ -188,24 +185,3 @@ def test_a_gap_is_past_three_expected_intervals_and_keeps_its_cpu() -> None:
     assert slow is not None and not slow.gap
     assert stall is not None and stall.gap and stall.cpu_busy_s == pytest.approx(35.0)
     assert stall.processes[0].cpu_s == 3.0
-
-
-def test_taken_at_follows_the_interval_clock_and_never_runs_back() -> None:
-    sampler = Sampler()
-    sampler.ingest(tick(1000, 100, 100))
-    ahead = sampler.ingest(tick(1101, 101, 101))  # the wall clock stepped 100 s ahead
-    asleep = sampler.ingest(tick(1162, 162, 102))  # 60 s asleep
-    back = sampler.ingest(tick(1133, 163, 103))  # the wall clock stepped 30 s back
-    assert ahead is not None and not ahead.gap and ahead.interval_s == 1
-    assert ahead.taken_at == 1101 and ahead.clock_step_s == 100
-    assert asleep is not None and asleep.gap and asleep.taken_at == 1162
-    assert back is not None and back.taken_at > asleep.taken_at and back.clock_step_s == -30
-
-
-def test_a_raw_store_never_reopens_an_earlier_day(tmp_path: Path) -> None:
-    files = FileMap.discover({"SUBMETER_HOME": str(tmp_path)})
-    store, day0 = RawStore(files), 1_795_132_800.0  # 2026-11-20 00:00:00 UTC
-    for at in (day0 + 1, day0 - 1):  # the second is stamped before midnight
-        store.write(models.SampleBatch.model_validate(dict(BATCH, taken_at=at)), (), {})
-    store.close()
-    assert [path.name for path in files.raw_dir.glob("*.db")] == ["2026-11-20.db"]

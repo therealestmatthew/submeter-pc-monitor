@@ -5,14 +5,13 @@ subtracts, and returns one batch per interval. Because it works from totals,
 a change of cadence never loses or invents CPU time: a longer interval simply
 carries a larger delta.
 
-Four cases need care, and each is handled here and nowhere else:
+Three cases need care, and each is handled here and nowhere else:
 - a process seen for the first time, whose whole CPU time belongs to this
   interval if it was born during it, and to no interval if it is older;
 - a pid that has been reused, which is a different process because identity
   is pid plus start time;
 - a sleep or stall, where the interval was not observed: the batch is marked
-  as a gap, and keeps its deltas, which are exact;
-- a wall-clock step, which taken_at follows forward but never back.
+  as a gap, and keeps its deltas, which are exact.
 """
 
 from __future__ import annotations
@@ -41,7 +40,6 @@ class Sampler:
         self._suspend_slack_s = suspend_slack_s
         self._previous: Snapshot | None = None
         self._known: dict[ProcessKey, ProcessCounters] = {}
-        self._stamp, self._departure = 0.0, 0.0  # the last taken_at, and the wall clock's lead
 
     def ingest(self, snapshot: Snapshot, *, expected_s: float = 1.0) -> SampleBatch | None:
         """Return the batch for the interval of expected_s ending here. The first returns None."""
@@ -49,7 +47,6 @@ class Sampler:
         self._previous = snapshot
         self._known = {process.key: process for process in snapshot.processes}
         if previous is None:
-            self._stamp, self._departure = snapshot.taken_at, 0.0
             return None
 
         elapsed = snapshot.monotonic - previous.monotonic
@@ -58,17 +55,10 @@ class Sampler:
         if snapshot.awake is not None and previous.awake is not None:
             asleep = elapsed - (snapshot.awake - previous.awake)
         stalled = elapsed > 3 * expected_s + self._suspend_slack_s
-        suspended = asleep > self._suspend_slack_s
-        gap = elapsed <= 0 or stalled or suspended
-        stamp = self._stamp + max(elapsed, 0.0)  # wall time carried on the interval clock
-        departure = snapshot.taken_at - stamp
-        step = 0.0 if suspended else departure - self._departure
-        if departure > self._suspend_slack_s and not suspended:  # re-anchor, forward only
-            stamp, departure = snapshot.taken_at, 0.0
-        self._stamp, self._departure = stamp, departure
+        gap = elapsed <= 0 or stalled or asleep > self._suspend_slack_s
         busy = sum(snapshot.system.cpu_busy_s) - sum(previous.system.cpu_busy_s)
         return SampleBatch(
-            taken_at=stamp,
+            taken_at=snapshot.taken_at,
             interval_s=max(elapsed, wall) if gap else elapsed,
             gap=gap,
             processes=tuple(
@@ -79,7 +69,6 @@ class Sampler:
             logical_cores=snapshot.system.logical_cores,
             cpu_busy_s=max(0.0, busy),
             memory_available_bytes=snapshot.system.memory_available_bytes,
-            clock_step_s=step if abs(step) > self._suspend_slack_s else 0.0,
         )
 
     @staticmethod
