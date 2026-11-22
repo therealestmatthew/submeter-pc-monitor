@@ -4,7 +4,7 @@
 
 ## Measure
 
-- Exact totals for tagged workloads on Windows, kept by the kernel, including processes that exit between samples. On Linux tagged runs come after version 1.
+- Exact CPU time, I/O and process counts for tagged workloads on Windows, kept by the kernel, including processes that exit between samples. Their current memory is a USS sum, as for every workload. On Linux tagged runs come after version 1.
 - Everything else from one bulk snapshot per tick that reads every process: by default every 2 seconds while the machine is busy and every 5 once it is quiet. The costly readings, such as USS, are taken less often.
 - Memory in units that sum across processes, with separate units for spotting growth.
 - GPU load, the adapter's VRAM, frequency and throttling, each marked full, partial or unavailable. Per-process VRAM, connections, battery level and temperatures come after version 1.
