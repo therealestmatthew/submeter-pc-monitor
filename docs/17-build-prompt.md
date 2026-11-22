@@ -173,7 +173,7 @@ Operations:
 
 ### Privacy and local security
 
-Command lines often contain keys and tokens. Redact them before they are written: keep the executable and a pattern-scrubbed argument list, with a configurable redaction list and a strict mode that stores the executable only. Restrict every data file to the current user.
+Command lines often contain keys and tokens. Redact them before they are written: keep the executable and a pattern-scrubbed argument list, with a configurable redaction list and a strict mode that stores the executable only. Restrict every data file to the current user. On Linux the system lets any user read other users' command lines: keep only the name of another user's process, never its command line, and count the process as Restricted.
 
 Version 1 opens no network port: the CLI reads the store files directly, and the API with its token comes in version 1.1. `submeter cost --json` and the report must never contain command lines or working directories. Nothing leaves the machine. Version 1 has no webhook, upload or update check. Both programs run as the signed-in user and never request administrator rights.
 
@@ -236,7 +236,7 @@ CLI, where every command accepts --json with a stable schema:
 - `submeter config show|check|reload`, where reload restarts the collector and server
 - `submeter store status|check|backup`
 - `submeter rules test` to show which rule claims a given process
-- `submeter doctor` for the capability matrix, restricted-process count, disk usage and the collector's own cost
+- `submeter doctor` for the capability matrix, restricted-process count, disk usage and the collector's own cost, and on Linux whether /proc is mounted with hidepid
 
 `submeter why` must answer in under two seconds.
 

@@ -228,6 +228,7 @@ A process provider built on psutil, so it is not tied to one operating system.
 - **Worth knowing:**
   - It asks about one process at a time, which is too slow for a 1-second cadence on a busy machine. On Windows it is not the hot path. On Linux in version 1 it is, so the overhead guard will hold the intervals longer there.
   - A refused read marks the process restricted, and the process is still returned. Any other failed read of I/O, the command line or the working folder leaves that field empty. A zombie is kept, because its CPU time is still readable. A process whose read fails in any other way is returned as a restricted record, so one process never costs the whole snapshot. Only a process that has already exited is left out.
+  - On Linux, a process owned by another user keeps no command line: when its real user id differs from the collector's, the command line is not read and the process is marked restricted, so only its name is kept.
   - On Windows it skips pid 0, the System Idle Process, whose CPU time is the machine's idle time.
   - Not here yet: the System bucket. Nothing assigns SYSTEM. On Windows the provider returns the System, Registry, MemCompression and Secure System processes as ordinary processes, and on Linux it reads kernel threads as restricted processes, until a planned task marks them, on Linux by reading PF_KTHREAD from /proc/PID/stat.
   - exe is the file name of psutil's exe(), or name() when exe() cannot be read. name() is stored as name, because on Linux it is the program's own title.

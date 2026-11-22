@@ -158,6 +158,8 @@ Command lines and USS are not readable,
 because Submeter never runs elevated.
 ```
 
+On Linux the last lines differ. The system lets Submeter read other users' CPU time, memory, name and command line, but not their I/O, USS, working folder or executable path, and Submeter keeps only the name of another user's process.
+
 ### How the mock moves
 
 Each second every workload moves part of the way to its target: 18% for CPU, 22% for memory and 25% for process count, with a little noise. Total CPU is capped at 98.5% of 16 cores. Per-core load weights performance cores about two and a half times as heavily as efficiency cores, with noise of up to 22% on each. Frequency, GPU load and overhead ease towards their targets in the same way.
