@@ -340,6 +340,7 @@ Folds samples into buckets, and buckets into wider buckets, keeping totals exact
   - Counters are summed. Gauges keep minimum, maximum, time-weighted mean and last value.
   - Each bucket records covered seconds and active seconds. A sample counts as active when the workload uses at least 0.005 of one core, the accumulator's `active_share`, which no setting changes.
   - Not here yet (finding R39, planned): a gap sample, which goes whole into the bucket that holds its end, adds its sums but no covered seconds, samples, active seconds, memory weight or histogram weight, and a bucket with no covered seconds closes and merges without dividing by zero. Until then a gap's whole interval counts as covered time with zero use: after a one-hour suspend one bucket claims more covered seconds than its width and the hour passes `well_covered`.
+  - A sample goes whole to the bucket that holds its end time. The raw reader selects the same half-open window, so an hour read and rolled up gives the same bucket as the whole day rolled up. A test checks it with ticks at fractional seconds.
   - An hour merged from 60 minute buckets equals the hour built directly from samples. A test checks the sum, the mean, the extremes and the 95th percentile.
   - Merging buckets from different series is refused.
   - Pure functions with no files. The writer for the history file is still to build.

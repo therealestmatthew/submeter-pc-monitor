@@ -39,6 +39,8 @@ Setting `SUBMETER_HOME` moves everything under one folder. `submeter store statu
 - Active seconds, so idle and busy periods can be compared separately.
 - The machine's capacity at the time and an epoch number, both explained below.
 
+A sample belongs, whole, to the bucket that holds its end time. A bucket covers [start, start + width), the same half-open split that puts each sample in its day file, so no bucket needs two day files. A read of raw samples for a window, and a query that merges raw samples into wider steps, use the same rule.
+
 ## Which data answers which question
 
 Legend: Raw samples; Hourly buckets; Stored totals.
