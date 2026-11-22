@@ -413,15 +413,15 @@ Chooses the tier and step for a time window, and explains the choice.
 
 The Theil-Sen slope, the plateau test, the usual range from median and spread, and daily minimums.
 
-- **Why it exists:** Leak and baseline checks need statistics that one spike cannot move.
+- **Why it exists:** The leak check, and the baseline checks after version 1, need statistics that one spike cannot move.
 - **Worth knowing:**
   - A leak is long enough, steep enough, and still climbing. Growth that stops is cleared.
   - `plateaued` compares the slope of the last third of the points with a quarter of the whole series' slope. With noise of up to 40 MB either way on each 1-minute point, the browser warm-up in [How it decides](07-analysis.md) is flagged in 18 to 34 of 60 runs, depending on the window, and a leak that grows in 2-hour steps is never flagged with a 2-hour window. Phase 4 replaces it, tuned together with the leak acceptance.
   - The slope is the median of the slopes between pairs of points, so one spike does not move it. A test confirms that with 20 points.
   - `check_growth` answers "not enough data yet" until it has 8 points spanning the minimum duration.
   - `usual_range` returns nothing until it has five values.
-  - `daily_minimums` feeds the slow-growth check. It takes each reading's local day from the operating system's time zone rules, with no new dependency, so days stay right across a daylight-saving change.
-- **Builds toward:** Arithmetic for component 17, analysis.detectors
+  - `daily_minimums` is kept for the slow-growth check, which comes after version 1 (finding R146). It takes each reading's local day from the operating system's time zone rules, with no new dependency, so days stay right across a daylight-saving change.
+- **Builds toward:** Arithmetic for component 17, analysis.detectors: theil_sen, plateaued and check_growth serve the leak check; usual_range and daily_minimums are kept for the baseline-anomaly and slow-growth checks after version 1.
 - **Provides:** `theil_sen`, `plateaued`, `GrowthResult`, `check_growth`, `usual_range`, `daily_minimums`
 - **Imports:** [`core.models`](../src/submeter/core/models.py)
 - **Imported by:** Nothing yet. The detectors will, in phase 4.
