@@ -27,7 +27,7 @@ Keep its full output in the review, whatever it says. A line that starts with FA
 
 - **Done on Linux:** `uv sync`, `uv run ruff check`, `uv run ruff format --check`, `uv run mypy src tests` and `uv run pytest` all pass on Python 3.13. They passed on 3.12 too, before the package required 3.13. mypy was also run with `--platform win32`, which type-checks the Windows-only branches without running them.
 - **Unknown:** everything at run time. Likely trouble: a test's temporary folder that cannot be removed because a database file is still open, and path comparisons that assume forward slashes.
-- **How to check:** run the five commands. Record the full output of any failure.
+- **How to check:** run the commands under Checks in `AGENTS.md`, which include mypy with `--platform win32` and with `--platform linux`. Record the full output of any failure.
 - **If it fails:** it is a finding for the review, not something to fix before the rulings.
 
 ## 2. The one-instance lock

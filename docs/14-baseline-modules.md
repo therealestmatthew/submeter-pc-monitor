@@ -77,7 +77,7 @@ The table gives the same links module by module. "Nothing yet" means the caller 
 
 ## How to check them
 
-- Run `uv sync`, then `uv run ruff check`, `uv run mypy src tests` and `uv run pytest`. Expect 20 tests to pass.
+- Run the checks in `AGENTS.md`: `uv sync`, then `uv run ruff check`, `uv run ruff format --check`, `uv run mypy src tests`, the same mypy run with `--platform win32` and with `--platform linux`, and `uv run pytest`. Expect 20 tests to pass.
 - Then hand over the execution prompt. It tells the session that this baseline exists, and that the build extends it instead of rewriting it.
 
 ## Not in the baseline, and why
@@ -90,14 +90,14 @@ The table gives the same links module by module. "Nothing yet" means the caller 
 
 ### `pyproject.toml`
 
-49 lines · [open the file](../pyproject.toml)
+50 lines · [open the file](../pyproject.toml)
 
 Declares the package, its three runtime dependencies, the submeter command, and the Ruff, mypy and pytest settings from the brief.
 
 - **Why it exists:** So that uv sync and uv run pytest work from the first commit, and every later module is checked the same way.
 - **Worth knowing:**
   - Source lives under src/submeter, and tests import it through the pytest pythonpath setting.
-  - mypy runs in strict mode with the Pydantic plugin. Ruff uses a 100-character line.
+  - mypy runs in strict mode with the Pydantic plugin. Ruff uses a 100-character line and skips Markdown files, so `ruff format` never rewrites the brief.
   - Requires Python 3.13 or newer, because from 3.13 `time.monotonic()` on Windows resolves 1 microsecond instead of 15.6 ms. The build backend is hatchling.
 - **Builds toward:** Project file
 
