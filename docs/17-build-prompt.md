@@ -58,7 +58,7 @@ Three programs share nothing but files on disk, and each writes only its own:
 
 `submeter session start` and `stop` write the session marker files, which the server reads. None of the three programs writes them.
 
-Files are the only channel to the running programs. There is no control port, and Windows has no signal that asks a process to exit cleanly, so each program polls for its control files each tick. `submeter daemon stop` writes a stop file for each program, which the program removes as it exits cleanly, and `submeter config reload` stops the programs this way before starting them again. The collector reports to the server through `event` rows in its raw file: a change in a provider's status starts an epoch, and the overhead guard lengthening the intervals becomes a finding.
+Files are the only channel to the running programs. There is no control port, and Windows has no signal that asks a process to exit cleanly, so each program polls for its control files each tick. `submeter daemon stop` writes a stop file for each program, which the program removes as it exits cleanly, and `submeter config reload` stops the programs this way before starting them again. `submeter store backup` writes a backup request file, which the server removes once it has written the backup into `backups/`. The collector reports to the server through `event` rows in its raw file: a change in a provider's status starts an epoch, and the overhead guard lengthening the intervals becomes a finding.
 
 None of the three imports another, and every file has exactly one writer. The reason is that the collector is the hot path, and I want to be able to replace it with a Rust binary later without touching anything else. In phase 0, run the collector (snapshot, deltas, attribution and raw-store writes) for 10 minutes on my Windows machine, as the bulk-snapshot probe under How to work says. If, for 300 processes at the default intervals with the provider that will ship, its CPU time as a share of one core is over the overhead budget (3% active, 1% idle), or its private bytes are over 80 MB, stop and tell me, because that is my trigger for the Rust collector. The psutil fallback's figures are reported, not judged.
 
@@ -249,7 +249,7 @@ CLI, where every command accepts --json with a stable schema:
 - `submeter report` for a self-contained HTML report, which holds version 1's charts for a session or range
 - `submeter export` to JSON or CSV
 - `submeter config show|check|reload`, where reload restarts the collector and server
-- `submeter store status|check|backup`
+- `submeter store status|check|backup`, where backup writes a backup request file for the server
 - `submeter rules test` to show which rule claims a given process. Command-line rules match the live command line before redaction, which the collector can read only for the user's own processes, so `rules test` reads the live process and marks which arguments the store hides
 - `submeter doctor` for the capability matrix, restricted-process count, disk usage, the collector's own cost, any Submeter file or folder that other users can read (on Windows, where file modes do not apply, it reports that check as unavailable), and on Linux whether /proc is mounted with hidepid
 

@@ -52,6 +52,7 @@ Commands reach the running programs only through files, which each program polls
 | --- | --- | --- | --- |
 | `control/stop-collector`, `control/stop-server` | `submeter daemon stop`, and `submeter config reload` before it starts the programs again | That program | Asks it to exit cleanly. The program removes the file as it exits |
 | `control/sessions/<id>.json` | `submeter session start` and `stop`, with an atomic rename | The server | Marks a session's start and stop |
+| `control/backup` | `submeter store backup` | The server | Asks it to back up the history file now. The server writes the copy into `backups/`, then removes the file, so it stays the only writer of backups |
 | `runs/<id>.json` | The launcher | The collector while live, the server once final | Names a tagged group, then holds its final totals, as the table of files above says |
 | `event` rows in the open raw file | The collector | The server | Reports a change in a provider's status, which starts an epoch, and the overhead guard lengthening the intervals, which becomes a finding |
 

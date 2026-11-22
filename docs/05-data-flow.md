@@ -53,6 +53,7 @@ Files are the only channel to the running programs and between them. There is no
 
 - `submeter daemon stop` writes a stop file for each program. The program exits cleanly and removes its stop file as it goes. `submeter config reload` stops the programs this way before starting them again.
 - `submeter session start` and `stop` write a session marker file, which the server reads.
+- `submeter store backup` writes a backup request file. The server writes the backup into `backups/` and then removes the file, so the server stays the only writer of backups.
 - The launcher writes a run file for each tagged run. The collector reads the live ones to find the groups, and the server copies the final ones into the history file.
 - The collector reports to the server through `event` rows in its raw file. A change in a provider's status starts an epoch, and the overhead guard lengthening the intervals becomes a finding.
 

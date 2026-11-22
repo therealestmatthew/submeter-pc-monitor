@@ -68,7 +68,7 @@ Each is built in the phase that first needs it: CI in P0, the load generator in 
 - `export` JSON or CSV
 - `config show | check | reload` reload restarts the collector and server
 - `rules test` which rule claims a process
-- `store status | check | backup`
+- `store status | check | backup` backup writes a backup request file, which the server reads
 - `doctor` what this machine can measure
 
 ## API routes (version 1.1)
