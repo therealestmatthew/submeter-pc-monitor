@@ -88,6 +88,14 @@ def test_failed_reads_keep_the_process(monkeypatch: pytest.MonkeyPatch) -> None:
     assert io_error.io_read_bytes is None and io_error.cwd is None and zombie.cmdline is None
 
 
+def test_a_failed_cpu_read_is_no_baseline(monkeypatch: pytest.MonkeyPatch) -> None:
+    fake, sampler = fake_process(42), Sampler()
+    fake.cpu_times.side_effect = [SimpleNamespace(user=500.0, system=0.0), RuntimeError("x")] * 2
+    monkeypatch.setattr(psutil, "process_iter", lambda: iter([fake]))
+    *_, batch = (sampler.ingest(PsutilProvider().snapshot()) for _ in range(3))
+    assert batch is not None and batch.processes[0].cpu_s == 0.0  # not its lifetime 500 s
+
+
 def test_windows_memory_is_private_bytes(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(sys, "platform", "win32")
     monkeypatch.setattr(ctypes, "windll", mock.Mock(), raising=False)  # its clock reads 0

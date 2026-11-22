@@ -84,7 +84,7 @@ class PsutilProvider:
                     memory_bytes = int(memory.vms if sys.platform == "win32" else memory.rss)
                     # psutil's Windows thread count queries the whole system for each process.
                     threads: int | None = None if sys.platform == "win32" else process.num_threads()
-                except (psutil.AccessDenied, OSError, RuntimeError, ValueError):
+                except psutil.AccessDenied:
                     cpu_s, memory_bytes, threads, restricted = 0.0, 0, None, True
                 cmdline: tuple[str, ...] | None = None
                 try:
