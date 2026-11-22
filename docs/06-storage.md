@@ -18,6 +18,8 @@ Data that expires together lives in a file together, so retention is always a fi
 | `logs/*.log` | Each program | 5 files of 5 MB | Each program's own diagnostics, with the same redaction as the store | Nothing that was measured |
 | `*.lock` | Each program | While the program runs | One lock per program, so two copies cannot run. The API token file comes with the API in version 1.1 | Nothing that was measured |
 
+The server keeps a rolled-up-until mark in the history file. At start it rolls up every raw day it holds, oldest first, before any retention pass, and it deletes a raw file only after the mark has passed that day's end. While the server is down, the collector deletes its own raw files older than 7 days, or older than `retention.raw` if that is longer, so a stopped server cannot fill the disk. It records each such deletion as an event in its open raw file, and the server raises a finding when it next reads that file.
+
 ## Where the files live
 
 | Kind | Windows | Linux |
@@ -112,7 +114,7 @@ A workload's figure for a metric is the sum over its processes that gave a readi
 | Logs | 0.05 GB | 2 programs, 5 files of 5 MB each |
 | Total | About 1.5 GB | Of the 2 GB budget |
 
-These sizes are estimates, and phase 2 measures the real bytes per row. When over budget the oldest raw file goes first, never below 24 hours, then backups down to one, then a finding is raised. History is never deleted automatically.
+These sizes are estimates, and phase 2 measures the real bytes per row. When over budget the oldest raw file goes first, never below 24 hours, then backups down to one, then a finding is raised. History is never deleted automatically. The server enforces the budget, so it is not enforced while the server is down. The collector does not enforce it: its cap bounds the raw files to about 7 days, or to `retention.raw` if that is longer.
 
 ## File activity of the processes being watched
 

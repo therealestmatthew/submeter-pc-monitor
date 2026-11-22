@@ -300,7 +300,7 @@ The file map: where settings, data and state live on each platform, the name of 
 - **Worth knowing:**
   - `SUBMETER_HOME` moves everything under one folder. The tests use it.
   - Raw files are named by UTC day, minute files by ISO week.
-  - A file expires only once its whole day or week ended longer ago than the retention.
+  - A file expires only once its whole day or week ended longer ago than the retention. A raw day also waits until the server's rolled-up-until mark, which the caller passes in, has passed its end, so no day goes before its hourly buckets are built.
   - The lock file is only ever locked, never written. The holder's process id goes in a file beside it, NAME.pid.
   - A refused acquire() tries again every 100 ms for up to 5 seconds by default, because Windows may release a dead holder's lock some time after the holder dies. A caller that wants one try passes a wait of 0.
   - The lock was run on Linux with two real processes, and against a stand-in for the Windows locking call. How Windows itself answers has still to be run there.
