@@ -13,6 +13,6 @@
 - **PSS:** Proportional set size. USS plus a fair share of every shared page. Linux only.
 - **Private bytes:** Memory a Windows process has committed for itself, whether or not it is in RAM.
 - **Working set:** The part of a process's memory currently in RAM. Windows trims it under pressure.
-- **Commit:** Memory the system has promised to processes. Allocations fail as it nears the limit.
+- **Commit:** Memory the system has promised to processes. On Windows, allocations fail as it nears the limit. Linux enforces the limit only when `vm.overcommit_memory` is 2.
 - **PSI:** Pressure stall information. Linux's measure of time lost waiting for CPU, memory or I/O.
 - **MAD:** Median absolute deviation. A measure of spread that outliers barely move.
