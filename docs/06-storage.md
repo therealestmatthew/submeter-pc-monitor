@@ -41,7 +41,7 @@ Setting `SUBMETER_HOME` moves everything under one folder. `submeter store statu
 - Covered seconds and sample count, so a gap is never read as zero use. A gap sample goes whole into the bucket that holds its end. It adds its CPU, I/O and processes started to the sums, and nothing to covered seconds, the sample count, active seconds, the memory mean or the histograms, so a bucket can hold sums with no covered seconds at all.
 - Awake seconds: how far the clock that stops during suspend moved. CPU and I/O rates, and capacity in core-seconds, are worked out over awake seconds, because a gap keeps the CPU of a stall in which the machine was awake. Covered seconds remain the observed time on which the memory mean, the histograms and the rule below for buckets less than half covered rest.
 - Active seconds, so idle and busy periods can be compared separately.
-- The machine's capacity in core-seconds, the shortest and longest sampling interval it contains, and an epoch number, all explained below.
+- The machine's capacity at the time, with CPU capacity in core-seconds, the shortest and longest sampling interval it contains, and an epoch number, all explained below.
 
 A sample belongs, whole, to the bucket that holds its end time. A bucket covers [start, start + width), the same half-open split that puts each sample in its day file, so no bucket needs two day files. A read of raw samples for a window, and a query that merges raw samples into wider steps, use the same rule. The per-executable part of a session or run summary is closed 60 seconds after the session or run ends, because a quiet process's CPU can be held that long before its row is written.
 
