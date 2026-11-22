@@ -34,6 +34,8 @@ The mock models a machine with 16 logical cores, 12 on performance cores and 4 e
 | GPU busiest engine | Percent | "3D engine · VRAM 2.8 of 12 GB". VRAM is modelled as 2.1 GB plus the GPU percentage divided by 22 | Shows the percentage |
 | Submeter overhead | Percent of one core | "2 s cadence · limit 3%" | Shows the share of the 3% limit in use |
 
+On Linux the memory tile shows memory in use instead of commit: 1 − MemAvailable ÷ MemTotal. Under Linux's default overcommit setting the commit limit is not enforced, and committed memory commonly exceeds it.
+
 ### The seven workloads at rest
 
 | Workload | Accounting source | CPU, cores | Memory | Processes |
