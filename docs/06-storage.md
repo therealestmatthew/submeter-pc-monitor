@@ -34,7 +34,8 @@ Setting `SUBMETER_HOME` moves everything under one folder. `submeter store statu
 - For counters such as CPU seconds, bytes read and written, and processes started: the sum. A total over any period is then an exact sum of sums.
 - For gauges such as memory, process count and frequency: minimum, maximum, time-weighted mean and last value.
 - For CPU cores in use and memory: a small histogram. A percentile over any period comes from merged bins, never from averaging percentiles.
-- Covered seconds and sample count, so a gap is never read as zero use.
+- Covered seconds and sample count, so a gap is never read as zero use. A gap sample goes whole into the bucket that holds its end. It adds its CPU, I/O and processes started to the sums, and nothing to covered seconds, the sample count, active seconds, the memory mean or the histograms, so a bucket can hold sums with no covered seconds at all.
+- Awake seconds: how far the clock that stops during suspend moved. CPU and I/O rates, and capacity in core-seconds, are worked out over awake seconds, because a gap keeps the CPU of a stall in which the machine was awake. Covered seconds remain the observed time on which the memory mean, the histograms and the rule below for buckets less than half covered rest.
 - Active seconds, so idle and busy periods can be compared separately.
 - The machine's capacity at the time and an epoch number, both explained below.
 

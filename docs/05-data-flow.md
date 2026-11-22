@@ -67,9 +67,9 @@ The model: children have exponentially distributed lifetimes with a mean of L, a
 | --- | --- | --- | --- |
 | Provider | `Counters` | pid, start time, cumulative CPU seconds, bytes, memory gauges | In memory only |
 | Sampler | `Sample` | identity, interval covered, deltas, gap flag | In memory only |
-| Attribution | `WorkloadSample` | workload, accounting source, redacted command | 0.7 M workload rows |
+| Attribution | `WorkloadSample` | workload, accounting source, gap flag, redacted command | 0.7 M workload rows |
 | Raw file | `process_raw` | written on change, with a full snapshot every 10 minutes | 3 to 4 M rows |
-| History file | `rollup_1h`, `exe_1h` | sums, min, max, mean, histogram, covered and active seconds per hour, plus the top executables per workload | About 2 K rows |
+| History file | `rollup_1h`, `exe_1h` | sums, min, max, mean, histogram, covered, awake and active seconds per hour, plus the top executables per workload | About 2 K rows |
 | Session or run end | `session_summary`, `run` | exact totals per workload, kept for good | A row per workload |
 | Analysis | `Finding` | type, severity, confidence, workload, window, evidence | Tens |
 

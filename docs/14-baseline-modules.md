@@ -298,6 +298,7 @@ Writes the daily raw file: workload totals every interval, process rows on chang
   - CPU used between written rows is carried into the next row, so per-process sums stay exact. A test compares the stored sum with the true total.
   - A keyframe writes every live process in full. One opens each file and one follows every keyframe interval.
   - A gap is recorded in its own table, and that batch is written in full.
+  - Not here yet (finding R39, planned): a gap column on workload_raw and system_raw, returned by workload_samples(). Until then a gap batch's workload and system rows look like observed time to the roll-up.
   - Command lines are redacted here whatever the caller did. A test reads the file bytes to confirm the secret is absent.
   - RawStore rolls over at UTC midnight and flushes pending CPU before closing a file.
 - **Builds toward:** Component 09, store.raw
@@ -315,6 +316,7 @@ Folds samples into buckets, and buckets into wider buckets, keeping totals exact
 - **Worth knowing:**
   - Counters are summed. Gauges keep minimum, maximum, time-weighted mean and last value.
   - Each bucket records covered seconds and active seconds.
+  - Not here yet (finding R39, planned): a gap sample, which goes whole into the bucket that holds its end, adds its sums but no covered seconds, samples, active seconds, memory weight or histogram weight, and a bucket with no covered seconds closes and merges without dividing by zero. Until then a gap's whole interval counts as covered time with zero use: after a one-hour suspend one bucket claims more covered seconds than its width and the hour passes `well_covered`.
   - An hour merged from 60 minute buckets equals the hour built directly from samples. A test checks the sum, the mean, the extremes and the 95th percentile.
   - Merging buckets from different series is refused.
   - Pure functions with no files. The writer for the history file is still to build.

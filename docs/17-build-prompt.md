@@ -120,7 +120,7 @@ Data that expires together lives in a file together, so retention is always a fi
 
 Rules for raw files:
 
-- Workload totals are written every sample. Per-process rows are written only when a value changes beyond a threshold, plus a full snapshot of every live process at the start of each file and every 10 minutes, so no query looks back further than that.
+- Workload totals are written every sample, and each workload and system row carries its batch's gap flag. Per-process rows are written only when a value changes beyond a threshold, plus a full snapshot of every live process at the start of each file and every 10 minutes, so no query looks back further than that.
 - A closed day's file is never written again and never migrated. Open closed files only for the length of a query, so they can be deleted on Windows.
 - Process rows live only in raw files. Nothing keyed by pid is kept beyond 48 hours.
 
@@ -129,7 +129,8 @@ What every hourly bucket records:
 - for counters (CPU seconds, bytes read and written, processes started): the sum;
 - for gauges (memory, process count, GPU load, frequency, run queue): minimum, maximum, time-weighted mean and last value;
 - for CPU cores in use and for memory: a fixed-bin histogram that can be merged, so a percentile over any period comes from merged bins and never from averaging percentiles;
-- covered seconds, sample count and active seconds, so a gap is never read as zero use;
+- covered seconds, sample count and active seconds, so a gap is never read as zero use. A gap sample goes whole into the bucket that holds its end, adds its CPU, I/O and processes started to the sums, and adds nothing to covered seconds, the sample count, active seconds, the memory mean or the histograms. A bucket with no covered seconds is valid, and closing or merging one must not divide by zero;
+- awake seconds, the growth of the clock that stops during suspend. CPU and I/O rates and capacity in core-seconds are worked out over awake seconds, so a stall's CPU, which its gap keeps, never raises a rate above capacity. Covered seconds stay the observed time for the memory mean, the histograms and the coverage rule under Queries;
 - the capacity at the time (logical cores, memory) and an epoch id.
 
 Build hourly buckets from raw data while it still exists. Rollups are idempotent: recomputing a bucket gives the same row. A bucket is final 30 seconds after it ends.
