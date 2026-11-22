@@ -56,10 +56,15 @@ def test_exe_only_is_the_default_because_scrub_misses_common_forms(tmp_path: Pat
 
 
 def test_scrub_keeps_harmless_words_paths_and_uuids() -> None:
-    """R99: secret names match whole words of a flag, and paths and UUIDs are not opaque."""
+    """R99: a secret word counts where a word ends, and only paths from '/' and UUIDs are kept."""
     path, uuid = "/srv/0123456789abcdef0123456789abcdef/out", "123e4567-e89b-12d3-a456-426614174000"
     args = ("tool", "--compass", "--bypass-cache", path, "--resume", uuid, "--password", "hunter2")
     assert redact_cmdline(args) == (*args[:-1], REDACTED)
+    flags = ("-storepass", "-keypass", "--passphrase", "-passin", "--authtoken", "--dbpassword")
+    assert [redact_cmdline(("tool", flag, "FAKEpw-1"))[2] for flag in flags] == [REDACTED] * 6
+    pairs = ("PGPASSWORD=FAKEpw-7", "-Djavax.net.ssl.trustStorePassword=FAKEpw-5")
+    assert not any("FAKE" in arg for arg in redact_cmdline(("java", *pairs)))
+    assert redact_cmdline(("aws", "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY")) == ("aws", REDACTED)
 
 
 def test_redact_patterns_are_checked_and_reach_the_store(tmp_path: Path) -> None:

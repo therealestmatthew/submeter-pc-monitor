@@ -8,9 +8,11 @@ opt-in and best-effort: it hides known shapes and cannot recognise every
 credential. It hides the argument after a flag one of whose words names a
 secret, the value of a NAME=value pair whose name does, known token shapes
 wherever they appear, and long opaque strings of letters and digits. It does not
-hide paths or UUIDs, or secrets passed in other forms: an attached -pPASS,
--u user:pass, a header such as "Authorization: Bearer ...", a command inside
-bash -c, --env=NAME=value, or a connection string. The executable is always kept.
+hide a string that starts with '/', which it takes for a path, a UUID, a secret
+word with more letters or digits after it (--password2), or secrets passed in
+other forms: an attached -pPASS, -u user:pass, a header such as "Authorization:
+Bearer ...", a command inside bash -c, --env=NAME=value, or a connection string.
+The executable is always kept.
 """
 
 from __future__ import annotations
@@ -22,9 +24,9 @@ from typing import Final, Literal
 REDACTED: Final = "[redacted]"
 Mode = Literal["scrub", "exe_only"]
 
-_SECRET_NAME: Final = re.compile(  # whole words of a flag or name: --compass is not a password
-    r"(^|[-_.])(pass(word|wd)?|pwd|secrets?|token|credentials?|authorization|bearer"
-    r"|(api|access|secret|private)[-_]?key)(?=$|[-_.])",
+_SECRET_NAME: Final = re.compile(  # a secret word that ends a word; compass and bypass are words
+    r"((?<!com)(?<!by)pass(w(or)?d|phrase|in|out)?|pwd|secrets?|token|credentials?|authorization"
+    r"|bearer|(api|access|secret|private)[-_]?key)(?=$|[-_.])",
     re.IGNORECASE,
 )
 _SECRET_SHAPES: Final = (
@@ -44,7 +46,7 @@ _UUID: Final = re.compile(r"^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$", re.IGN
 def _looks_opaque(text: str) -> bool:
     return (
         bool(_OPAQUE.match(text))
-        and "/" not in text  # a path, whose folder names may be long hashes
+        and not text.startswith("/")  # an absolute path, whose folder names may be long hashes
         and not _UUID.match(text)
         and any(c.isdigit() for c in text)
         and any(c.isalpha() for c in text)
