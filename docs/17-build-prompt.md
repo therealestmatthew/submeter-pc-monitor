@@ -287,7 +287,7 @@ Version 1 cannot measure some things. Say so in the CLI output, in the report an
 - On Windows, a program that asks to break away from a tagged group, or that places children in its own job with UI limits, cannot start those children under `submeter run`.
 - On Linux, tagged runs are unavailable in version 1: `submeter run` runs the command polled. PSI and the other Linux system counters are not read either, so `why` on Linux reads Inconclusive or unavailable.
 - The WSL2 and Docker Desktop VM is opaque: version 1 has no guest collector.
-- Processes owned by other users or the system are counted in the Restricted bucket with their CPU time and working set, but their command lines and USS cannot be read.
+- Processes owned by other users or the system are counted in the Restricted bucket with their CPU time and memory. On Windows their command lines and USS cannot be read. On Linux their command lines can be read, but Submeter keeps only the name of another user's process, and their I/O, USS, working folder and executable path cannot be read.
 - Workload memory totals can lag by up to the USS interval.
 - On Windows, after a wall-clock step back, a child started within the step of its parent can appear to start before it, so its parent link is refused.
 - CPU time is not normalised for core type or frequency.
