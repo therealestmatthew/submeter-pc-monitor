@@ -27,7 +27,7 @@ Raw rows and raw data on disk are not modelled. Every process is read every tick
 
 **Status line**
 
-The status comes from the assumed costs, so it is not a budget check. The measured costs above are higher, and only the phase 0 measurement of the whole tick says whether a setting fits the budget.
+The status comes from the assumed costs, so it is not a budget check. The measured costs above are higher. The phase 0 measurement of the collector's whole tick, and the phase 2 and phase 3 soaks for every Submeter process, say whether a setting fits the budget.
 
 | When | Label | Message |
 | --- | --- | --- |
