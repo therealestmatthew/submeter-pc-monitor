@@ -282,6 +282,8 @@ A change of sampling interval, rules, provider status or hardware could shift a 
 
 **Fix:** Epochs. Any such change starts one and is marked on every chart, and a comparison of maxima or percentiles across an interval change is flagged.
 
+Amended by R94 (21 November 2026): an epoch follows the configured sampling settings, the rules file, provider status, hardware and version. Cadence the collector changes itself, and edits to alert, UI or verdict settings, do not start one. Each bucket records the shortest and longest interval it contains, so an interval change within an epoch is still flagged, and stores capacity in core-seconds.
+
 ### R33: No rule said which tier answers a question
 
 A 7-day chart could mix raw and rolled-up data without saying so.

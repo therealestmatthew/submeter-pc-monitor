@@ -2,7 +2,7 @@
 
 > Submeter build brief · Part 2, the design · [Index](README.md)
 
-Two files: `submeter.toml` for settings and `rules.toml` for attribution rules. Both are validated on load, and unknown keys are rejected. Both are read when a program starts, so a change takes effect when `submeter config reload` restarts the collector and server. A restart that changes the sampling settings or the rules starts a new epoch, marked on the charts, so a shift in the data can be traced to the setting that caused it.
+Two files: `submeter.toml` for settings and `rules.toml` for attribution rules. Both are validated on load, and unknown keys are rejected. Both are read when a program starts, so a change takes effect when `submeter config reload` restarts the collector and server. A restart that changes the sampling settings or the rules starts a new epoch, marked on the charts, so a shift in the data can be traced to the setting that caused it. A change to alert, UI or verdict settings does not start one.
 
 ## Sample time explorer
 
@@ -111,7 +111,7 @@ The overhead budget covers every Submeter process: the collector, the server and
 - `submeter config check` validates a file without applying it.
 - Out-of-range values are refused with the allowed range in the message. They are never silently clamped.
 - Sizes are binary, in settings and in the acceptance checks: 1 MB is 1024 × 1024 bytes and 1 GB is 1024 cubed bytes, so `50MB/h` is 50 MiB an hour.
-- Any change to sampling, rules or providers starts a new epoch, which is marked on every chart. A wall-clock step that the collector detects also starts a new epoch.
+- A new epoch starts when the configured sampling settings, the rules file, a provider's status, the hardware or the Submeter version differ. The epoch is marked on every chart. A wall-clock step that the collector detects also starts a new epoch. Cadence the collector changes itself, switching between the active and idle intervals or the overhead guard lengthening them, does not start one, and neither does an edit to alert, UI or verdict settings.
 - Settings and rules are read only when a program starts. `submeter config reload` applies a change by restarting the collector and server.
 - Each machine reads its own settings file: the one in the standard location, the one under `SUBMETER_HOME`, or one named with `--file`.
 

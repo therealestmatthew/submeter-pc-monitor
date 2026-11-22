@@ -41,7 +41,7 @@ Setting `SUBMETER_HOME` moves everything under one folder. `submeter store statu
 - Covered seconds and sample count, so a gap is never read as zero use. A gap sample goes whole into the bucket that holds its end. It adds its CPU, I/O and processes started to the sums, and nothing to covered seconds, the sample count, active seconds, the memory mean or the histograms, so a bucket can hold sums with no covered seconds at all.
 - Awake seconds: how far the clock that stops during suspend moved. CPU and I/O rates, and capacity in core-seconds, are worked out over awake seconds, because a gap keeps the CPU of a stall in which the machine was awake. Covered seconds remain the observed time on which the memory mean, the histograms and the rule below for buckets less than half covered rest.
 - Active seconds, so idle and busy periods can be compared separately.
-- The machine's capacity at the time and an epoch number, both explained below.
+- The machine's capacity in core-seconds, the shortest and longest sampling interval it contains, and an epoch number, all explained below.
 
 A sample belongs, whole, to the bucket that holds its end time. A bucket covers [start, start + width), the same half-open split that puts each sample in its day file, so no bucket needs two day files. A read of raw samples for a window, and a query that merges raw samples into wider steps, use the same rule.
 
@@ -100,10 +100,10 @@ The raw and history tables hold a column for every metric in this catalogue from
 
 ## When two periods can be compared
 
-- An epoch is a stretch of time in which the sampling intervals, the rules file, each provider's status, the hardware and the Submeter version all stayed the same. Any change starts a new epoch and is marked on every chart. A wall-clock step that the collector detects also starts a new epoch.
-- Sums compare freely across epochs. Maxima and percentiles depend on the sampling interval, so a comparison that crosses an interval change is flagged.
+- An epoch is a stretch of time with one set of sampling settings, one rules file, one status for each provider, the same hardware and the same Submeter version. A new epoch starts when the configured sampling settings, the rules file, a provider's status, the hardware or the Submeter version differ. It is marked on every chart. A wall-clock step that the collector detects also starts a new epoch. Cadence the collector changes itself, switching between the active and idle intervals or the overhead guard lengthening them, does not start one, and neither does an edit to alert, UI or verdict settings. Settings and rules change only at a restart, which starts an epoch only if something in this list differs; a provider's status and the hardware can change while the programs run.
+- Sums compare freely across epochs. Maxima and percentiles depend on the sampling interval, and each bucket records the shortest and longest interval it contains, so a comparison of maxima or percentiles across different intervals is flagged, within an epoch as well as across one.
 - A rules change moves processes between workloads. Stored history is not rewritten. The boundary is marked.
-- Percentages use the capacity recorded in each bucket, so new hardware does not distort old data.
+- Percentages use the capacity recorded in each bucket, stored as core-seconds (covered seconds times logical cores, summed), so new hardware does not distort old data, and a bucket or a merged period that spans a change of core count keeps the right percentage.
 - Buckets with less than half their time covered are left out of baselines and trends.
 - Days and weeks are worked out in your time zone when you ask, from buckets stored in UTC. A day of 23 or 25 hours is compared per hour.
 - A workload name is stable and reused across runs. A label marks one run. Time series are kept per name and totals per run, so a new label never starts a new series.
