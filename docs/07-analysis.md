@@ -120,7 +120,7 @@ This table is the single rule set for the verdict. `submeter why` checks every r
 
 The base frequency is the processor's rated (nominal) frequency, not its turbo maximum. Turbo frequencies are not sustainable, so a laptop under steady all-core load would otherwise read as throttled.
 
-Each threshold has an on value and a lower off value. A signal that has turned on stays on until it is back past its off value, so the verdict does not flicker at a threshold. Each threshold is named under `verdict.thresholds` in the settings.
+Each threshold has an on value and an off value on the far side of it: lower for a signal that turns on above its threshold, higher for frequency, which turns on below it. A signal that has turned on stays on until it is back past its off value, so the verdict does not flicker at a threshold. Each threshold is named under `verdict.thresholds` in the settings.
 
 | Setting | Signal | On | Off |
 | --- | --- | --- | --- |
