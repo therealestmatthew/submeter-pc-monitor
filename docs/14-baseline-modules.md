@@ -2,13 +2,13 @@
 
 > Submeter build brief · Part 3, the build · [Index](README.md)
 
-Sixteen Python modules that form the platform-neutral core of Submeter, with the project file and their tests. This is working code, written and run for this brief: 2,356 lines in the modules and 20 tests. They start twelve of the 22 components in the build list. Each entry says what the module does, why it exists, what it provides, what it imports and what imports it.
+Sixteen Python modules that form the platform-neutral core of Submeter, with the project file and their tests. This is working code, written and run for this brief: 2,356 lines in the modules and 62 tests. They start twelve of the 22 components in the build list. Each entry says what the module does, why it exists, what it provides, what it imports and what imports it.
 
 In this package the files are already in place at the paths shown, 27 files in all: the 20 described here and 7 empty `__init__.py` files, one in each package folder.
 
 ## What was checked, and what was not
 
-- Ruff reports nothing. mypy in strict mode reports no issues in 25 files, checked as Linux and again as Windows. All 20 tests pass on Python 3.13. They also passed on 3.12, before the package required 3.13.
+- Ruff reports nothing. mypy in strict mode reports no issues in 25 files, checked as Linux and again as Windows. All 62 tests run on Python 3.13: 61 pass and 1 is a strict expected failure, R61's recorded breach in tests/test_attribution.py. The original 20 also passed on 3.12, before the package required 3.13.
 - Everything ran on Linux. `submeter top` took two snapshots of live processes and printed totals by workload.
 - This package was unpacked into an empty folder, where `uv sync`, Ruff, mypy and the tests all passed.
 - Nothing ran on Windows, so expect small fixes there. The one-instance lock was redesigned so that its lock file is never written, and its Windows calls are tested against a stand-in, but Windows itself has not answered them. Private-bytes memory in the psutil provider has never run. [`reference/windows-priorities.md`](reference/windows-priorities.md) lists what to check first, and `scripts/platform_check.py` checks it.
@@ -77,7 +77,7 @@ The table gives the same links module by module. "Nothing yet" means the caller 
 
 ## How to check them
 
-- Run the checks in `AGENTS.md`: `uv sync`, then `uv run ruff check`, `uv run ruff format --check`, `uv run mypy src tests`, the same mypy run with `--platform win32` and with `--platform linux`, and `uv run pytest`. Expect 20 tests to pass.
+- Run the checks in `AGENTS.md`: `uv sync`, then `uv run ruff check`, `uv run ruff format --check`, `uv run mypy src tests`, the same mypy run with `--platform win32` and with `--platform linux`, and `uv run pytest`. Expect 62 tests: 61 pass and 1 is an expected failure (xfail). On Windows the two POSIX-only tests, in tests/test_files.py and tests/test_analysis.py, are skipped.
 - Then hand over the execution prompt. It tells the session that this baseline exists, and that the build extends it instead of rewriting it.
 
 ## Not in the baseline, and why
