@@ -83,7 +83,7 @@ The overhead budget covers every Submeter process: the collector, the server and
 | Storage | `backups.keep` | 3 | Copies of the history file to keep |
 | Analysis | `leak.min_duration` | 2h | Shorter catches leaks sooner and raises more false alarms |
 | Analysis | `leak.min_slope` | 50MB/h | Ignore growth too slow to matter within a day |
-| Analysis | `slow_growth.window` | 7d | Not used in version 1, which has no slow-growth check. Later, the days of daily minimums used to catch leaks too slow for the leak check |
+| Analysis | `slow_growth.window` | 7d | Not used in version 1, which has no slow-growth check. Later, the daily minimums the slow-growth check fits: at least 7, which needs 8 days of hourly buckets |
 | Analysis | `baseline.learning_period` | 7d | Not used in version 1, which has no baseline anomaly check. Later, the days of history before anomalies are raised |
 | Analysis | `baseline.window` | 14d | Not used in version 1. Later, how far back the usual range looks |
 | Analysis | `baseline.sensitivity` | 4.0 | Not used in version 1. Later, the distance from normal, in spreads, that counts as an anomaly |
