@@ -72,6 +72,8 @@ Two findings are present from the start: a Warning from 12 min ago, "Baseline an
 
 The rules are checked in this order and the first match wins. The two "stays until" clauses are hysteresis, so the verdict does not flicker at a threshold.
 
+This table is the mock's simplification. The rule set the product uses is the verdict table in [How it decides](07-analysis.md): there every rule is checked, two matching rules read Inconclusive instead of the first match winning, every threshold has an on and an off value, and throttling is judged against the base (nominal) frequency.
+
 | Verdict | Severity | Rule | Confidence | Evidence shown |
 | --- | --- | --- | --- | --- |
 | Thermally throttled | Serious | Frequency below 80% of maximum | high | "Frequency 62% of maximum under load", "CPU time 91%, the work of 9.0 full-speed cores", "No power-saving plan active" |

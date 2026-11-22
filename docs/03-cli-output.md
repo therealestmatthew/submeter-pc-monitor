@@ -31,7 +31,7 @@ Verdict    CPU-bound     confidence: high     window: last 5 min
 Evidence
   run queue        2.3 per core
   cpu time         91% of capacity
-  frequency        98% of maximum  not throttled
+  frequency        98% of base  not throttled
   commit           71% of limit
 
 Top contributors

@@ -86,7 +86,7 @@ The expensive memory reading has a cost of its own. On Linux it costs about 25 t
 | Analysis | `baseline.window` | 14d | Not used in version 1. Later, how far back the usual range looks |
 | Analysis | `baseline.sensitivity` | 4.0 | Not used in version 1. Later, the distance from normal, in spreads, that counts as an anomaly |
 | Verdict | `window` | 5m | How far back `submeter why` looks |
-| Verdict | `thresholds.*` | see verdict table | Tune each signal to your hardware |
+| Verdict | `thresholds.*` | see the verdict table in [How it decides](07-analysis.md) | Tune each signal to your hardware |
 | Verdict | `min_confidence` | moderate | Below this the verdict reads Inconclusive |
 | Alerts | `rules[]` | 3 built in | Your own thresholds per workload or system-wide |
 | Alerts | `cooldown` | 15m | Minimum gap between repeats of the same alert |

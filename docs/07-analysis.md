@@ -100,14 +100,37 @@ The chart is a bar for each workload, to either side of zero.
 
 ## How a bottleneck verdict is reached
 
+This table is the single rule set for the verdict. `submeter why` checks every rule against the window, and the verdict is:
+
+- the one rule that matches, when exactly one matches and its ruled-out condition does not hold;
+- No bottleneck, when no rule matches and the window holds at least 60 seconds of data;
+- Inconclusive, when the signals disagree or the window holds fewer than 60 seconds of data. The signals disagree when two or more rules match, or when a rule matches while its ruled-out condition holds.
+
 | Verdict | Windows signals | Linux signals (after version 1) | Ruled out when |
 | --- | --- | --- | --- |
 | CPU-bound | Run queue above 1 per core, CPU time above 85% | CPU pressure (PSI) some above 20% | Frequency is being held down |
 | Memory-bound | Commit above 85% of limit, page writes rising | Memory pressure full above 5%, swap-out rising | Page reads only, with no writes |
 | I/O-bound | Disk queue length and latency above absolute thresholds | I/O pressure full above 10% | CPU is saturated too |
 | GPU-bound | One engine type above 90% | Busiest DRM engine or NVML utilisation above 90% | The adapter's VRAM is full, which is reported separately |
-| Thermally throttled | Frequency below 80% of maximum under load | Throttle counters rising, frequency capped | A power-saving plan is active |
-| Inconclusive | Signals disagree, or fewer than 60 seconds of data | Signals disagree, or fewer than 60 seconds of data | Never forced into another class |
+| Thermally throttled | Frequency below 80% of the base (nominal) frequency under load | Throttle counters rising, frequency capped | A power-saving plan is active |
+| No bottleneck | No rule above matches, with at least 60 seconds of data | The same as on Windows | Any rule above matches |
+| Inconclusive | Two or more rules match, a rule matches while its ruled-out condition holds, or fewer than 60 seconds of data | The same as on Windows | Never forced into another class |
+
+The base frequency is the processor's rated (nominal) frequency, not its turbo maximum. Turbo frequencies are not sustainable, so a laptop under steady all-core load would otherwise read as throttled.
+
+Each threshold has an on value and a lower off value. A signal that has turned on stays on until it is back past its off value, so the verdict does not flicker at a threshold. Each threshold is named under `verdict.thresholds` in the settings.
+
+| Setting | Signal | On | Off |
+| --- | --- | --- | --- |
+| `run_queue` | Run queue, per logical core | above 1.0 | below 0.8 |
+| `cpu_time` | CPU time, share of capacity | above 85% | below 80% |
+| `commit` | Commit, share of the commit limit | above 85% | below 82% |
+| `disk_queue` | Disk queue length | absolute value, set in phase 4 | set in phase 4 |
+| `disk_latency` | Disk latency | absolute value, set in phase 4 | set in phase 4 |
+| `gpu_engine` | Busiest GPU engine type | above 90% | below 85% |
+| `frequency` | Frequency under load, share of the base frequency | below 80% | above 85% |
+
+The Linux thresholds get on and off values in the same way when that column is built after version 1.
 
 Version 1 does not read the Linux signals: PSI and the other Linux system counters come after version 1. On Linux `why` reads Inconclusive or unavailable in version 1.
 
