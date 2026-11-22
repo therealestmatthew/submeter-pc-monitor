@@ -160,6 +160,8 @@ A Job Object is destroyed once its last process has exited and its handles are c
 
 **Fix:** The launcher holds the group while the command runs and saves its totals when the command ends. Anything that outlives the command is held open by a detached helper until the group is empty. The collector re-attaches to live groups after a restart.
 
+Amended by R72 (21 November 2026): not every cgroup is removed once it is empty. systemd removes a scope once it is empty; a cgroup made with mkdir stays until it is removed. Version 1 makes no cgroup. The Linux design kept for after version 1 places each tagged run in a transient systemd user scope with holder and payload leaf groups, and the holder reads the final totals once the payload is empty.
+
 ### R16: Per-process VRAM on Windows cannot be trusted yet
 
 Microsoft documents a fault in which the GPU Process Memory counter appears to leak. NVML cannot supply the figure on desktop Windows either.
