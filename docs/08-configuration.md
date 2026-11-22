@@ -20,7 +20,7 @@ Move the controls to see what a sampling choice costs. The figures come from a s
 **Formulas**, where a is the active interval in seconds and P the number of processes
 
 - Cost of one bulk sample, assumed: 1.5 ms plus 0.012 ms for each process.
-- **Collector overhead**, shown "of one core, limit 3% when active": the sample cost divided by a, as a percentage, plus 0.2 points for the store and the server.
+- **Submeter overhead**, shown "of one core, limit 3% when active": the sample cost divided by a, as a percentage, plus 0.2 points for the store and the server.
 - **Short-lived CPU that polling captures**, shown for "children averaging 300 ms. Tagged workloads get 100%": (0.3 ÷ a) × (1 − e^(−a ÷ 0.3)).
 
 Raw rows and raw data on disk are not modelled. Every process is read every tick, but a process row is written only when the process changes enough, and how often that happens is not known until the collector's rows and bytes per tick are measured.
@@ -31,13 +31,13 @@ The status comes from the assumed costs, so it is not a budget check. The measur
 
 | When | Label | Message |
 | --- | --- | --- |
-| Overhead above 3% | Over | Over the overhead limit. The guard would lengthen the interval until the collector is back under 3%. |
+| Overhead above 3% | Over | Over the overhead limit. The guard would lengthen the collector's intervals until the summed overhead of every Submeter process is back under 3%. |
 | Overhead above 1% | Active only | Fine while active, but above the 1% idle limit, so adaptive mode matters at this setting. |
 | Otherwise | In budget | Inside the overhead budget. |
 
 **Results**
 
-| Active interval | Processes | Collector overhead | Polling captures | Status |
+| Active interval | Processes | Submeter overhead | Polling captures | Status |
 | --- | --- | --- | --- | --- |
 | 250 ms | 300 | 2.2% | 68% | Active only |
 | 500 ms | 300 | 1.2% | 49% | Active only |
