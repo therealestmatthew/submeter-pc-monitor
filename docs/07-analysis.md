@@ -36,8 +36,10 @@ The chart shows the IDE's daily peak memory in GB over 30 days. The data is synt
 
 The value compared with the usual range is one per local day, built from hourly buckets: the daily peak, which is the highest hourly maximum of the day for memory and the highest hourly 95th percentile of cores in use for CPU.
 
+Idle and active baselines are kept apart. An hourly bucket is active when its active seconds are at least half of its covered seconds, and a sample counts as active when the workload uses at least 0.005 of one core. Each baseline uses only the buckets of its own state, so a day gives one active and one idle daily peak, and a day with no buckets of a state gives no value for it.
+
 - Days 1 to 7 are the learning period, so no range is drawn and nothing is raised.
-- From day 8 the usual range is the median of the last 14 values that were not flagged, plus or minus 4 × 1.4826 × the median absolute deviation.
+- From day 8 the usual range is the median of the values from the last 14 days (`baseline.window`) that were not flagged, plus or minus 4 × 1.4826 × the median absolute deviation. From the first value outside the range until values return inside it, the range is held still.
 - The floor bounds the median absolute deviation before it is scaled. It is never taken as less than 0.03 GB for memory or 0.05 cores for CPU, so a series that barely moves, such as an idle workload, still gets a range of non-zero width. `usual_range` applies its `floor` argument to the scaled spread, so the detector passes it 1.4826 times these values.
 - A value outside the range is flagged and left out of later ranges, so one anomaly does not widen the band.
 - An anomaly is raised only when 3 values in a row are outside the range, so one odd day raises nothing.
