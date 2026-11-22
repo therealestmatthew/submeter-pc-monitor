@@ -165,7 +165,7 @@ A 64-bin histogram that merges by adding bins and returns percentiles.
 
 318 lines · [open the file](../src/submeter/core/config.py)
 
-Builds one immutable Settings object from defaults, submeter.toml, a named profile, environment variables and overrides, and records where each value came from.
+Builds one immutable Settings object from defaults, submeter.toml, environment variables and overrides, and records where each value came from.
 
 - **Why it exists:** The rule that values are refused and never clamped, and the config show --effective command, both need a single validated source of truth.
 - **Worth knowing:**
