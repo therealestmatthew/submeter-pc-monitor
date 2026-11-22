@@ -144,6 +144,7 @@ The frozen records passed between layers: counters, samples, workload totals, bu
   - Bucket carries everything needed to merge buckets exactly: sums, extremes, a time-weighted mean, two histograms, covered seconds, capacity in core-seconds, and the shortest and longest interval it contains.
   - GroupTotals holds what the kernel counted for one tagged group over one interval: CPU time, I/O (None when the group cannot report it) and process count.
   - Not here yet: separate fields for the two memory units. memory_bytes holds the unit read every tick, and the unit for workload totals, USS or PSS with the time it was read, is a planned field.
+  - A validation error never quotes the value it refused, and the repr of a process record leaves out its command line and working folder, so neither can carry them into a log.
   - No behaviour lives here.
 - **Builds toward:** Component 01, core.models
 - **Provides:** `Record`, `Availability`, `AccountingSource`, `Severity`, `Confidence`, `Tier`, `Capability`, `ProcessKey`, `ProcessCounters`, `SystemCounters`, `Snapshot`, `ProcessSample`, `SampleBatch`, `WorkloadSample`, `Bucket`, `Finding`, `GroupTotals`
