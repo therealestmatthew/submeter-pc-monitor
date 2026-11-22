@@ -124,6 +124,8 @@ Task Manager has changed how it measures CPU between Windows builds, so it is no
 
 **Fix:** Reference figures come from kernel counters. CI runs on Windows and Linux with a 30-minute soak. The 24-hour soak is yours to run. Hardware providers are tested from recorded fixtures.
 
+Amended by R83 (21 November 2026): the reference for the per-process and tagged-run gates is the load generator's own accounting, which Submeter does not read: each burner's own CPU seconds, and the children's summed CPU time plus the generator's own. Kernel and performance-counter figures are compared only as a parsing check.
+
 ## First pass, medium: noise and overconfidence
 
 ### R11: Detectors would fire on normal behaviour

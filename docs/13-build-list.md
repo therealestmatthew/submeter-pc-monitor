@@ -40,7 +40,7 @@ Three programs that share only files on disk: a collector, a server and the laun
 
 - CI on Windows and Linux runners with a 30-minute soak. The Linux runner runs the portable tests
 - Recorded fixtures for every provider and detector
-- A load generator: short-lived children, a controlled leak, a CPU burn
+- A load generator: short-lived children, a controlled leak, a CPU burn. It reports its own accounting, each burner's CPU seconds and its children's summed CPU time, which the P1 and P2 gates use as their reference
 - Default `submeter.toml` and `rules.toml`
 - Windows scheduled task
 - The brief under `docs/`, `AGENTS.md` with `CLAUDE.md`, and `docs/STATUS.md`
