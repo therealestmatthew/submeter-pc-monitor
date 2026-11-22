@@ -15,8 +15,8 @@ builds           kernel        1.31     2.2 GB    0.9 GB          212
 browser          polled        0.52     5.4 GB    5.0 GB           31
 ide              polled        0.31     3.6 GB    3.4 GB           14
 unattributed     polled        0.11     2.1 GB    2.0 GB           74
-system           kernel        0.24        n/a       n/a          n/a
-restricted       polled        0.05        n/a       n/a           14
+system           counters      0.24        n/a       n/a          n/a
+restricted       partial       0.05        n/a       n/a           14
 
 Total  8.03 of 12.80 CPU-hours available (62.7%) over 48 min
 Note   polled workloads may undercount short-lived children
@@ -58,7 +58,7 @@ thermal.temp        unavailable   no source without administrator rights
 thermal.throttle    full
 net.connections     unavailable   not in version 1
 net.bytes           unavailable   not in version 1
-vm.guest            opaque        WSL2 VM holds 3% of CPU time, under the 10% rule
+vm.guest            opaque        WSL2 VM holds 3% of busy CPU time, 2% of capacity
 
 Restricted   14 processes visible but not readable
 Workloads    11 names, limit 200
