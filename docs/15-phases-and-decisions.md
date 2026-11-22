@@ -20,6 +20,8 @@ Phase 0 settles the facts that change the design of version 1 on the owner's own
 
 `doctor` is not built out into the full capability matrix in phase 0. It grows with each provider.
 
+CI proves portability: ruff, mypy (with `--platform` for the other system), pytest, fixture parsing and logic on both systems. It does not prove privilege, hardware or session behaviour, because the Windows runners are administrators with User Account Control off. Tests that need an unprivileged user, a user session (the logon task) or hardware (GPU, the on-battery flag, suspend) are marked and run on the owner's machine at the gate. The CI soak states its process count. CI runs on every pushed branch.
+
 Gate: the baseline passes its checks on the Windows and Linux runners, the output of step 1 and of each probe is saved, and the choice each probe decides is recorded. The brief is saved in the repository.
 
 ## P1: Tagged runs
