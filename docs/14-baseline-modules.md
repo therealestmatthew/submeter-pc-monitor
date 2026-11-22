@@ -271,6 +271,7 @@ Gives every process exactly one workload, with the reason, and totals a batch by
   - A rule may match on exe, cmdline, cwd and parent, the program that started the process. Every condition it gives must hold. Program names match on file name, ignoring case.
   - `needs_cwd` tells the caller whether any rule uses the working folder, so that folders are read only then.
   - aggregate marks each workload as measured by the kernel, by polling, or partially.
+  - Not here yet: partial and unavailable figures. aggregate adds an I/O figure a process cannot give as 0 and still labels the workload polled. A planned task marks such a figure partial, with the count of processes missing it, or unavailable when none can give it.
   - The sample `rules.toml` in `examples/` loads through this module without error.
 - **Builds toward:** Component 15, attribution
 - **Provides:** `UNATTRIBUTED`, `RESTRICTED`, `SYSTEM`, `SELF`, `Rule`, `RuleSet`, `Attribution`, `Attributor`, `aggregate`
