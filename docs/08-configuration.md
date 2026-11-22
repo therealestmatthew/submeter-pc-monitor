@@ -69,6 +69,8 @@ Every tick reads CPU time, I/O and memory for every process. Only the costly rea
 
 The expensive memory reading has a cost of its own. On Linux it costs about 25 to 30 ms of CPU per GB resident in the processes read; with the defaults that is about 0.8% of one core on a desktop with 8 GB in its 25 largest processes, most of the 1% idle budget. The overhead guard stretches `uss_interval` or shrinks `uss_top_n` before it lengthens the active and idle intervals.
 
+The overhead budget covers every Submeter process: the collector, the server and the launcher's detached holders, which the `submeter` workload holds together. With 300 processes running, their summed CPU time stays under `overhead_limit`, 1% of one core at the idle cadence and 3% at the active cadence, and the collector and server together stay under 150 MB of memory, measured as private bytes on Windows and USS on Linux. The overhead guard acts on the collector, whose intervals are the only ones it lengthens, and `overhead_fraction` reports the total.
+
 ## Other settings worth exposing
 
 | Group | Setting | Default | Why you would change it |
@@ -134,7 +136,7 @@ An alert rule names one workload pattern and one metric from this list. A rule t
 | `io_bytes_per_s` | Any workload | Disk bytes read plus written | Bytes per second |
 | `commit_fraction` | `machine` | Memory commit as a share of the commit limit. Read on Windows. On Linux unavailable in version 1, which reads no Linux commit counter; after version 1 it is read only when `vm.overcommit_memory` is 2, otherwise unavailable | 0 to 1 |
 | `throttled` | `machine` | 1 while frequency is held down under load, otherwise 0 | 0 or 1 |
-| `overhead_fraction` | `submeter` | The collector's CPU time as a share of one core | 0 to 1 |
+| `overhead_fraction` | `submeter` | The summed CPU time of every Submeter process as a share of one core | 0 to 1 |
 
 ## The three built-in alert rules
 

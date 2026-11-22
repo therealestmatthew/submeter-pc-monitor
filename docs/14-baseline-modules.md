@@ -275,6 +275,7 @@ Gives every process exactly one workload, with the reason, and totals a batch by
 - **Why it exists:** The order of attribution and the rule that nothing is dropped are what let the parts be checked against the whole.
 - **Worth knowing:**
   - Order: tagged kernel group, then Submeter itself, then rules in priority order, then inheritance from a valid parent, then Unattributed or Restricted.
+  - Submeter itself is a set of pids, `self_pids`, not one pid, so that the collector, the server and the launcher's detached holders, and their children, all go to the `submeter` workload. `set_self_pids` replaces the set from the next batch, and a pid added after its process was first seen moves to `submeter`, with the move listed in `changes`.
   - A parent link counts only if the parent started no later than the child.
   - Attributor remembers each process's workload across batches and forgets it when assign() is told the process exited, so an inherited workload lasts for the life of the process. A remembered process moves only when a kernel group or a Submeter pid claims it, or when its executable or command line has changed and a rule matches it. Each move is listed in `changes`, for the caller to record as an event in the raw file.
   - Not here yet: seeding what Attributor remembers from the open raw file when the collector starts.

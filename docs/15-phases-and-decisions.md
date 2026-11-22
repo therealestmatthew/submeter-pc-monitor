@@ -32,13 +32,13 @@ Gate: on Windows, a tagged tree spawning 500 sub-second children is charged with
 
 Builds the Windows bulk snapshot provider, the Windows system counters (component 06), the collector loop with adaptive cadence and the overhead guard, the raw files with command lines redacted before they are written, and the baseline attribution with its four fixed buckets, so that reconciliation can be tested. On Linux it also places CPU time not seen by polling by cgroup, unless phase 0 showed that reading every leaf cgroup's `cpu.stat` each tick breaks the overhead budget.
 
-Gate: a 30-minute CI soak stays inside the budget, per-process CPU agrees with the load generator's own accounting, and totals reconcile within 2%, with CPU time not seen by polling as its own term. On a quiet fixture that term stays under the share stated with the fixture. Each CPU burner of the generator reports its own CPU seconds at known instants (GetProcessTimes on Windows, getrusage with RUSAGE_SELF on Linux), and over 10 minutes Submeter's stored CPU for every burner above 10% of a core agrees within 5% or 0.05 s, whichever is larger. Comparing with Windows performance counters is a parsing check only. Killing the collector mid-write loses at most 5 seconds and corrupts nothing.
+Gate: a 30-minute CI soak stays inside the overhead budget, per-process CPU agrees with the load generator's own accounting, and totals reconcile within 2%, with CPU time not seen by polling as its own term. On a quiet fixture that term stays under the share stated with the fixture. The budget is judged on every Submeter process running in the soak, as [Configuration](08-configuration.md) defines it, not on the collector alone. Each CPU burner of the generator reports its own CPU seconds at known instants (GetProcessTimes on Windows, getrusage with RUSAGE_SELF on Linux), and over 10 minutes Submeter's stored CPU for every burner above 10% of a core agrees within 5% or 0.05 s, whichever is larger. Comparing with Windows performance counters is a parsing check only. Killing the collector mid-write loses at most 5 seconds and corrupts nothing.
 
 ## P3: Attribution rules, history, sessions
 
 Builds the server, with the history file, the hourly rollup, retention, the disk budget, backups and the copying of final run files into the history file; the attribution rules; sessions, through their marker files; and the collector's reading of each live group's totals, with re-attach after a restart.
 
-Gate: CPU-hours from the hourly tier match the raw sum within 0.1%. Deleting a day of raw data frees its space at once. On Windows, a restarted collector re-attaches to live groups. A session's cost reads the same before and after its raw data is deleted.
+Gate: CPU-hours from the hourly tier match the raw sum within 0.1%. Deleting a day of raw data frees its space at once. On Windows, a restarted collector re-attaches to live groups. A session's cost reads the same before and after its raw data is deleted. Run with the server, the 30-minute CI soak of P2 still stays inside the overhead budget, now summed over the collector and the server.
 
 ## P4: Analysis
 
