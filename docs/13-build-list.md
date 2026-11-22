@@ -56,7 +56,7 @@ Each is built in the phase that first needs it: CI in P0, the load generator in 
 
 ## Commands
 
-- `daemon start | stop | status | install | uninstall` stop writes each program's stop file
+- `daemon start | stop | status | install | uninstall` stop writes the collector's and the server's stop files, or asks the service manager
 - `run --as NAME [--label L] -- COMMAND`
 - `top` live workload view
 - `why` bottleneck verdict

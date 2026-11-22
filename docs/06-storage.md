@@ -46,15 +46,15 @@ Setting `SUBMETER_HOME` moves everything under one folder. `submeter store statu
 
 ## How commands reach the programs
 
-Commands reach the running programs only through files, which each program polls each tick. There is no control port and no signal, because Windows has no signal that asks a process to exit cleanly. Control files live under the state folder. Run files stay in the data folder.
+Commands reach the running programs only through files, which each program polls each tick, except that `submeter daemon stop` may ask the service manager instead. There is no control port and Submeter sends no signal, because Windows has no signal that asks a process to exit cleanly. Control files live under the state folder. Run files stay in the data folder.
 
 | File | Written by | Read by | What it does |
 | --- | --- | --- | --- |
-| `control/stop-collector`, `control/stop-server` | `submeter daemon stop`, and `submeter config reload` before it starts the programs again | That program | Asks it to exit cleanly. The program removes the file as it exits |
+| `control/stop-collector`, `control/stop-server` | `submeter daemon stop` (or the service manager instead), and `submeter config reload` before it starts the programs again | That program | Asks it to exit cleanly. The program removes the file as it exits |
 | `control/sessions/<id>.json` | `submeter session start` and `stop`, with an atomic rename | The server | Marks a session's start and stop |
 | `control/backup` | `submeter store backup` | The server | Asks it to back up the history file now. The server writes the copy into `backups/`, then removes the file, so it stays the only writer of backups |
 | `runs/<id>.json` | The launcher | The collector while live, the server once final | Names a tagged group, then holds its final totals, as the table of files above says |
-| `event` rows in the open raw file | The collector | The server | Reports a change in a provider's status, which starts an epoch, and the overhead guard lengthening the intervals, which becomes a finding |
+| `event` rows in the open raw file | The collector | The server, and the collector when it starts | Reports a change in a provider's status and a wall-clock step the collector detects, each of which starts an epoch; the overhead guard lengthening the intervals and a raw file the collector deleted under its 7-day cap, each of which becomes a finding; and each change of a process's workload after an exec, which the collector reads back to seed attribution when it starts |
 
 ## What every bucket records
 
