@@ -136,6 +136,7 @@ The frozen records passed between layers: counters, samples, workload totals, bu
 - **Why it exists:** These classes are the contract between the collector, the server and the command line. Frozen and strict, so a record cannot be altered after it is made or carry a misspelt field.
 - **Worth knowing:**
   - A process is identified by ProcessKey, which is pid plus start time.
+  - Not here yet (finding R57, planned): ProcessCounters.cpu_s as float or None, where None means unreadable, and a Snapshot count of processes whose start time could not be read. Such a process gets no ProcessKey and appears only in that count.
   - Not here yet (finding R56, planned): the start time as the platform's integer stamp, ticks since boot with the boot id on Linux and CreateTime as a FILETIME integer on Windows. Today it is psutil's wall-clock float, so a clock step can cut a child from its parent's workload, and a provider that does not cache start times would re-key every process.
   - ProcessCounters holds running totals as a provider read them. ProcessSample holds what happened in one interval.
   - Bucket carries everything needed to merge buckets exactly: sums, extremes, a time-weighted mean, two histograms and covered seconds.
@@ -223,6 +224,7 @@ A process provider built on psutil, so it is not tied to one operating system.
 - **Worth knowing:**
   - It asks about one process at a time, which is too slow for a 1-second cadence on a busy machine. On Windows it is not the hot path. On Linux in version 1 it is, so the overhead guard will hold the intervals longer there.
   - A process that cannot be read fully is still returned and marked restricted. Nothing is dropped.
+  - Not here yet (finding R57, planned): None for a CPU time it cannot read, and no stand-in start time. Today a refused CPU read is written as 0.0 CPU-seconds, and a process that fails to read at all is returned with the start time 0.0.
   - Memory is private bytes on Windows and resident memory elsewhere. Swap is not added yet.
   - Disk I/O is left empty where psutil cannot read it, as on macOS.
   - Reading each working directory is off by default because of its cost.
@@ -246,6 +248,7 @@ Subtracts consecutive snapshots to find what each process did during the interva
   - An interval longer than 30 seconds, or one in which the clock that counts suspend ran more than 2 seconds ahead of the clock that does not, is a gap: deltas are zero and the batch says so.
   - Not here yet: the adaptive cadence loop and the overhead guard.
   - The fixed 30-second rule and the zeroed deltas are wrong (finding R38), and a planned task replaces them together with R39's gap handling in the store. ingest() will take the interval expected for the tick. A tick will be a gap only past three times that interval plus the 2-second slack, or when the suspend test fires, and a gap will keep its CPU and I/O deltas. Until then any interval over 30 seconds records zero CPU, and `submeter top --seconds` above 30 prints zero cores for every workload.
+  - Not here yet (finding R57, planned): no CPU baseline when either reading is None, and a cap on each credited CPU delta at the interval times the logical cores, with a count of the capped samples. Today a stand-in 0.0 becomes the next interval's baseline and credits a process's whole lifetime of CPU to one interval.
   - Not here yet (finding R55, planned): stamps anchored on the interval clock, and a 'clock stepped' event when the wall clock moves away from them. Today a batch is stamped with the wall clock as read, so a step back stamps a batch earlier than the one before, and nothing records the step.
 - **Builds toward:** Core of component 07, collector.sampler
 - **Provides:** `Sampler`
