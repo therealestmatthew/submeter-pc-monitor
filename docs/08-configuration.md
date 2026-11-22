@@ -121,7 +121,7 @@ Every duration, size, rate and fraction setting that version 1 uses has a finite
 ## Fixed on purpose
 
 - Observe-only. No setting lets version 1 act on a process.
-- The collector and server run as the signed-in user. They never ask for administrator rights.
+- The collector, the server and the launcher run as the signed-in user. They never ask for administrator rights.
 - Nothing is sent off the machine. There is no webhook, upload or update check.
 - Version 1 opens no network port. The API of version 1.1 binds to loopback and always requires a token.
 - `submeter cost --json` and the report never contain command lines, whatever the redaction mode.

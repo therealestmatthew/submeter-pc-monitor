@@ -118,6 +118,8 @@ Matching on an environment tag means reading another process's memory, which fai
 
 **Fix:** The environment rule is gone. Group membership replaces it. A parent link counts only if the parent started before the child.
 
+Amended by R135 (21 November 2026): a parent link counts if the parent started no later than the child, so equal start times are allowed, as `attribution.rules` does.
+
 ### R10: Several acceptance gates could not be verified
 
 Task Manager has changed how it measures CPU between Windows builds, so it is no reference. A coding agent cannot run a 24-hour soak, and it builds on one OS.
@@ -269,6 +271,8 @@ Data, settings, logs, the API token and locks had no stated location, owner or l
 **Fix:** A file map per platform with one override, a one-instance lock per program, rotating redacted logs, and a token file only you can read.
 
 Amended by R150 (21 November 2026): the token file comes with the API in version 1.1. Version 1 has no API token.
+
+Amended by R135 (21 November 2026): only the collector and the server take a one-instance lock. The launcher takes none, because many tagged runs can be live at once.
 
 ## Third pass, medium: comparisons that could mislead
 

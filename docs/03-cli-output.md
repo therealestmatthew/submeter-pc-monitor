@@ -2,7 +2,7 @@
 
 > Submeter build brief · Part 1, the product · [Index](README.md)
 
-One sample for each job. Every command also takes `--json`.
+One sample for each job. Every command also takes `--json`. In the baseline code, `config show` and `config check` do not take it yet.
 
 ## Job 1: what did that session cost?
 
@@ -30,7 +30,7 @@ Verdict    CPU-bound     confidence: high     window: last 5 min
 
 Evidence
   run queue        2.3 per core
-  cpu time         91% of capacity
+  cpu time         93% of capacity
   frequency        98% of base  not throttled
   commit           71% of limit
 

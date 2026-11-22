@@ -66,7 +66,7 @@ Three programs that share only files on disk: a collector, a server and the laun
 
 ## API routes (version 1.1)
 
-Not in version 1, which has no API. These are kept for the dashboard in version 1.1. All are read-only.
+Not in version 1, which has no API. These are kept for the dashboard in version 1.1. All are read-only, under the prefix `/api/v1`.
 
 - `GET /health`
 - `GET /capabilities`
