@@ -33,6 +33,13 @@ Retention deletes each raw file's .db with its -wal and -shm. A file's space is 
 
 Setting `SUBMETER_HOME` moves everything under one folder. `submeter store status` prints every file with its writer, size and coverage.
 
+## Durability, access and versions
+
+- Every data file is restricted to the current user.
+- Each SQLite file runs in WAL mode with synchronous=NORMAL. A program crash loses nothing committed. A power loss or an operating-system crash may lose the samples written since the last checkpoint, up to a few minutes, and must never corrupt a file. The few minutes were measured at a 1 s interval and are to be confirmed at the shipped cadence once the collector exists.
+- Read transactions are kept short so the write-ahead log can be checkpointed. `journal_size_limit` bounds the log left after a checkpoint. `submeter store status` and `doctor` report the size of each write-ahead log, and a finding is raised when one is larger than that limit.
+- Every file carries a schema version, and readers accept every version still on disk.
+
 ## What every bucket records
 
 - For counters such as CPU seconds, bytes read and written, and processes started: the sum. A total over any period is then an exact sum of sums.
@@ -44,6 +51,8 @@ Setting `SUBMETER_HOME` moves everything under one folder. `submeter store statu
 - The machine's capacity at the time, with CPU capacity in core-seconds, the shortest and longest sampling interval it contains, and an epoch number, all explained below.
 
 A sample belongs, whole, to the bucket that holds its end time. A bucket covers [start, start + width), the same half-open split that puts each sample in its day file, so no bucket needs two day files. A read of raw samples for a window, and a query that merges raw samples into wider steps, use the same rule. The per-executable part of a session or run summary is closed 60 seconds after the session or run ends, because a quiet process's CPU can be held that long before its row is written.
+
+Rollups are idempotent: recomputing a bucket gives the same row. A bucket is final 30 seconds after it ends.
 
 ## Which data answers which question
 

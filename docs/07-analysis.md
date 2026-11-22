@@ -26,6 +26,8 @@ The chart shows private bytes in GB over six hours, one point every 5 minutes. B
 
 *Figure:* The IDE grows 0.38 GB per hour for five hours with no levelling off, so it is flagged. The browser grows faster at first but flattens within the hour, which is a cache warming up, so it is cleared.
 
+Growth is tracked for each workload as well as for each process, so a leak spread across short-lived processes is still seen.
+
 ## Baseline anomaly: a regression against the usual range (after version 1)
 
 Not in version 1. Version 1 has no baseline anomaly or slow-growth check: regressions are found by hand with the session diff and the hourly history. The design below is kept for later.
