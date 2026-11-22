@@ -150,6 +150,7 @@ The frozen records passed between layers: counters, samples, workload totals, bu
   - Pydantic leaves the refused input out of a record's validation error, and the repr of a process record leaves out its command line and working folder, so neither can carry them into a log. A validator's own message can still name a settings value, as the redact-pattern and workload-name checks do.
   - No behaviour lives here.
   - Not here yet: fields for most rows of the metric catalogue in `docs/06-storage.md`, busy time per core in SampleBatch, which holds one summed figure, an opaque value in Availability, and an epoch on WorkloadSample. A planned task adds them before parallel work starts, each catalogue field optional with None meaning unavailable (finding R112).
+  - Not here yet (finding R145, planned): Tier.MINUTE is removed.
 - **Builds toward:** Component 01, core.models
 - **Provides:** `Record`, `Availability`, `AccountingSource`, `Severity`, `Confidence`, `Tier`, `Capability`, `ProcessKey`, `ProcessCounters`, `SystemCounters`, `Snapshot`, `ProcessSample`, `SampleBatch`, `WorkloadSample`, `Bucket`, `Finding`, `GroupTotals`
 - **Imports:** pydantic
@@ -183,6 +184,7 @@ Builds one immutable Settings object from defaults, submeter.toml, environment v
 - **Worth knowing:**
   - Every default in the tables of `docs/08-configuration.md`, and every range in its sampling table, was checked against this module. A value outside a range the module holds is refused, with the range in the error.
   - Not here yet: most ranges in the other-settings table of docs/08. Retention, the disk budget, the memory change threshold, the leak settings, the verdict window, the cooldown and unattributed_alert take any number, a negative one included; retention, the leak settings, the verdict window, the cooldown and unattributed_alert also take NaN. A planned task adds their ranges, with retention.raw at least 24h (finding R111).
+  - Not here yet (finding R145, planned): Retention.minute, which docs/08 does not list, is removed; until then storage.retention.minute is still accepted.
   - Unknown keys are errors, so a typo cannot silently do nothing. The exception is `verdict.thresholds`, still a free mapping of names to numbers, which accepts a misspelt name; the same planned task makes it a model with one named field per signal.
   - Alert rules are structured fields. The TOML key "for" maps to the field duration. A rule's metric is not yet checked against the seven ids in docs/08, or against the workload it applies to; the planned task adds both checks.
   - Each of `privacy.redact_patterns` must compile as a regular expression. A bad one is refused, and the error names it.
@@ -329,6 +331,7 @@ The file map: where settings, data and state live on each platform, the name of 
   - `ensure()` makes every Submeter folder with mode 0o700, which Python 3.12.4 and later turn into an access control list for the current user and administrators on Windows, and on POSIX tightens a folder that already exists to 0700. `readable_by_others()` lists every path under the settings, data and state folders that other users can read, or returns None on Windows, where mode bits mean nothing. A test runs under umask 0022.
   - Raw files are named by UTC day, minute files by ISO week.
   - A file expires only once its whole day or week ended longer ago than the retention. A raw day also waits until the server's rolled-up-until mark, which the caller passes in, has passed its end, so no day goes before its hourly buckets are built.
+  - Not here yet (finding R145, planned): version 1 has no minute tier. A planned task removes minute_dir, minute_file, expired_minute and disk_use()'s minute entry; until it lands the code still names and expires weekly minute files.
   - An expired raw day comes with its -wal and -shm, side files first, so a pass cut short leaves the .db to find on the next one.
   - The lock file is only ever locked, never written. The holder's process id and start time go in a file beside it, NAME.pid, created 0600 before it is written.
   - `holder()` names a process only when a non-blocking probe finds the lock held and the live process with that pid has the recorded start time. A pid file left by a holder that crashed, or a pid since reused, names nobody.
@@ -396,6 +399,7 @@ Chooses the tier and step for a time window, and explains the choice.
 - **Why it exists:** Without a rule, a 7-day chart could mix raw and rolled-up data without saying so (finding R33).
 - **Worth knowing:**
   - Picks raw samples while the raw data on disk covers the start of the window: the first tick of the oldest raw file left, which the caller passes in, so a raw day the disk budget has already deleted is never chosen. Otherwise it picks minute buckets while minute retention covers the start, and otherwise hourly buckets.
+  - Not here yet (finding R145, planned): the minute branch and choose_tier's minute_retention_s argument are removed, leaving raw samples merged to wider steps, or hourly buckets; until then the code falls back to minute buckets as described.
   - Moves to a coarser tier, and then to wider steps, when the answer would hold more points than a chart can use.
   - Returns the reason as text, for the CLI and the report's charts to show.
 - **Builds toward:** Component 11, store.query
