@@ -107,6 +107,7 @@ Other extended providers (after version 1). No job's acceptance check or verdict
 Every process maps to exactly one workload, in this order: kernel group membership, then rules, then inheritance from a valid parent, then Unattributed.
 
 - Rules live in rules.toml and match on executable, command-line pattern, parent chain or working directory, with explicit priority. Do not match on environment variables, because reading another process's environment is unreliable.
+- A tagged workload reports its group's kernel totals for CPU time, I/O and process count, not the sum of its polled processes. That sum is kept only as a cross-check and for the process tree.
 - System (kernel, interrupts), Restricted, Unattributed and Submeter itself are always-visible workloads.
 - Reconciliation invariant: for any window, attributed plus unattributed plus system plus restricted plus idle CPU time equals total capacity within 2%. Test it, and show it in the UI and in `submeter why`.
 

@@ -141,9 +141,10 @@ The frozen records passed between layers: counters, samples, workload totals, bu
   - ProcessCounters holds running totals as a provider read them. ProcessSample holds what happened in one interval.
   - ProcessCounters has an optional children_cpu_s, for the Linux child time of children a process has reaped. No provider fills it yet.
   - Bucket carries everything needed to merge buckets exactly: sums, extremes, a time-weighted mean, two histograms and covered seconds.
+  - GroupTotals holds what the kernel counted for one tagged group over one interval: CPU time, I/O (None when the group cannot report it) and process count.
   - No behaviour lives here.
 - **Builds toward:** Component 01, core.models
-- **Provides:** `Record`, `Availability`, `AccountingSource`, `Severity`, `Confidence`, `Tier`, `Capability`, `ProcessKey`, `ProcessCounters`, `SystemCounters`, `Snapshot`, `ProcessSample`, `SampleBatch`, `WorkloadSample`, `Bucket`, `Finding`
+- **Provides:** `Record`, `Availability`, `AccountingSource`, `Severity`, `Confidence`, `Tier`, `Capability`, `ProcessKey`, `ProcessCounters`, `SystemCounters`, `Snapshot`, `ProcessSample`, `SampleBatch`, `WorkloadSample`, `Bucket`, `Finding`, `GroupTotals`
 - **Imports:** pydantic
 - **Imported by:** [`analysis.growth`](../src/submeter/analysis/growth.py), [`attribution.rules`](../src/submeter/attribution/rules.py), [`collector.sampler`](../src/submeter/collector/sampler.py), [`core.config`](../src/submeter/core/config.py), [`providers.base`](../src/submeter/providers/base.py), [`providers.psutil_provider`](../src/submeter/providers/psutil_provider.py), [`store.query`](../src/submeter/store/query.py), [`store.raw`](../src/submeter/store/raw.py), [`store.rollup`](../src/submeter/store/rollup.py)
 
@@ -270,8 +271,8 @@ Gives every process exactly one workload, with the reason, and totals a batch by
   - A parent link counts only if the parent started no later than the child.
   - A rule may match on exe, cmdline, cwd and parent, the program that started the process. Every condition it gives must hold. Program names match on file name, ignoring case.
   - `needs_cwd` tells the caller whether any rule uses the working folder, so that folders are read only then.
-  - aggregate marks each workload as measured by the kernel, by polling, or partially.
-  - Not here yet: partial and unavailable figures. aggregate adds an I/O figure a process cannot give as 0 and still labels the workload polled. A planned task marks such a figure partial, with the count of processes missing it, or unavailable when none can give it.
+  - aggregate takes each tagged workload's group totals and reports the group's CPU time, process count and, when the group can report it, I/O, in place of the sum of its polled processes. It labels those workloads kernel, Restricted partial and the rest polled.
+  - Not here yet: partial and unavailable figures. aggregate adds an I/O figure a process cannot give as 0 and still labels the workload polled. A tagged workload none of whose processes polling has seen shows 0 memory, and 0 I/O when its group cannot report I/O. A planned task marks such a figure partial, with the count of processes missing it, or unavailable when none can give it.
   - The sample `rules.toml` in `examples/` loads through this module without error.
 - **Builds toward:** Component 15, attribution
 - **Provides:** `UNATTRIBUTED`, `RESTRICTED`, `SYSTEM`, `SELF`, `Rule`, `RuleSet`, `Attribution`, `Attributor`, `aggregate`
