@@ -24,4 +24,4 @@ The collector and the server share nothing but the database schema. If phase 0 s
 - Switch if, for 300 processes at the default intervals with the provider that will ship, that CPU share is over the overhead budget (3% of one core active, 1% idle), or the private bytes are over 80 MB. The psutil fallback's figures are reported, not judged.
 - You add deep tracing later. ETW and eBPF deliver thousands of events per second, which Python cannot keep up with.
 
-The report's charts are plain JavaScript with a canvas chart library, inlined in the HTML file, so nothing needs a Node build step. The live dashboard of version 1.1 is built the same way.
+The report's charts are plain JavaScript with a canvas chart library, inlined in the HTML file, so nothing needs a Node build step and the report requests nothing from another host. The chart library ships in the package: uPlot, if it is the one used, is vendored with its licence text. The live dashboard of version 1.1 is built the same way, and the server serves every asset it uses from the package.

@@ -45,6 +45,7 @@ Three programs that share only files on disk: a collector, a server and the laun
 - Windows scheduled task
 - The brief under `docs/`, `AGENTS.md` with `CLAUDE.md`, and `docs/STATUS.md`
 - The capability matrix in `doctor`, which grows as each provider is built
+- The runtime dependencies, approved by the owner before the build: pydantic, psutil and typer, as in the baseline, with Windows API calls made through ctypes and no added package. tzdata is approved for Windows only; the owner decides whether it goes into `pyproject.toml` and `uv.lock` before the first wave or when a feature first needs named time zones. If the report draws its charts with uPlot, it is vendored in the package with its licence text. FastAPI and uvicorn, with websockets, and httpx for tests only, are approved for the API of version 1.1, and an MCP server, if one is built later, is hand-written
 
 ## Commands
 
