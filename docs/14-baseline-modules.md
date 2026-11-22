@@ -325,6 +325,7 @@ Writes the daily raw file: workload totals every interval, process rows on chang
   - Command lines are redacted here whatever the caller did. A test reads the file bytes to confirm the secret is absent.
   - RawStore rolls over at UTC midnight and flushes pending CPU before closing a file.
   - Not here yet (finding R55, planned): RawStore never reopening a day earlier than the open file. Today a batch stamped on an earlier day, after a wall-clock step back across midnight, reopens that closed day's file.
+  - journal_size_limit bounds the write-ahead log left after each checkpoint to 4 MiB. Only close() truncates it.
 - **Builds toward:** Component 09, store.raw
 - **Provides:** `SCHEMA_VERSION`, `RawFile`, `RawStore`
 - **Imports:** [`core.models`](../src/submeter/core/models.py), [`privacy.redact`](../src/submeter/privacy/redact.py), [`store.files`](../src/submeter/store/files.py)
