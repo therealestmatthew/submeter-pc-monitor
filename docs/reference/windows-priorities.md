@@ -14,7 +14,7 @@ Keep its full output, whatever it says, under `docs/review/ground-windows/` with
 
 | Priority | What | Unknown on Windows | Where |
 | --- | --- | --- | --- |
-| 1 | The baseline's own checks | Whether Ruff, mypy and the 20 tests pass at all | `uv run pytest` |
+| 1 | The baseline's own checks | Whether Ruff, mypy and the tests pass at all | `uv run pytest` |
 | 2 | The one-instance lock | How Windows answers the locking call | `src/submeter/store/files.py` |
 | 3 | Reading processes | What a signed-in user may read, and what it costs | `src/submeter/providers/psutil_provider.py` |
 | 4 | SQLite files | Deleting and closing files that Windows holds open | `src/submeter/store/raw.py` |
