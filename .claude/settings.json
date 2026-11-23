@@ -1,0 +1,75 @@
+{
+  "worktree": {
+    "baseRef": "head"
+  },
+  "ultracode": false,
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "0",
+    "CLAUDE_CODE_FORK_SUBAGENT": "0",
+    "CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH": "1",
+    "CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS": "8",
+    "CLAUDE_CODE_USE_POWERSHELL_TOOL": "0"
+  },
+  "permissions": {
+    "deny": [
+      "Agent(fork)",
+      "Bash(git push *--force*)",
+      "Bash(git push -f *)",
+      "Bash(git push * -f *)",
+      "Bash(git push * -f)",
+      "Bash(git push *+*)",
+      "Bash(git push *--mirror*)",
+      "Bash(git push *--delete*)",
+      "Bash(git push * -d *)",
+      "Bash(git remote set-url *)",
+      "Bash(gh repo *)",
+      "Bash(gh gist *)"
+    ],
+    "ask": [
+      "Edit(**/AGENTS.md)",
+      "Edit(**/CLAUDE.md)"
+    ],
+    "allow": [
+      "Edit(/**)",
+      "Bash(uv sync *)",
+      "Bash(uv run ruff check *)",
+      "Bash(uv run ruff format --check *)",
+      "Bash(uv run mypy *)",
+      "Bash(uv run pytest *)",
+      "Bash(uv run submeter *)",
+      "Bash(uv run python scripts/*)",
+      "Bash(uv run --directory tests python -m tools.*)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git rev-parse *)",
+      "Bash(git merge-base *)",
+      "Bash(git ls-files *)",
+      "Bash(git ls-remote *)",
+      "Bash(git grep *)",
+      "Bash(git cat-file *)",
+      "Bash(git remote -v)",
+      "Bash(git fetch *)",
+      "Bash(git pull --ff-only *)",
+      "Bash(git switch *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git merge *)",
+      "Bash(git push origin *)",
+      "Bash(git reset --hard *)",
+      "Bash(git tag gate-P*)",
+      "Bash(git remote add origin https://github.com/therealestmatthew/submeter-pc-monitor)",
+      "Bash(git remote add origin https://github.com/therealestmatthew/submeter-pc-monitor.git)",
+      "Bash(git worktree list *)",
+      "Bash(git worktree remove *)",
+      "Bash(gh run list *)",
+      "Bash(gh run view *)",
+      "Bash(gh run watch *)",
+      "Bash(gh run download *)",
+      "Bash(date *)",
+      "Bash(uname *)",
+      "Bash(claude --version)"
+    ]
+  }
+}
