@@ -39,7 +39,7 @@ How the numbers are produced, and how far each one can be trusted.
 
 **Part 3 · The build**
 
-What gets made, in what order, and the prompt that starts it.
+What gets made, in what order, and the whole specification as one prompt. The build itself starts from [`prompts/02-orchestration-prompt.md`](../prompts/02-orchestration-prompt.md).
 
 | File | What it holds |
 | --- | --- |
@@ -57,7 +57,7 @@ What gets made, in what order, and the prompt that starts it.
 | [`reference/claude-code-notes.md`](reference/claude-code-notes.md) | What Claude Code does with instruction files, subagents, working copies and parallel agents, checked against its documentation on 20 November 2026 |
 | [`brief.html`](brief.html) | The v8 brief as delivered, as a web page, with the charts, the working mock and the calculator. It is not updated after rulings; where it differs, the topic files win. Open it in a browser |
 
-## Written later, by the sessions that build Submeter
+## Written by the sessions that build Submeter
 
 | File | What it holds |
 | --- | --- |
