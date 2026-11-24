@@ -8,7 +8,7 @@ A working mock of the live dashboard on a machine with 16 logical cores and 32 G
 
 ## The mock, described
 
-The page `brief.html` in this folder runs the mock in a browser. This section states everything the mock shows, as corrected by the rulings, so nothing here depends on opening it. `brief.html` is the mock as delivered and is not updated after rulings; where it differs, this section wins. It differs in four places: the overhead tile reads "1 s cadence · limit 3%"; Restricted is labelled partial with 0.3 GB of working set, so the workloads total 20.8 GB, 65% of 32; the System process tree reads "Kernel time, interrupts, deferred calls and non-process memory. No process owns these."; and the Restricted process tree reads "restricted partial · 0.16 cores · 0.3 GB" and "CPU time and working set are counted."
+The page `brief.html` in this folder runs the mock in a browser. This section states everything the mock shows, as corrected by the rulings, so nothing here depends on opening it. `brief.html` is the mock as delivered and is not updated after rulings; where it differs, this section wins. It differs in six places: the overhead tile reads "1 s cadence · limit 3%"; Restricted is labelled partial with 0.3 GB of working set, so the workloads total 20.8 GB, 65% of 32; the memory commit tile, which the mock computes from that total, reads "20.8 of 32 GB"; the No bottleneck evidence, computed the same way, reads "Commit 65% of limit"; the System process tree reads "Kernel time, interrupts, deferred calls and non-process memory. No process owns these."; and the Restricted process tree reads "restricted partial · 0.16 cores · 0.3 GB" and "CPU time and working set are counted."
 
 The mock models a machine with 16 logical cores, 12 on performance cores and 4 efficiency cores, and 32 GB of memory. It advances once a second and keeps the last 120 points, which is 2 minutes. It pauses itself when the browser asks for reduced motion.
 
@@ -30,7 +30,7 @@ The mock models a machine with 16 logical cores, 12 on performance cores and 4 e
 | Tile | Value | Line below it | Meter |
 | --- | --- | --- | --- |
 | CPU time in use | Percent of 16 cores | "5.0 of 16 cores" | Turns serious above 86% |
-| Memory commit | Percent of 32 GB | "20.8 of 32 GB" | Turns warning above 74% and serious above 86% |
+| Memory commit | Percent of 32 GB | "20.5 of 32 GB" | Turns warning above 74% and serious above 86% |
 | GPU busiest engine | Percent | "3D engine · VRAM 2.8 of 12 GB". VRAM is modelled as 2.1 GB plus the GPU percentage divided by 22 | Shows the percentage |
 | Submeter overhead | Percent of one core | "2 s cadence · limit 3%" | Shows the share of the 3% limit in use |
 
@@ -80,7 +80,7 @@ This table is the mock's simplification. The rule set the product uses is the ve
 | Memory-bound | Serious | Commit above 86%. Stays until it falls below 82% | high | "Commit 88% of limit", "Page writes rising", "IDE private bytes still growing" |
 | CPU-bound | Warning | CPU time above 86%. Stays until it falls below 80% | high | "Run queue 2.0 per core", "Agents hold 67% of CPU time", "Frequency not limited" |
 | Memory tightening | Warning | Commit above 74% | moderate | "Commit 78% of limit", "No page writes yet" |
-| No bottleneck | Healthy | None of the above | high | "No pressure signals", "Commit 65% of limit", "Frequency at maximum" |
+| No bottleneck | Healthy | None of the above | high | "No pressure signals", "Commit 64% of limit", "Frequency at maximum" |
 
 The numbers inside the evidence follow the simulation. Run queue is modelled as 1 plus 9 times the amount by which CPU time exceeds 80%.
 
