@@ -2,9 +2,9 @@
 
 > Submeter build brief · Part 3, the build · [Index](README.md)
 
-The whole specification in one prompt, with all three review passes, the storage design, the configuration design, the build list, the four settled decisions and the baseline modules folded in. It can start a single-session build on its own. In the starter package it serves as the specification in compact form, and the execution prompt under [How to start](../README.md) replaces its working instructions.
+The whole specification in one prompt, with all three review passes, the storage design, the configuration design, the build list, the four settled decisions and the baseline modules folded in. It can start a single-session build on its own. In this repository it serves as the specification in compact form, and the build starts from the orchestration prompt under [How to start](../README.md), which with the plan replaces its working instructions.
 
-> **Status in this package.** Work starts from [`prompts/01-execution-prompt.md`](../prompts/01-execution-prompt.md), which replaces the working instructions under "How to work" in the prompt that follows. Everything before that heading is the specification in compact form. The phases and gates under it are the starting point for the formal plan, not a script to follow.
+> **Status in this repository.** The execution prompt, [`prompts/01-execution-prompt.md`](../prompts/01-execution-prompt.md), was run from 20 to 23 November 2026 and wrote the formal plan, [`PLAN.md`](PLAN.md), and the orchestration prompt. The build starts from [`prompts/02-orchestration-prompt.md`](../prompts/02-orchestration-prompt.md), and that prompt and the plan replace the working instructions under "How to work" in the prompt that follows. Everything before that heading is the specification in compact form. The phases and gates under it were the starting point for the formal plan, not a script to follow.
 
 ---
 
@@ -328,7 +328,7 @@ A recorded fixture is anonymised before it is written: user name, host name and 
 
 A baseline already exists in the repository: pyproject.toml and sixteen tested modules under src/submeter (core.units, core.models, core.histogram, core.config, core.names, privacy.redact, providers.base, providers.psutil_provider, collector.sampler, attribution.rules, store.files, store.raw, store.rollup, store.query, analysis.growth and cli), with tests in tests/. Read them before writing anything. Extend them instead of rewriting them, keep their interfaces unless you tell me why a change is needed, and keep the rule that imports only point downward, which tests/test_layers.py enforces. If the repository is empty, stop and tell me, because I have not added them yet.
 
-In the starter package the brief is already in docs/, one file per topic, the standing rules are in AGENTS.md, which CLAUDE.md imports, and work starts from prompts/01-execution-prompt.md, whose plan replaces the working instructions in this section. Without the package, save this brief verbatim as docs/BRIEF.md before anything else, and create a CLAUDE.md that carries the priorities, the conventions and the not-configurable rules, so later sessions start from them. Either way, when a decision changes the design, change the document that states it in the same commit.
+In this repository the brief is already in docs/, one file per topic, the standing rules are in AGENTS.md, which CLAUDE.md imports, and prompts/01-execution-prompt.md has been run: the build starts from prompts/02-orchestration-prompt.md, and that prompt and docs/PLAN.md replace the working instructions in this section. Without the repository, save this brief verbatim as docs/BRIEF.md before anything else, and create a CLAUDE.md that carries the priorities, the conventions and the not-configurable rules, so later sessions start from them. Either way, when a decision changes the design, change the document that states it in the same commit.
 
 These are decided, so do not ask about them again: every program runs as the signed-in user and never requests administrator rights, nothing is sent off the machine, and the name is Submeter.
 
