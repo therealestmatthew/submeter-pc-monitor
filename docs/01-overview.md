@@ -28,4 +28,4 @@
 - **Data:** Kept in local files. Nothing leaves the machine
 - **Size of the build:** 3 programs, 22 components, raw and history files plus run files, 6 phases
 
-To start, unpack the starter package and give a Claude Code session the execution prompt, as set out under [How to start](../README.md). It reviews the design, waits for your rulings, then writes the plan and the prompt that builds it. The four decisions that were open are settled under [Build phases](15-phases-and-decisions.md).
+The starter package was committed as delivered on 20 November 2026, and its execution prompt, `prompts/01-execution-prompt.md`, was run from 20 to 23 November 2026: it reviewed the design, applied the owner's rulings, and wrote [the plan](PLAN.md) and the orchestration prompt that builds it. The build starts from that prompt, [`prompts/02-orchestration-prompt.md`](../prompts/02-orchestration-prompt.md), as set out under [How to start](../README.md). The four decisions that were open are settled under [Build phases](15-phases-and-decisions.md).
