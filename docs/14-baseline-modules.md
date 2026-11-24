@@ -78,7 +78,7 @@ The table gives the same links module by module. "Nothing yet" means the caller 
 ## How to check them
 
 - Run the checks in `AGENTS.md`: `uv sync`, then `uv run ruff check`, `uv run ruff format --check`, `uv run mypy src tests`, the same mypy run with `--platform win32` and with `--platform linux`, and `uv run pytest`. Expect 62 tests: 61 pass and 1 is an expected failure (xfail). On Windows the two POSIX-only tests, in tests/test_files.py and tests/test_analysis.py, are skipped.
-- Then hand over the execution prompt. It tells the session that this baseline exists, and that the build extends it instead of rewriting it.
+- The execution prompt, run from 20 to 23 November 2026, told its session that this baseline exists, and the plan it wrote, [`PLAN.md`](PLAN.md), starts from it: phase P0 repairs it and every later phase builds on it (plan choice C9). The build starts from [`prompts/02-orchestration-prompt.md`](../prompts/02-orchestration-prompt.md).
 
 ## Not in the baseline, and why
 
