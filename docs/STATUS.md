@@ -6,15 +6,15 @@ The state of the build, kept by the lead of `prompts/02-orchestration-prompt.md`
 
 | Field | Value |
 | --- | --- |
-| Updated | 2026-11-23 12:24, starting state written in stage 3 |
+| Updated | 2026-11-25 00:16, lead session 1: entry conditions checked; stopped before dispatch (stop rule 13) |
 | Phase | P0, decision probes, CI and the baseline repairs (`docs/PLAN.md` 3.4) |
 | Wave | P0-W1, the pilot: not started |
-| Base commit B | not fixed. P0-W1's B will be `main` once the stage 3 commit is on `origin` and the entry conditions of section 2 hold (prompt 5.2 step 6) |
+| Base commit B | not fixed. `main` was at `72ea6f8` on `origin` when lead session 1 began; P0-W1's B is fixed at prompt 5.2 step 6, once L1-1 and L1-2 (section 7.5) are settled |
 | Width | 2 builders (pilot); cap 4 (plan 5.4) |
 | Gate P0 | not started |
-| Build machine | not decided (Q1). Stage 3 ran on Linux |
-| Lead session | none has run |
-| **Next action** | The lead runs prompt section 0 (if the stage 3 output is not committed, 0 step 2 says what to do). The owner meets E1 and E3 to E5 and answers the questions marked for P0-W1 in section 7: S3-1, S3-3, S3-4, Q1, Q2, I82, C3, C6, C9, and CQ-02, which the owner answers (7.3). The lead checks E2, answers CQ-01 and CQ-03 (prompt 5.2 step 2), then runs P0-W1 from prompt 5.2. |
+| Build machine | Linux (Q1, the owner, 2026-11-25). A Windows-only task is done only when CI-W passes. The owner runs the nine owner tasks by hand on the Windows 11 PC as a standard user |
+| Lead session | 1 (section 13), on Linux |
+| **Next action** | Stopped before dispatch under stop rule 13 (section 7.5). The owner settles L1-1 (ultracode is on in lead session 1; prompt 11.2 needs it off) and L1-2 (the Agent tool of lead session 1 does not offer the seven roles of `.claude/agents/`), most simply by starting a new lead session interactively in the repository root, without ultracode, with the message of prompt section 13. That session runs prompt section 0, confirms that the Agent tool offers `builder`, `code-reviewer`, `plan-reviewer`, `plan-writer`, `test-runner`, `failure-investigator` and `gate-reviewer`, then runs P0-W1 from prompt 5.2 (E1 to E5 are met; CQ-01 to CQ-03 are answered). The owner's answers to the batch of section 7.6 are recorded when they arrive; none of them blocks P0-W1 except L1-1 and L1-2. |
 
 ## 2. Entry conditions of the pilot P0-W1
 
@@ -22,12 +22,12 @@ From prompt section 5.1. Tick each with the date and the evidence.
 
 | # | Condition | State | Evidence |
 | --- | --- | --- | --- |
-| E1 | The owner approved stage 3's output: `prompts/02-orchestration-prompt.md`, `.claude/agents/`, `.claude/settings.json`, `docs/tasks/`, this file and stage 3's changes to `docs/PLAN.md` (S3-1), and it is committed (prompt 0 step 2) | open | — |
-| E2 | `main` is on `origin` and holds the stage 3 commit: `git ls-remote origin refs/heads/main` prints the sha of `git rev-parse main`, and `git cat-file -e main:docs/tasks/P0-W1-T1.md` exits 0 (S3-2) | open | 2026-11-23 12:08: `git ls-remote origin` printed `76ebe7124736db49aba2f3ff0c0fdf46cca47401 HEAD` and the same sha for `refs/heads/main`, which is stage 2's commit. The stage 3 commit was not yet made |
-| E3 | The build machine is decided (Q1), and this lead session runs on it (prompt 5.1 item 3); Q2, I82, C3, C6 and C9 answered or their defaults accepted | open | — |
-| E4 | The owner approved how builders' commands run: the rules and `env` values of `.claude/settings.json` (S3-3) and the lead's permission mode (S3-4); and the owner accepted the workspace trust dialog for the clone the lead runs in, without which the allow rules and the agents' hooks are not applied (prompt 11.3) | open | — |
-| E5 | If the build runs on Windows: Git for Windows present, the clone at a root of 40 characters or fewer, `git config core.longpaths true` in it (S3-7) | open, or not applicable | — |
-| E6 | Recommended: every decision of plan 5.6, every question of plan 11 and the card questions of section 7.3 that the owner answers, put to the owner as one batch (prompt 5.1 item 5) | open | — |
+| E1 | The owner approved stage 3's output: `prompts/02-orchestration-prompt.md`, `.claude/agents/`, `.claude/settings.json`, `docs/tasks/`, this file and stage 3's changes to `docs/PLAN.md` (S3-1), and it is committed (prompt 0 step 2) | met 2026-11-25 | The owner, 2026-11-25: "S3-1: I approve stage 3's output as committed in 75974eb." `git log -1 --format=%h -- prompts/02-orchestration-prompt.md` printed `75974eb`. The owner also said that commits `def084a` to `72ea6f8` corrected `docs/01`, `docs/02`, `docs/14`, `docs/17`, `docs/README.md`, `prompts/README.md` and `README.md` after the stage 3 commit, and that none of them touches stage 3's output |
+| E2 | `main` is on `origin` and holds the stage 3 commit: `git ls-remote origin refs/heads/main` prints the sha of `git rev-parse main`, and `git cat-file -e main:docs/tasks/P0-W1-T1.md` exits 0 (S3-2) | met 2026-11-25 | 2026-11-25 00:15: `git ls-remote origin refs/heads/main` printed `72ea6f849b7314af73fb0c792cca41ef574e2082`, equal to `git rev-parse main`; `git cat-file -e main:docs/tasks/P0-W1-T1.md` exited 0; `75974eb` (stage 3) is an ancestor, 7 commits back. Earlier, 2026-11-23 12:08: `git ls-remote origin` printed `76ebe7124736db49aba2f3ff0c0fdf46cca47401 HEAD` and the same sha for `refs/heads/main`, which is stage 2's commit. The stage 3 commit was not yet made |
+| E3 | The build machine is decided (Q1), and this lead session runs on it (prompt 5.1 item 3); Q2, I82, C3, C6 and C9 answered or their defaults accepted | met 2026-11-25 | The owner, 2026-11-25: "Build machine (Q1): Linux. This session runs on it."; "Q2: CI runs Python 3.13 only."; "I82, C3, C6, C9: the defaults in docs/PLAN.md section 11 stand." `uname -s` printed `Linux` in lead session 1 |
+| E4 | The owner approved how builders' commands run: the rules and `env` values of `.claude/settings.json` (S3-3) and the lead's permission mode (S3-4); and the owner accepted the workspace trust dialog for the clone the lead runs in, without which the allow rules and the agents' hooks are not applied (prompt 11.3) | met 2026-11-25 by the owner's word; see L1-1 and L1-2 in section 7.5 for what lead session 1 found | The owner, 2026-11-25: "S3-3: the rules and env values in .claude/settings.json, as written."; "S3-4: manual permission mode (default) with the allow list, never bypassPermissions. I accepted workspace trust for this clone." In lead session 1 the five `env` values of `.claude/settings.json` were set in the shell, but ultracode was on and the Agent tool did not offer the seven roles (section 7.5) |
+| E5 | If the build runs on Windows: Git for Windows present, the clone at a root of 40 characters or fewer, `git config core.longpaths true` in it (S3-7) | not applicable 2026-11-25 | Q1 is Linux |
+| E6 | Recommended: every decision of plan 5.6, every question of plan 11 and the card questions of section 7.3 that the owner answers, put to the owner as one batch (prompt 5.1 item 5) | put 2026-11-25 | Section 7.6 lists the batch put to the owner in lead session 1; answers not yet received |
 
 ## 3. Phase P0 tasks, dispatches and branches
 
@@ -75,7 +75,8 @@ Every branch an agent or the lead is expected to push, added when the agent is d
 
 | Branch | Pushed by (task or role, agent id) | Added | State (open, or merged at a sha) |
 | --- | --- | --- | --- |
-| `main` | the lead | 2026-11-23 | on `origin` at `76ebe71` (stage 2) |
+| ~~`main`~~ | ~~the lead~~ | ~~2026-11-23~~ | ~~on `origin` at `76ebe71` (stage 2)~~ |
+| `main` | the lead | 2026-11-25 | always expected; at `72ea6f8` when lead session 1 began (replaces the row above, which gave stage 2's commit) |
 
 ## 4. Waves of P0
 
@@ -188,9 +189,9 @@ Points the plan and the brief leave open, found while the P0 cards were written 
 
 | Id | Card | Question (short) | Default | Who answers | Mark | Answer |
 | --- | --- | --- | --- | --- | --- | --- |
-| CQ-01 | P0-W1-T1 | A CI-W failure in code or tests the task does not own: is the task done? | Yes, when `ci.yml` is right (both jobs ran every step, the Linux job passed); each CI-W failure becomes an unplanned fix task (plan 5.5, K40), run in the wave P0-W1a before P0-W2's base commit (prompt 8.5) | lead | Before P0-W1-T1 | |
-| CQ-02 | P0-W1-T2 | `cpu_time_check.py` when r1 and r2 both hold (interrupt plus DPC under 1% of elapsed) | "ask": the owner decides B4, as when neither holds | owner: the rule decides B4, a decision of plan 5.6 | Before P0-W1-T2 | |
-| CQ-03 | P0-W1-T2 | `replace_names.py` on a file that is neither UTF-8 nor UTF-16 | left unchanged, listed as `not scanned`, exit 1 | lead | Before P0-W1-T2 | |
+| CQ-01 | P0-W1-T1 | A CI-W failure in code or tests the task does not own: is the task done? | Yes, when `ci.yml` is right (both jobs ran every step, the Linux job passed); each CI-W failure becomes an unplanned fix task (plan 5.5, K40), run in the wave P0-W1a before P0-W2's base commit (prompt 8.5) | lead | Before P0-W1-T1 | The default, the lead, 2026-11-25: prompt 8.5 item 1 says the same, and the task owns only `ci.yml`, `pyproject.toml`, `uv.lock` and `tests/test_project.py`, so it cannot fix a failure elsewhere. Subject to S3-10, which the owner has not yet answered (section 7.6) |
+| CQ-02 | P0-W1-T2 | `cpu_time_check.py` when r1 and r2 both hold (interrupt plus DPC under 1% of elapsed) | "ask": the owner decides B4, as when neither holds | owner: the rule decides B4, a decision of plan 5.6 | Before P0-W1-T2 | The owner, 2026-11-25: "CQ-02: the default stands ("ask": I decide B4)." |
+| CQ-03 | P0-W1-T2 | `replace_names.py` on a file that is neither UTF-8 nor UTF-16 | left unchanged, listed as `not scanned`, exit 1 | lead | Before P0-W1-T2 | The default, the lead, 2026-11-25: a file the script cannot decode may still hold a name, so it must be reported and must fail the run, never be passed silently; the card already says this |
 | CQ-04 | P0-W2-T1 | The builder copies that share a name but differ (`workload` in `test_baseline.py` and `test_store.py`) | each moves unchanged; the `test_store.py` copy gets the suffix `_store` | lead | Before P0-W2-T1 | |
 | CQ-05 | P0-W2-T1 | Delete `test_collector.py`, `test_store.py`, `test_settings.py` and `test_analysis.py` once emptied, as well as `test_baseline.py` | all five deleted | lead | Before P0-W2-T1 | |
 | CQ-06 | P0-W2-T4 | The artefact that carries the two Linux figures | a separate artefact `linux-costs` with `linux-cgroup-cost.txt` and `linux-pss-cost.txt` | lead | Before P0-W2-T4 | |
@@ -210,6 +211,29 @@ Found on the stage 3 machine (Linux) on 2026-11-23 by `git worktree list`. Not o
 | `/code/submeter-pc-monitor/wt/fix-g1` to `fix-g5` | `fix-g1` to `fix-g5` | stage 1's `fix now` code changes, branched from `561a266`; 3 to 17 commits each that `main` does not contain |
 
 None of the fourteen is an ancestor of `main` (`git merge-base --is-ancestor <branch> main` failed for each). `git cherry main <branch>` finds some of their commits on `main` as equal patches (all of `docs-d1`, `fix-g1`, `fix-g3` and `fix-g4`) and not others (for example 12 of 19 on `docs-d2`, all 8 on `docs-d8`), which can mean the changes reached `main` in a different form. Whether anything on them is still needed was not checked in stage 3.
+
+Recorded by lead session 1 on 2026-11-25, from the owner's message of that date:
+
+- The owner: "On 24 November 2026 I had stage 1's fourteen worktrees under /code/submeter-pc-monitor/wt/ removed. Their branches (docs-d1 to docs-d9, fix-g1 to fix-g5) remain, and S3-11 still applies." On 2026-11-25 `git worktree list` in the lead's checkout printed only the checkout itself, and `git log -1` answered for `docs-d1`, `docs-d9`, `fix-g1` and `fix-g5`.
+- The owner: "Checked on 24 November 2026: every commit title on those branches is on main except 383d612 (R109). Main already has that commit's result at docs/17-build-prompt.md:244 and :260. So none of the branches holds work main still needs (S3-11, STATUS 7.4)." This settles the last sentence of the paragraph above. The branches are local, not on `origin`, and the build still neither reads nor removes them.
+
+### 7.5 Found by lead session 1 (stop rule 13)
+
+| Id | What was found | What the prompt needs | Asked | Mark |
+| --- | --- | --- | --- | --- |
+| L1-1 | Lead session 1 runs with ultracode on (the runner said so at the start of the session), although `.claude/settings.json` holds `"ultracode": false` | Prompt 11.2: sessions start with ultracode off; with it on, the limit of 8 subagents "isn't enforced" and Claude may replace the subagents of 11.1 with a workflow. Prompt 13: start the lead "without `--effort ultracode`". The lead used no workflow | The owner turns ultracode off, or starts a new lead session without it | Blocks P0-W1 |
+| L1-2 | The Agent tool of lead session 1 offers the types `claude`, `claude-code-guide`, `Explore`, `general-purpose`, `Plan`, `statusline-setup` and `web-fetch`, and none of the seven roles of `.claude/agents/`. The session was started in `/code/submeter-pc-monitor` and moved to the repository root with `/cd` | Prompt 11.3 and 11.4: builders and checkers are started from the definitions in `.claude/agents/`, whose frontmatter hooks stop a builder pushing `main` and a checker writing; "Start the lead interactively in the repository root and accept the trust dialog". Without the definitions the hooks are not in force (stop rule 13) | The owner starts a new lead session in the repository root and accepts the trust dialog there if asked | Blocks P0-W1 |
+
+### 7.6 The batch put to the owner on 2026-11-25 (E6)
+
+Put in lead session 1's report. Answered already and not repeated: S3-1, S3-3, S3-4, Q1, Q2, I82, C3, C6, C9, CQ-02 (section 2; section 7.3). S3-2 needed no answer: `main` is on `origin` with the stage 3 commit (E2). Still open, with the default the lead proposed:
+
+- Blocks P0-W1: L1-1, L1-2 (section 7.5).
+- Before P0-W1's verify step: S3-10 (default: as prompt 8.5 says).
+- Blocks P0-W2-T1: B9 (default (a)); S3-8 and B10, the `AGENTS.md:35` wording, with the line-46 wording of plan 11.6 recommended at the same time.
+- Blocks P0-W4-T2: B7 (no default: eight bounds), with Q15 (default: `retention.executables` unused, so seven bounds).
+- Blocks P0-O2: B16 (default: skip probe 1 step f and say so).
+- Defaults proposed for acceptance as a group: S3-5, S3-6, S3-9, S3-11; C8, I22, I28; I2, I9, C4, C7, Q8; I12, I42 with R57, C5, I50, I57; I7, I17; I56; Q3, Q4; the Windows case of CQ-11 as a known limit.
 
 ## 8. Change requests
 
@@ -242,6 +266,7 @@ One row per lead session, added at its start and committed with its first commit
 
 | # | Started | System (`uname -s`) | Runner version | Ended | Why it ended | Next action left |
 | --- | --- | --- | --- | --- | --- | --- |
+| 1 | 2026-11-25 00:15 | Linux | 2.1.322 (Claude Code) | | | |
 
 ## 14. How to update this file
 
