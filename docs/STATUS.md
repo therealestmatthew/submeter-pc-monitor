@@ -6,15 +6,15 @@ The state of the build, kept by the lead of `prompts/02-orchestration-prompt.md`
 
 | Field | Value |
 | --- | --- |
-| Updated | 2026-11-26 04:39, lead session 2: prompt section 0 steps 1 to 3 run; the Agent tool still refuses the seven roles (L2-2, section 7.5); stopped before dispatch (stop rule 13) and ended |
+| Updated | 2026-11-26 06:53, lead session 3: prompt section 0 steps 1 to 3 run; the owner's answers to the batch of section 7.6 recorded (section 7.7); the Agent tool still refuses the seven roles (L3-1, section 7.5); stopped before dispatch (stop rule 13) and ended |
 | Phase | P0, decision probes, CI and the baseline repairs (`docs/PLAN.md` 3.4) |
 | Wave | P0-W1, the pilot: not started |
-| Base commit B | not fixed. `main` was at `72ea6f8` on `origin` when lead session 1 began and at `cda57da` when lead session 2 began; P0-W1's B is fixed at prompt 5.2 step 6, once L2-2 (section 7.5) is settled |
+| Base commit B | not fixed. `main` was at `72ea6f8` on `origin` when lead session 1 began and at `cda57da` when lead session 2 began and at `742b7eb` when lead session 3 began; P0-W1's B is fixed at prompt 5.2 step 6, once L3-1 (section 7.5) is settled |
 | Width | 2 builders (pilot); cap 4 (plan 5.4) |
 | Gate P0 | not started |
 | Build machine | Linux (Q1, the owner, 2026-11-25). A Windows-only task is done only when CI-W passes. The owner runs the nine owner tasks by hand on the Windows 11 PC as a standard user |
-| Lead session | 2 (section 13), on Linux; ended 2026-11-26 04:39 |
-| **Next action** | Stopped before dispatch under stop rule 13 (L2-2, section 7.5). The owner closes the Claude Code process that ran lead sessions 1 and 2 (`/exit`; `/clear` is not enough, because it keeps the process), then starts a new one: `cd /code/submeter-pc-monitor/submeter-pc-monitor-extract`, `claude` (no `--effort ultracode`), accept the workspace trust dialog if it appears, and send the message of prompt section 13. Before sending it the owner can type `/agents` and see the seven roles listed. That session (lead session 3) runs prompt section 0 in full, step 4 included (lead session 2 did not read the plan sections of step 4, because it dispatched nothing). It confirms that the Agent tool offers `builder`, `code-reviewer`, `plan-reviewer`, `plan-writer`, `test-runner`, `failure-investigator` and `gate-reviewer` and that the runner gives no notice that ultracode is on, then runs P0-W1 from prompt 5.2 (E1 to E5 are met; CQ-01 to CQ-03 are answered). The owner's answers to the batch of section 7.6 are recorded when they arrive; none of them blocks P0-W1 except L2-2. |
+| Lead session | 3 (section 13), on Linux; ended 2026-11-26 06:53 |
+| **Next action** | Stopped before dispatch under stop rule 13 (L3-1, section 7.5). Lead session 3 ran in a new Claude Code process, but that process was started in `/code/submeter-pc-monitor`, the folder above the repository, and moved to the repository root with `/cd`; its Agent tool offers none of the seven roles. The owner closes that process (`/exit`), then in the terminal runs `cd /code/submeter-pc-monitor/submeter-pc-monitor-extract` first and `claude` second (no `--effort ultracode`), so that the process itself starts in the repository root; no `/cd` inside Claude Code. Accept the workspace trust dialog if it appears, and send the message of prompt section 13 without the word ultracode in it (L3-2). That session (lead session 4) runs prompt section 0 in full, step 4 included (no lead session has yet read the plan sections of step 4, because none dispatched anything). Before anything else it tests its own Agent tool: the list of types it is given must hold `builder`, `code-reviewer`, `plan-reviewer`, `plan-writer`, `test-runner`, `failure-investigator` and `gate-reviewer`. If it does not, the cause is not the start folder, and the owner and the lead look at it together before another restart. Then it runs P0-W1 from prompt 5.2 (E1 to E5 are met; CQ-01 to CQ-03 are answered; S3-10 is answered). The owner's answers of 2026-11-26 are in section 7.7 and need not be sent again. After P0-W1's record step and before P0-W2's base commit, the lead commits the two `AGENTS.md` wordings of section 7.7 and ends its session (prompt 5.7). B7 is asked again before P0-W4. |
 
 ## 2. Entry conditions of the pilot P0-W1
 
@@ -27,7 +27,7 @@ From prompt section 5.1. Tick each with the date and the evidence.
 | E3 | The build machine is decided (Q1), and this lead session runs on it (prompt 5.1 item 3); Q2, I82, C3, C6 and C9 answered or their defaults accepted | met 2026-11-25 | The owner, 2026-11-25: "Build machine (Q1): Linux. This session runs on it."; "Q2: CI runs Python 3.13 only."; "I82, C3, C6, C9: the defaults in docs/PLAN.md section 11 stand." `uname -s` printed `Linux` in lead session 1 |
 | E4 | The owner approved how builders' commands run: the rules and `env` values of `.claude/settings.json` (S3-3) and the lead's permission mode (S3-4); and the owner accepted the workspace trust dialog for the clone the lead runs in, without which the allow rules and the agents' hooks are not applied (prompt 11.3) | met 2026-11-25 by the owner's word; see L1-1 and L1-2 in section 7.5 for what lead session 1 found | The owner, 2026-11-25: "S3-3: the rules and env values in .claude/settings.json, as written."; "S3-4: manual permission mode (default) with the allow list, never bypassPermissions. I accepted workspace trust for this clone." In lead session 1 the five `env` values of `.claude/settings.json` were set in the shell, but ultracode was on and the Agent tool did not offer the seven roles (section 7.5) |
 | E5 | If the build runs on Windows: Git for Windows present, the clone at a root of 40 characters or fewer, `git config core.longpaths true` in it (S3-7) | not applicable 2026-11-25 | Q1 is Linux |
-| E6 | Recommended: every decision of plan 5.6, every question of plan 11 and the card questions of section 7.3 that the owner answers, put to the owner as one batch (prompt 5.1 item 5) | put 2026-11-25; put again 2026-11-26 | Section 7.6 lists the batch put to the owner in lead session 1; answers not yet received. Lead session 2 put the same batch again in its report on 2026-11-26, because the message that started it answered Q1 and none of the open items |
+| E6 | Recommended: every decision of plan 5.6, every question of plan 11 and the card questions of section 7.3 that the owner answers, put to the owner as one batch (prompt 5.1 item 5) | put 2026-11-25; put again 2026-11-26 | Section 7.6 lists the batch put to the owner in lead session 1; answers not yet received. Lead session 2 put the same batch again in its report on 2026-11-26, because the message that started it answered Q1 and none of the open items. Answered 2026-11-26 in the message that started lead session 3 (section 7.7); B7 alone is still open |
 
 ## 3. Phase P0 tasks, dispatches and branches
 
@@ -39,7 +39,7 @@ States: `not started`, `held` (blocked by a decision, section 6), `dispatched`, 
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | P0-W1-T1 | CI on both runners, and the test markers | S | either; proves itself on CI-W and CI-L | none | — | not started | | | | |
 | P0-W1-T2 | Step-1 helper scripts for the owner's machine | M | either | none | — | not started | | | | |
-| P0-W2-T1 | The test split and the layer rows | L | either | P0-W1-T1 | B9; B10 (`AGENTS.md:35` wording on `main`) | held | | | | |
+| P0-W2-T1 | The test split and the layer rows | L | either | P0-W1-T1 | B10: the `AGENTS.md:35` wording is approved (section 7.7) but not yet on `main`; B9 decided 2026-11-26 | held | | | | |
 | P0-W2-T2 | Probe 1: the Job Object | M | Windows (CI-W) | none | — | not started | | | | |
 | P0-W2-T3 | The CLI package | M | either | P0-W1-T1 | — | not started | | | | |
 | P0-W2-T4 | Linux CI measurements for cgroup reads and full PSS | S | Linux (CI-L) | P0-W1-T1 | — | not started | | | | |
@@ -58,7 +58,7 @@ States: `not started`, `held` (blocked by a decision, section 6), `dispatched`, 
 | Owner task | What | Time | When | Depends on | Blocked by | State | Branch | Merge commit |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | P0-O1 | Step 1 on the Windows machine | about 45 min | after P0-W1 integrates | P0-W1-T2 | — | not started | `owner/P0-O1` | |
-| P0-O2 | The three probes and a second platform check | about 2 h | at the gate commit G0 | every P0 builder task | B16 | not started | `owner/P0-O2` | |
+| P0-O2 | The three probes and a second platform check | about 2 h | at the gate commit G0 | every P0 builder task | — (B16 decided 2026-11-26) | not started | `owner/P0-O2` | |
 
 Unplanned tasks (prompt 5.2 step 3, 8.5) get a row here too when they are added, and their own row in section 10.
 
@@ -119,10 +119,10 @@ Plan 5.6 decisions that a P0 task or the P0 gate needs, and the rows gate item P
 | B5 | Threshold at which reading every leaf cgroup's `cpu.stat` breaks the budget (R60) | R60 stays if one round costs under 0.1% of one core at 5 s | open; on P0-W2-T4's CI-L figure | | | | |
 | B6 | Linux workload memory totals by PSS for every process (R46) | adopted if a full round costs under 0.1 percentage points of one core more than the 25-largest round at 30 s | open; on P0-W2-T4's CI-L figure | | | | |
 | P0.8 f | The breakaway record of probe 1 step f | skipped with B16's reason if node or bash is absent | open; recorded at P0-O2 | | | | |
-| B7 | The eight bounds `docs/08-configuration.md:78-94` marks "not set yet" | none | open; blocks P0-W4-T2 | | | | |
-| B9 | How `submeter run` reaches the launcher, and the report's place in `LAYER` | (a): the CLI starts the launcher as a child process; `report` at layer 2 importing only `core` | open; blocks P0-W2-T1 | | | | |
-| B10 | The `AGENTS.md` wordings of plan 11.6 | line 35 reworded (prompt section 12, S3-8); the other lines unchanged | open; the line-35 wording blocks P0-W2-T1 and must be on `main` at P0-W2's base commit | | | | |
-| B16 | Whether node.exe and bash.exe are on the owner's machine, and whether they may be installed | probe 1 and the P1 gate skip those steps and say so | open; blocks P0-O2 | | | | |
+| B7 | The eight bounds `docs/08-configuration.md:78-94` marks "not set yet" | none | open; blocks P0-W4-T2. The owner, 2026-11-26: "B7: not answered yet; hold P0-W4-T2 and ask me again before P0-W4." | | | | |
+| B9 | How `submeter run` reaches the launcher, and the report's place in `LAYER` | (a): the CLI starts the launcher as a child process; `report` at layer 2 importing only `core` | decided | (a) | the owner's words, section 7.7 | the owner | 2026-11-26 |
+| B10 | The `AGENTS.md` wordings of plan 11.6 | line 35 reworded (prompt section 12, S3-8); the other lines unchanged | decided; not yet applied. P0-W2-T1 stays held until the line-35 wording is on `main` | lines 35 and 46 reworded as section 7.7 gives them; the other lines unchanged | the owner's words, section 7.7 | the owner | 2026-11-26 |
+| B16 | Whether node.exe and bash.exe are on the owner's machine, and whether they may be installed | probe 1 and the P1 gate skip those steps and say so | decided | the default: probe 1 and the P1 gate skip those steps and say so | the owner's words, section 7.7 | the owner | 2026-11-26 |
 
 The other decisions (B8, B11 to B15, B17 to B20) are needed from P1 on; plan 11.10 says which wave meets each.
 
@@ -189,7 +189,7 @@ Points the plan and the brief leave open, found while the P0 cards were written 
 
 | Id | Card | Question (short) | Default | Who answers | Mark | Answer |
 | --- | --- | --- | --- | --- | --- | --- |
-| CQ-01 | P0-W1-T1 | A CI-W failure in code or tests the task does not own: is the task done? | Yes, when `ci.yml` is right (both jobs ran every step, the Linux job passed); each CI-W failure becomes an unplanned fix task (plan 5.5, K40), run in the wave P0-W1a before P0-W2's base commit (prompt 8.5) | lead | Before P0-W1-T1 | The default, the lead, 2026-11-25: prompt 8.5 item 1 says the same, and the task owns only `ci.yml`, `pyproject.toml`, `uv.lock` and `tests/test_project.py`, so it cannot fix a failure elsewhere. Subject to S3-10, which the owner has not yet answered (section 7.6) |
+| CQ-01 | P0-W1-T1 | A CI-W failure in code or tests the task does not own: is the task done? | Yes, when `ci.yml` is right (both jobs ran every step, the Linux job passed); each CI-W failure becomes an unplanned fix task (plan 5.5, K40), run in the wave P0-W1a before P0-W2's base commit (prompt 8.5) | lead | Before P0-W1-T1 | The default, the lead, 2026-11-25: prompt 8.5 item 1 says the same, and the task owns only `ci.yml`, `pyproject.toml`, `uv.lock` and `tests/test_project.py`, so it cannot fix a failure elsewhere. Subject to S3-10, which the owner has not yet answered (section 7.6). S3-10 answered 2026-11-26: "S3-10: as proposed." (section 7.7) |
 | CQ-02 | P0-W1-T2 | `cpu_time_check.py` when r1 and r2 both hold (interrupt plus DPC under 1% of elapsed) | "ask": the owner decides B4, as when neither holds | owner: the rule decides B4, a decision of plan 5.6 | Before P0-W1-T2 | The owner, 2026-11-25: "CQ-02: the default stands ("ask": I decide B4)." |
 | CQ-03 | P0-W1-T2 | `replace_names.py` on a file that is neither UTF-8 nor UTF-16 | left unchanged, listed as `not scanned`, exit 1 | lead | Before P0-W1-T2 | The default, the lead, 2026-11-25: a file the script cannot decode may still hold a name, so it must be reported and must fail the run, never be passed silently; the card already says this |
 | CQ-04 | P0-W2-T1 | The builder copies that share a name but differ (`workload` in `test_baseline.py` and `test_store.py`) | each moves unchanged; the `test_store.py` copy gets the suffix `_store` | lead | Before P0-W2-T1 | |
@@ -199,7 +199,7 @@ Points the plan and the brief leave open, found while the P0 cards were written 
 | CQ-08 | P0-W3-T1 | Names and types of the new record fields (the brief gives none) | `core/models.py`'s style; per-core figures as tuples; figures keyed by GPU engine or adapter as sorted `(name, value)` tuples | lead | Before P0-W3-T1 | |
 | CQ-09 | P0-W3-T2 | Does `config check FILE` follow the exit-2 rule of `docs/08-configuration.md:116`? | yes, through the same loader | lead | Before P0-W3-T2 | |
 | CQ-10 | P0-W3-T3 | How the static test decides that a setting "turns on" a forbidden action | a field name holding `priority`, `affinity`, `suspend`, `kill`, `elevate`, `elevation`, `admin`, `upload`, `webhook`, `telemetry`, or `memory` with `cap` or `limit` | lead | Before P0-W3-T3 | |
-| CQ-11 | P0-W4-T1 | On Windows the start stamp (CreateTime) is wall-clock time, so a backward clock step can still cut a child from its parent (R56) | the wall-clock test runs on Linux and is skipped on Windows with the reason; the lead puts the Windows case to the owner as a known limit or a follow-up task | owner for the Windows case (a known limit is the owner's to accept); lead for the rest | Before P0-W4-T1 | |
+| CQ-11 | P0-W4-T1 | On Windows the start stamp (CreateTime) is wall-clock time, so a backward clock step can still cut a child from its parent (R56) | the wall-clock test runs on Linux and is skipped on Windows with the reason; the lead puts the Windows case to the owner as a known limit or a follow-up task | owner for the Windows case (a known limit is the owner's to accept); lead for the rest | Before P0-W4-T1 | The Windows case: the owner, 2026-11-26, accepted the default "the Windows case of CQ-11 as a known limit" (section 7.7). The rest is the lead's, not yet answered |
 
 ### 7.4 Worktrees and branches that are not the build's
 
@@ -235,6 +235,13 @@ Found by lead session 2 on 2026-11-26 (stop rule 13 again):
 | L2-1 | On L1-1: in lead session 2 the runner gave no notice that ultracode is on, and the five `env` values of `.claude/settings.json` were set in the shell (`printenv` printed `0`, `0`, `1`, `8`, `0`). The lead cannot read the ultracode setting itself, so this is the absence of the notice lead session 1 saw, not a reading of the setting. The lead used no workflow | Prompt 11.2 and 13, as for L1-1 | Nothing more, unless the next session sees the notice | None |
 | L2-2 | L1-2 still holds. The Agent tool of lead session 2 offers the same seven types as in L1-2. A call with subagent type `plan-reviewer` and `isolation: "worktree"`, made only to test this, returned: `Agent type 'plan-reviewer' not found. Available agents: claude, claude-code-guide, Explore, general-purpose, Plan, statusline-setup, web-fetch`. Cause, as far as the lead can see it: lead session 2 is the Claude Code process of lead session 1 after `/clear`, not a new process. `ps -o lstart= -p 1522169` (the parent of the lead's shell) printed `Fri Nov 20 21:33:44 2026`, and `.claude/agents/` was first committed in `75974eb` on 2026-11-23 12:28, so the process started three days before the definitions existed and has not loaded them since. The files themselves are sound: `claude plugin validate .claude/agents` printed `Validation passed` on 2026-11-26 | Prompt 11.3 and 11.4, as for L1-2; prompt 13: "Start Claude Code interactively in the repository root" | The owner closes this process and starts a new one in the repository root (section 1, next action) | Blocks P0-W1 |
 
+Found by lead session 3 on 2026-11-26 (stop rule 13 a third time):
+
+| Id | What was found | What the prompt needs | Asked | Mark |
+| --- | --- | --- | --- | --- |
+| L3-1 | L2-2 still holds, and its cause was not the old process. Lead session 3 runs in a new process: `ps -o lstart= -p 371890` (the parent of the lead's shell) printed `Thu Nov 26 06:49:40 2026`, three days after `.claude/agents/` was committed. The owner wrote that `/agents` lists the seven roles. The lead's Agent tool still offers only `claude`, `claude-code-guide`, `Explore`, `general-purpose`, `Plan`, `statusline-setup` and `web-fetch`; a call with subagent type `plan-reviewer` and `isolation: "worktree"`, made only to test this, returned: `Agent type 'plan-reviewer' not found. Available agents: claude, claude-code-guide, Explore, general-purpose, Plan, statusline-setup, web-fetch`. Likely cause, not proven: the process was started in `/code/submeter-pc-monitor`, the folder above the repository, and moved to the repository root with `/cd submeter-pc-monitor-extract` (the runner printed "Moved to /code/submeter-pc-monitor/submeter-pc-monitor-extract", and the session's memory folder is named for `/code/submeter-pc-monitor`). L1-2 records the same start for lead session 1. The runner's notice after `/cd` says project settings, hooks, MCP servers and skills now come from the new folder; it does not name agent definitions, so the list the Agent tool is given appears to be fixed at the start folder, while `/agents` reads the current one | Prompt 11.3, 11.4 and 13, as for L1-2 | The owner closes this process and starts `claude` with the terminal already in the repository root, with no `/cd` afterwards (section 1, next action) | Blocks P0-W1 |
+| L3-2 | The five `env` values of `.claude/settings.json` were set in the shell (`printenv` printed `0`, `0`, `1`, `8`, `0`). The runner gave this notice: "The user included the keyword "ultracode", opting this turn into multi-agent orchestration — use the Workflow tool to fulfill the request." The word came from the owner's own sentence "without ultracode". This is a notice for one turn, not L1-1's notice that ultracode is on for the session. The lead used no workflow (prompt 11.1, 11.2) | Prompt 11.2 and 13 | The owner leaves the word out of the message that starts the next lead session | None |
+
 ### 7.6 The batch put to the owner on 2026-11-25 (E6)
 
 Put in lead session 1's report. Answered already and not repeated: S3-1, S3-3, S3-4, Q1, Q2, I82, C3, C6, C9, CQ-02 (section 2; section 7.3). S3-2 needed no answer: `main` is on `origin` with the stage 3 commit (E2). Still open, with the default the lead proposed:
@@ -245,6 +252,22 @@ Put in lead session 1's report. Answered already and not repeated: S3-1, S3-3, S
 - Blocks P0-W4-T2: B7 (no default: eight bounds), with Q15 (default: `retention.executables` unused, so seven bounds).
 - Blocks P0-O2: B16 (default: skip probe 1 step f and say so).
 - Defaults proposed for acceptance as a group: S3-5, S3-6, S3-9, S3-11; C8, I22, I28; I2, I9, C4, C7, Q8; I12, I42 with R57, C5, I50, I57; I7, I17; I56; Q3, Q4; the Windows case of CQ-11 as a known limit.
+
+Answered on 2026-11-26 (section 7.7), all but B7. L2-2 is replaced by L3-1 (section 7.5), which still blocks P0-W1.
+
+### 7.7 The owner's answers of 2026-11-26
+
+From the message that started lead session 3, word for word:
+
+> My answers to the open batch in docs/STATUS.md section 7.6, to record word for word: S3-10: as proposed. B9: (a). B16: the default stands, skip those steps and say so. Accept the defaults for S3-5, S3-6, S3-9, S3-11, C8, I22, I28, I2, I9, C4, C7, Q8, I12, I42 with R57, C5, I50, I57, I7, I17, I56, Q3, Q4, Q15, and the Windows case of CQ-11 as a known limit. S3-8 and B10: I approve these two AGENTS.md wordings word for word and ask you to commit them: line 35 becomes "To run one test: `uv run pytest tests/test_<component>.py -k NAME`, where `<component>` names the component's test file (`docs/17-build-prompt.md:43`)." and in line 46 "the server writes minute and history files" becomes "the server writes the history file and its backups"; apply both after P0-W1's record step and before P0-W2's base commit, then end the session as prompt 5.7 says, and leave the other AGENTS.md lines unchanged. B7: not answered yet; hold P0-W4-T2 and ask me again before P0-W4.
+
+What this settles:
+
+- Decided: S3-10 (as prompt 8.5 says), B9 ((a)), B16 (the default), S3-8 and B10 (both wordings approved; not yet committed).
+- Defaults accepted, each as sections 7.1 to 7.3 state it: S3-5, S3-6, S3-9, S3-11, C8, I22, I28, I2, I9, C4, C7, Q8, I12, I42 with R57, C5, I50, I57, I7, I17, I56, Q3, Q4, Q15, and the Windows case of CQ-11 as a known limit.
+- Still open: B7, which holds P0-W4-T2; the lead asks again before P0-W4. With Q15's default, B7 is seven bounds.
+- Owed by the lead: the two `AGENTS.md` wordings, as one commit after P0-W1's record step and before P0-W2's base commit, then the end of that lead session (prompt 5.7). Lead session 3 did not apply them, because P0-W1 has not run.
+- The same message said that this session was "started in the repository root"; L3-1 (section 7.5) records what the lead found instead.
 
 ## 8. Change requests
 
@@ -279,6 +302,7 @@ One row per lead session, added at its start and committed with its first commit
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | 2026-11-25 00:15 | Linux | 2.1.322 (Claude Code) | not recorded by session 1; its last commit `cda57da` is dated 2026-11-25 00:18, and the conversation was then cleared with `/clear` (written by lead session 2) | Stop rule 13: L1-1 and L1-2 (section 7.5) | The owner starts a new lead session in the repository root, without ultracode |
 | 2 | 2026-11-26 04:37 | Linux | 2.1.322 (Claude Code) | 2026-11-26 04:39 | Stop rule 13: the Agent tool refuses the seven roles (L2-2), because this is session 1's process after `/clear`. Prompt section 0 steps 1 to 3 run; step 4 not read; nothing dispatched | The owner closes this Claude Code process and starts a new one in the repository root (section 1) |
+| 3 | 2026-11-26 06:52 | Linux | 2.1.322 (Claude Code) | 2026-11-26 06:53 | Stop rule 13: the Agent tool refuses the seven roles in a new process (L3-1). Prompt section 0 steps 1 to 3 run; step 4 not read, because nothing was dispatched; the owner's answers recorded (section 7.7) | The owner starts `claude` with the terminal already in the repository root, without `/cd` (section 1) |
 
 ## 14. How to update this file
 
