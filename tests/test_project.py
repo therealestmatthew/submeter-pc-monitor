@@ -158,6 +158,8 @@ def test_ci_runs_every_agents_check_on_both_systems() -> None:
     assert "--continue-on-collection-errors" in text
     assert "cancel-in-progress" not in text
     assert "continue-on-error" not in text
+    # Python 3.13 installed by uv on both runners, never the runner image's own interpreter.
+    assert re.search(r"^env:\n(?:  .*\n)*?  UV_PYTHON_PREFERENCE: only-managed\n", text, re.M), text
 
     jobs = jobs_and_steps(text)
     seen_labels: set[str] = set()
