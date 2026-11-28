@@ -207,7 +207,7 @@ Processes stopped: list, or "none started"
 
 ### 3.9 Owner
 
-Runs the owner tasks as the signed-in standard user on the personal Windows 11 PC, the machine of record, and reads every file recorded there before it is pushed from there; runs them again on the work PC, from which nothing is committed or pushed, and tells the lead each item's result in one word, which the lead records in `docs/STATUS.md` as the owner's statement with the date (plan 3.1, Owner tasks; 6.2 step 4); rules where the plan says the owner rules, approves `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json` and dependency changes, and approves every gate.
+Runs the owner tasks as the signed-in standard user on the personal Windows 11 PC, the machine of record, and reads every file recorded there before it is pushed from there; runs P0-O1 and P0-O2, and from P1 on only each gate's owner check run (plan 6.2 step 4), again on the work PC, from which nothing is committed or pushed, and tells the lead each item's result in one word, which the lead records as the owner's statement with the date in the gate section of `docs/STATUS.md`, in the table "Work PC results by word" (plan 3.1, Owner tasks; 6.2 step 4); rules where the plan says the owner rules, approves `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json` and dependency changes, and approves every gate.
 
 ## 4. Where the state lives
 
@@ -222,7 +222,7 @@ A new session can resume from these alone.
 | Dispatches, branches, unplanned tasks | `docs/STATUS.md` section 3.2 (one row per dispatch: task, round, B, model, agent id, time, worktree path), 3.3 (every branch an agent or the lead is expected to push, added when that agent is dispatched or the lead pushes it) and 10 (unplanned tasks, with their Owns lines) | the lead |
 | Other review notes | `docs/tasks/<wave id>-record-review.md` (record reviews), `docs/tasks/plan-review-<nnn>.md` (plan changes), `docs/tasks/investigation-<nnn>.md` (failure investigations) | the lead, from the reply |
 | A builder's work and report | branch `task/<task id>` on `origin`; the report is its last commit | the builder |
-| Owner evidence | branch `owner/<task id>`, then the task's folder (plan 3.1, Owner tasks); the work PC's one-word results in `docs/STATUS.md` | the owner, or the test runner on the owner's personal Windows PC, from that PC only; the lead records the work PC's words |
+| Owner evidence | branch `owner/<task id>`, then the task's folder (plan 3.1, Owner tasks); the work PC's one-word results in the table "Work PC results by word" of `docs/STATUS.md`'s gate section (section 5 for P0) | the owner, or the test runner on the owner's personal Windows PC, from that PC only; the lead records the work PC's words |
 | Gate evidence and verdict | `docs/gates/P<n>/` (P0: `docs/review/ground-windows/` and `docs/gates/P0/verdict.md`); branches `gate/P<n>` and `evidence/P<n>`; tag `gate-P<n>` | test runner, owner, lead |
 
 Every commit on `main` is one of these, and nothing else:
@@ -380,7 +380,7 @@ A merged diff that touches a path outside the task's Owns line is handled the sa
 
 ### 6.5 Owner-task branches
 
-Merge `owner/<task id>` the same way once a code reviewer has read it and, from P2, the anonymisation scan has passed (plan 6.2 step 5). `git diff --name-only <pre> HEAD` must list only that task's folder. Every `owner/` branch is pushed from the owner's personal Windows PC; the owner reads every file recorded there before it is pushed; never merge one the owner has not read. Nothing from the work PC is ever merged: its results are the owner's one-word statements, which the lead records in `docs/STATUS.md` with the date (plan 6.2 step 4).
+Merge `owner/<task id>` the same way once a code reviewer has read it and, from P2, the anonymisation scan has passed (plan 6.2 step 5). `git diff --name-only <pre> HEAD` must list only that task's folder. Every `owner/` branch is pushed from the owner's personal Windows PC; the owner reads every file recorded there before it is pushed; never merge one the owner has not read. Nothing from the work PC is ever merged: its results are the owner's one-word statements, which the lead records with the date in the table "Work PC results by word" of `docs/STATUS.md`'s gate section (plan 6.2 step 4).
 
 ## 7. The gate procedure
 
@@ -389,7 +389,7 @@ Every phase ends at a gate. No task of the next phase is dispatched until the ow
 1. **Entry** (plan 6.2): every builder task of the phase merged and recorded; every owner task done or the last one due at the gate commit; every blocking decision recorded; every change request against the phase merged or moved with the owner's agreement.
 2. **Gate commit G** (lead): `git push origin <G>:refs/heads/gate/P<n>`, with the sha and n written out; record G in `docs/STATUS.md` section 5, and the branches `gate/P<n>` and `evidence/P<n>` in section 3.3.
 3. **Checks and harness, then CI** (test runner, plan 6.2 steps 2 and 3, and for P0 the variant in plan 6.4): in a new working copy at G; evidence pushed on `evidence/P<n>`.
-4. **Owner check run and the last owner task** (owner, plan 6.2 step 4) at G: on the personal Windows 11 PC, whose evidence is pushed on `owner/<task id>`, then on the work PC, whose results the owner tells you in one word each and you record in `docs/STATUS.md` as the owner's statement with the date. Nothing from the work PC is committed or pushed.
+4. **Owner check run and the last owner task** (owner, plan 6.2 step 4) at G: on the personal Windows 11 PC, whose evidence is pushed on `owner/<task id>`, then on the work PC (for P0, P0-O2 in full; from P1, only the owner check run), whose results the owner tells you in one word each and you record as the owner's statement with the date in the table "Work PC results by word" of the phase's gate section in `docs/STATUS.md`. Nothing from the work PC is committed or pushed.
 5. **Merge the evidence** (lead, plan 6.2 step 5): `git diff --name-only <G> HEAD` lists only the gate's evidence folders; write the phase's entry in `docs/STATUS.md` from the evidence (S3); run the seven checks; commit and push. That commit is E.
 6. **Review** (gate reviewer, plan 6.2 step 6) at E. For P0, the plan reviewer also checks the decision rows (P0.12).
 7. **Record and ask** (lead, plan 6.2 step 7): write `docs/gates/P<n>/verdict.md` with G, E, the date, the reviewer's reply word for word and the rulings asked for. Commit, push, and put the gate to the owner with the message of section 10.3.
