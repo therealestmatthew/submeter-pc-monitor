@@ -41,7 +41,7 @@ States: `not started`, `held` (blocked by a decision, section 6), `dispatched`, 
 | P0-W1-T2 | Step-1 helper scripts for the owner's machine | M | either | none | — | merged 2026-11-28 08:16 (review 1: BLOCKED on size alone, 2026-11-28 07:38; review 2: PASS, 2026-11-28 08:16, after the size exception of PD-001) | a06e70300853747a2 | a4c80656d57c366e5 (round 1), a90f33ab3552dd27c (round 2) | 2 | `e17cd5b` |
 | P0-W2-T1 | The test split and the layer rows | L | either | P0-W1-T1 | — (B9 decided 2026-11-26; B10's line-35 wording is on `main` at `e41caa5`, 2026-11-28) | passed (dispatched 2026-11-28 09:21; review 1: PASS, 2026-11-28 09:54) | abe7f596960e1ebe2 | a137d634e7b0f13c1 (round 1) | 1 | |
 | P0-W2-T2 | Probe 1: the Job Object | M | Windows (CI-W) | none | — | dispatched 2026-11-28 09:21 | a7992e3d5fa8dc7fa | | 1 | |
-| P0-W2-T3 | The CLI package | M | either | P0-W1-T1 | — | round 1 reviewed (dispatched 2026-11-28 09:21; review 1: CHANGES, 2026-11-28 09:56) | a7aecbc934e86a6c5 | a2aecd70676c478f0 (round 1) | 1 | |
+| P0-W2-T3 | The CLI package | M | either | P0-W1-T1 | — | round 2 (dispatched 2026-11-28 09:21; review 1: CHANGES, 2026-11-28 09:56; round 2 dispatched 2026-11-28 10:15) | a7aecbc934e86a6c5 | a2aecd70676c478f0 (round 1) | 1 | |
 | P0-W2-T4 | Linux CI measurements for cgroup reads and full PSS | S | Linux (CI-L) | P0-W1-T1 | — | passed (dispatched 2026-11-28 09:21; review 1: PASS, 2026-11-28 09:54) | abc972094bf014fa3 | a9fa411307b8eaa34 (round 1) | 1 | |
 | P0-W3-T1 | The optional record fields, and the minute tier removed from the code | L | either | P0-W2-T1 | — | not started | | | | |
 | P0-W3-T2 | Named settings and rules files exit with code 2 | S | either | P0-W2-T3 | — | not started | | | | |
@@ -74,6 +74,7 @@ One row per builder dispatched (prompt 5.3 step 3), written at dispatch; the wor
 | P0-W2-T1 | 1 | `37fe97b` | opus | abe7f596960e1ebe2 | 2026-11-28 09:21 (the lead read the clock after all four builders were started) | `task/P0-W2-T1` | |
 | P0-W2-T2 | 1 | `37fe97b` | opus | a7992e3d5fa8dc7fa | 2026-11-28 09:21 (the lead read the clock after all four builders were started) | `task/P0-W2-T2` | |
 | P0-W2-T3 | 1 | `37fe97b` | opus | a7aecbc934e86a6c5 | 2026-11-28 09:21 (the lead read the clock after all four builders were started) | `task/P0-W2-T3` | |
+| P0-W2-T3 | 2 | `37fe97b` | opus | a7aecbc934e86a6c5 (the same builder, continued) | 2026-11-28 10:15 | `task/P0-W2-T3` | as round 1 |
 | P0-W2-T4 | 1 | `37fe97b` | opus | abc972094bf014fa3 | 2026-11-28 09:21 (the lead read the clock after all four builders were started) | `task/P0-W2-T4` | |
 
 ### 3.3 Branches on origin
