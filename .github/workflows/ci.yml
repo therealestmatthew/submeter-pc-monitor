@@ -113,6 +113,27 @@ jobs:
         with:
           name: gate-linux
           path: ${{ runner.temp }}/gate
+      # The two CI-runner figures for B5 and B6 (P0-W2-T4, gate P0.6 and P0.7), written outside
+      # the working copy and kept as the artefact linux-costs (CQ-06). Both scripts run even if
+      # the first fails, and either failing fails the step.
+      - name: Linux cost figures (cgroup cpu.stat and full PSS)
+        if: ${{ !cancelled() && steps.sync.outcome == 'success' }}
+        shell: bash
+        env:
+          LINUX_COSTS: ${{ runner.temp }}/linux-costs
+        run: |
+          mkdir -p "$LINUX_COSTS"
+          status=0
+          uv run python scripts/probes/linux_cgroup_cost.py | tee "$LINUX_COSTS/linux-cgroup-cost.txt" || status=1
+          uv run python scripts/probes/linux_pss_cost.py | tee "$LINUX_COSTS/linux-pss-cost.txt" || status=1
+          exit "$status"
+      - name: upload the Linux cost figures as linux-costs
+        if: ${{ !cancelled() && steps.sync.outcome == 'success' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: linux-costs
+          path: ${{ runner.temp }}/linux-costs
+          if-no-files-found: error
       - name: git status --porcelain is empty
         if: ${{ !cancelled() && steps.sync.outcome == 'success' }}
         shell: bash
