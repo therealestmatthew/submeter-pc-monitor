@@ -6,9 +6,9 @@ The state of the build, kept by the lead of `prompts/02-orchestration-prompt.md`
 
 | Field | Value |
 | --- | --- |
-| Updated | 2026-11-28 08:48, lead session 4: wave P0-W1 recorded. Both tasks merged; integration commit `e17cd5b`; CI success on both runners; the pilot is clean. The record review has returned CHANGES three times, each on the lead's bookkeeping in this file and none on the merges: round 1, missing review times; round 2, three wrong times; round 3, one wrong time, this row out of date, OQ-01's row not updated, PD-003 not naming every passage, and the owner tasks' rows not showing PD-003. All are corrected here. OQ-01 is answered (section 7.10); PD-003 is open |
+| Updated | 2026-11-28 08:57, lead session 4: wave P0-W1 is recorded and pushed. Both tasks merged; integration commit `e17cd5b`; CI success on both runners; the pilot is clean. The record review returned CHANGES in each of three rounds, all on the lead's bookkeeping in this file; the corrections are in, and the owner chose on 2026-11-28 to push the record without a fourth round (`docs/tasks/P0-W1-record-review.md`). OQ-01 is answered (section 7.10); PD-003 is open |
 | Phase | P0, decision probes, CI and the baseline repairs (`docs/PLAN.md` 3.4) |
-| Wave | P0-W1, the pilot: integrated and recorded; the record review is `docs/tasks/P0-W1-record-review.md`. Next wave: P0-W2, planned width 4 |
+| Wave | P0-W1, the pilot: integrated, recorded and pushed; the record review note is `docs/tasks/P0-W1-record-review.md`. Next wave: P0-W2, planned width 4 |
 | Base commit B | P0-W1: `799feea19e9c226d4389104ae573fca389ef5b12`. P0-W2: not fixed; it is fixed by the next lead session after the `AGENTS.md` wordings are on `main` and the CI run of that commit has passed on both runners (prompt 5.2 step 6) |
 | Width | The pilot ran 2 builders and was clean (section 4), so later waves run at their planned width, up to the cap of 4 (plan 5.4) |
 | Gate P0 | not started |
@@ -88,7 +88,7 @@ Every branch an agent or the lead is expected to push, added when the agent is d
 
 | Wave | Planned width | Run width | B (base) | Checks at B | Dispatch commit | I (last merge) | R (record) | Record review | CI on R |
 | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- |
-| P0-W1 | 2 | 2 | `799feea19e9c226d4389104ae573fca389ef5b12` | Linux, 2026-11-28, 19 s for all seven: sync=0 ruff=0 format=0 mypy=0 mypy-win32=0 mypy-linux=0 pytest=0; `61 passed, 1 xfailed in 2.99s` | `9f937ac` | `e17cd5b` (merge of P0-W1-T2; P0-W1-T1 merged at `202584d`). CI run 46148834972 on it: success, checks-linux 16 s, checks-windows 42 s | the commit `Record P0-W1` | `docs/tasks/P0-W1-record-review.md` | read when P0-W2's base commit is fixed (prompt 5.2 step 6) |
+| P0-W1 | 2 | 2 | `799feea19e9c226d4389104ae573fca389ef5b12` | Linux, 2026-11-28, 19 s for all seven: sync=0 ruff=0 format=0 mypy=0 mypy-win32=0 mypy-linux=0 pytest=0; `61 passed, 1 xfailed in 2.99s` | `9f937ac` | `e17cd5b` (merge of P0-W1-T2; P0-W1-T1 merged at `202584d`). CI run 46148834972 on it: success, checks-linux 16 s, checks-windows 42 s | `d3849be` (`Record P0-W1`) with its corrections `da4c1b1`, `bc6afd0`, `8423e7c` and `53db195` | `docs/tasks/P0-W1-record-review.md`: CHANGES in each of three rounds, all on this file's bookkeeping and none on the merges; pushed on the owner's decision of 2026-11-28 without a PASS | read when P0-W2's base commit is fixed (prompt 5.2 step 6) |
 | P0-W2 | 4 | | | | | | | | |
 | P0-W3 | 3 | | | | | | | | |
 | P0-W4 | 2 | | | | | | | | |
@@ -324,6 +324,15 @@ What this settles (the lead's summary, which the owner confirmed with the last l
 - **The stop rules about the work computer are unchanged** (prompt section 1, rules 4 and 5): a request to elevate there, or a block by its security software or policy, stops the build.
 
 What is owed, as planning defect PD-003 (section 9): the plan, the owner cards and the step-1 procedure say "the owner's machine" for one machine and end each owner task with a commit and push from it. The plan writer corrects them and the plan reviewer reads the change. Because the correction changes what gate P0 and the later gates accept as evidence (plan section 6), the owner approves its wording before it is merged (prompt 3.1; plan 4.3 item 6). It is due before the first owner evidence is committed and blocks no builder task of P0-W2.
+
+### 7.11 The owner's decisions of 2026-11-28 at the end of the pilot wave
+
+Both asked with the question tool, each answer paired with its question:
+
+- Asked: "The third reviewer has already finished reading the pilot wave's record and found five more small bookkeeping faults in the status file (one wrong time, a stale 'last updated' line, three places not updated for your two-Windows-machines answer). I have fixed all five on this machine. The code itself is already on GitHub and passing. What should happen to the corrected record now?" The owner chose: "Push it now (Recommended)".
+- Asked: "After the record is settled, the build rules have me commit the two rule-file wordings you approved on 26 November (how to run one test, and which data files the server writes) and then end this session so the next wave starts in a fresh one. Shall I do that as soon as the record is pushed?" The owner chose: "Yes, close out (Recommended)".
+
+The owner also said how decisions are to be put from now on: "This is why I always ask Claude to use the ask user questions tool to resolve things. It prevents ambiguity, every answer gets paired with the question." And earlier the same day: "Codes.Don't mean anything to me." So every lead session puts each owner decision as one question with the question tool, in plain words, and keeps ids such as B7 or PD-003 for the files (prompt 10.1 says to lead with what a thing is; this goes further).
 
 ## 8. Change requests
 
