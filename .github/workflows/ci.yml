@@ -1,0 +1,121 @@
+# The seven AGENTS.md checks on a Windows runner and a Linux runner, on every push to every
+# branch (docs/PLAN.md 7.5). Every step after `uv sync --locked` runs even when an earlier
+# check failed, so a test-only commit's run shows every check's result (docs/PLAN.md 7.2).
+# tests/test_project.py::test_ci_runs_every_agents_check_on_both_systems reads this file.
+name: ci
+
+on:
+  push:
+    branches: ["**"]
+
+permissions:
+  contents: read
+
+env:
+  # uv installs Python 3.13 itself on both runners and never uses the image's own interpreter.
+  UV_PYTHON_PREFERENCE: only-managed
+
+jobs:
+  windows:
+    name: checks-windows
+    runs-on: windows-2025
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+        with:
+          version: "0.11.14"
+          python-version: "3.13"
+          enable-cache: false
+      - name: uv sync --locked
+        id: sync
+        run: uv sync --locked
+      - name: whoami
+        if: ${{ !cancelled() && steps.sync.outcome == 'success' }}
+        run: whoami
+      - name: ruff check
+        if: ${{ !cancelled() && steps.sync.outcome == 'success' }}
+        run: uv run ruff check
+      - name: ruff format --check
+        if: ${{ !cancelled() && steps.sync.outcome == 'success' }}
+        run: uv run ruff format --check
+      - name: mypy
+        if: ${{ !cancelled() && steps.sync.outcome == 'success' }}
+        run: uv run mypy src tests
+      - name: mypy --platform win32
+        if: ${{ !cancelled() && steps.sync.outcome == 'success' }}
+        run: uv run mypy --platform win32 src tests
+      - name: mypy --platform linux
+        if: ${{ !cancelled() && steps.sync.outcome == 'success' }}
+        run: uv run mypy --platform linux src tests
+      - name: pytest
+        if: ${{ !cancelled() && steps.sync.outcome == 'success' }}
+        env:
+          SUBMETER_GATE_DIR: ${{ runner.temp }}/gate
+        run: uv run pytest -m "not owner_machine and not session and not hardware and not soak" -rfEsxX --durations=25 --continue-on-collection-errors "--basetemp=${{ runner.temp }}/pytest"
+      - name: upload SUBMETER_GATE_DIR as gate-windows
+        if: ${{ !cancelled() && steps.sync.outcome == 'success' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: gate-windows
+          path: ${{ runner.temp }}/gate
+      - name: git status --porcelain is empty
+        if: ${{ !cancelled() && steps.sync.outcome == 'success' }}
+        shell: bash
+        run: |
+          status="$(git status --porcelain)"
+          if [ -n "$status" ]; then printf '%s\n' "$status"; exit 1; fi
+
+  linux:
+    name: checks-linux
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+        with:
+          version: "0.11.14"
+          python-version: "3.13"
+          enable-cache: false
+      - name: uv sync --locked
+        id: sync
+        run: uv sync --locked
+      - name: whoami
+        if: ${{ !cancelled() && steps.sync.outcome == 'success' }}
+        run: whoami
+      - name: ruff check
+        if: ${{ !cancelled() && steps.sync.outcome == 'success' }}
+        run: uv run ruff check
+      - name: ruff format --check
+        if: ${{ !cancelled() && steps.sync.outcome == 'success' }}
+        run: uv run ruff format --check
+      - name: mypy
+        if: ${{ !cancelled() && steps.sync.outcome == 'success' }}
+        run: uv run mypy src tests
+      - name: mypy --platform win32
+        if: ${{ !cancelled() && steps.sync.outcome == 'success' }}
+        run: uv run mypy --platform win32 src tests
+      - name: mypy --platform linux
+        if: ${{ !cancelled() && steps.sync.outcome == 'success' }}
+        run: uv run mypy --platform linux src tests
+      - name: pytest
+        if: ${{ !cancelled() && steps.sync.outcome == 'success' }}
+        env:
+          SUBMETER_GATE_DIR: ${{ runner.temp }}/gate
+        run: uv run pytest -m "not owner_machine and not session and not hardware and not soak" -rfEsxX --durations=25 --continue-on-collection-errors "--basetemp=${{ runner.temp }}/pytest"
+      - name: upload SUBMETER_GATE_DIR as gate-linux
+        if: ${{ !cancelled() && steps.sync.outcome == 'success' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: gate-linux
+          path: ${{ runner.temp }}/gate
+      - name: git status --porcelain is empty
+        if: ${{ !cancelled() && steps.sync.outcome == 'success' }}
+        shell: bash
+        run: |
+          status="$(git status --porcelain)"
+          if [ -n "$status" ]; then printf '%s\n' "$status"; exit 1; fi
