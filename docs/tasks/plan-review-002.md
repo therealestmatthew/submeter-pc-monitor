@@ -117,3 +117,59 @@ The change: branch `plan/pd-003-two-windows-machines`, written by the plan write
 > - **Frontmatter fields, and no file-editing tool for checkers:** not applicable, since nothing under `.claude/agents/` changed.
 >
 > I committed and pushed nothing. I ran only read-only git commands in `/code/submeter-pc-monitor/submeter-pc-monitor-extract/.claude/worktrees/agent-afde2222ef6dd79af`, and the only files I wrote were working copies in the scratchpad.
+
+## Round 3
+
+- Reviewer agent id: a151472b90758b017
+- Date: 2026-11-28
+- Branch tip read: `371ab58c04e736836e1108d1f54503a8e035f208`
+- Verdict: PASS
+- Reply (word for word):
+
+> PASS
+>
+> No defects in round 3. I read the whole diff `origin/main...origin/plan/pd-003-two-windows-machines` (merge base `2c89335`, tip `371ab58`) and checked it against `docs/STATUS.md` 7.10 and 7.12 as they now stand on `origin/main`. Round 3 itself is `git diff 8f0df3f 371ab58`: one line each in `docs/PLAN.md`, `docs/tasks/P0-O1.md` and `docs/tasks/P0-O2.md`.
+>
+> Checklist, plan change and cards:
+>
+> - **Files changed:** only the four allowed. `git diff --stat` lists `docs/PLAN.md`, `docs/tasks/P0-O1.md`, `docs/tasks/P0-O2.md` and `prompts/02-orchestration-prompt.md`. `git diff --quiet ... -- docs/review/02-rulings.md .claude/agents docs/STATUS.md` exits 0.
+> - **Round 2 defect 1 (`P0-O2.md:117`) is answered.** The line now reads: CQ-15 "covers B4 and B3; probe 2's trigger is not a ruling at the gate but a stop on either machine, `docs/PLAN.md` 6.4, P0.9 and P0.12". This agrees with card line 113, card line 86, P0.12 (`PLAN.md:2182`) and STATUS 7.12 as corrected.
+> - **Round 2 defect 2 (the Uses lines) is answered.** `PLAN.md:478` and `P0-O1.md:39` both add "for the work PC run, the procedure at the later commit the lead names, with P0-W3-T4's summary screen".
+> - **Round 2's note on where the work PC's commit is recorded is now covered.** `PLAN.md:2119` (6.2 step 4) adds "and for P0-O1's work PC run also the commit that run was made at". The card's Base commit (`P0-O1.md:16`) and Acceptance 7 (`:99`) cite it.
+> - **No sentence sends probe 2's trigger to a ruling at the gate.** I grepped "trigger" across all four files. Every hit treats it as a stop on either machine or as the recorded B2 word:
+>   - plan: `PLAN.md:2179` P0.9, `:2182` P0.12, `:2193` 6.4 Procedure, `:3436` 10.3 item 2;
+>   - prompt: `prompt.md:56`, stop rule 2;
+>   - card `P0-O2.md`: `:86`, `:113`, `:117`.
+>   - The owner's rulings at the gate are limited to "B3 or B4 where the work PC's word differs" (`PLAN.md:2195`, 5.6 at `:1976-1977`, 11.2 at `:3540-3541`, `P0-O1.md:111` and `:119`). `PLAN.md:3371` and `:1975` are the existing B2 rows. In both the owner decides and the build stops if the trigger fires.
+> - **Nothing gives the P0-W1 integration commit for P0-O1's work PC run.** I grepped "integration commit" across the four files. Each hit for P0-O1 either covers the personal PC run or is qualified in the same passage:
+>   - `PLAN.md:478` and `:479`: the qualifier is in the same line.
+>   - `PLAN.md:2172`, P0.2 (a): the saved output, which comes from the personal PC only.
+>   - `PLAN.md:2193`: the same paragraph adds "P0-O1 on the work PC at a commit the lead names after P0-W3-T4 is merged".
+>   - `PLAN.md:2319` and `:3367`: name the work PC run after P0-W3-T4.
+>   - `P0-O1.md:16` and `:39`: the qualifier is in the same line.
+>   - `P0-O1.md:74` and `:97`: steps headed "On the personal Windows 11 PC", and the personal PC's branch.
+> - **STATUS 7.10 and 7.12, item by item:**
+>   - **The personal PC is the machine of record:** matches (`PLAN.md:27`, `:230`, `:2025`, `:2182`; `P0-O1.md:14`; `P0-O2.md:14`).
+>   - **Nothing from the work PC is committed or pushed:** matches. See `PLAN.md:230`, `:2119`, `:2131`, `:3405-3407` and `:3452`; `prompt.md:69`, `:210`, `:225`, `:383`, `:392` and `:584`; `P0-O1.md:15`, `:82` and `:108`; `P0-O2.md:15`, `:84` and `:109`. No added passage commits from the work PC.
+>   - **One word per item:** matches (`PLAN.md:230`, `:2119`; the summary tables at `P0-O1.md:57-66` and `P0-O2.md:58-66`).
+>   - **On the work PC, only P0-O1, P0-O2 and each later gate's check run:** matches (`PLAN.md:230`, `:2119`, `:3393`, `:3401`). The OS lines of P2-O1 (`:869`) and P5-O1 (`:1448`) say personal PC only. Those of P1-O1, P2-O2, P3-O1, P4-O1 and P5-O2 (`:605`, `:878`, `:1142`, `:1300`, `:1457`) say "on the work PC only the owner check run".
+>   - **A difference on B3 or B4 goes to the owner at the gate:** matches (P0.12 at `:2182`, `:2195`, 5.6 at `:1976-1977`, 11.2 at `:3540-3541`, `P0-O1.md:111`, `:119`, `P0-O2.md:113`).
+>   - **Stop rules 2 and 3 apply to a result from either machine:** matches (`PLAN.md:2119`, `:2178` P0.8, `:2179` P0.9, `:2193`, `:3436-3437`; `prompt.md:56-57`; `P0-O2.md:86`, `:119`).
+>   - **Stop rules 4 and 5 stay in force for the work PC:** both still name the work computer (`PLAN.md:3438-3439`, `prompt.md:58-59`). They are repeated at `PLAN.md:2119`, `P0-O1.md:85`, `:110` and `P0-O2.md:86`.
+> - **Cards match plan section 3:** Owns, Uses and Provides, Tests first ("none"), Depends on, Time, OS and Gate evidence all match plan entries `:474-490` for P0-O1 and P0-O2. Neither Owns line is in the diff.
+> - **Card for an unplanned task:** none in this change. P0-W3-T4's card is out of scope, as briefed.
+> - **No path has two owners in one wave:** no Owns line changed, so nothing repeats.
+> - **Every dependency is in an earlier wave:** P0-O1 runs outside the waves. Its work PC run depends on P0-W3-T4 (in P0-W3), and its outputs feed B4 (P2) and gate P0, which both come later. P0-O2 is unchanged (G0).
+> - **Rulings, gate numbers, 5.6 and 5.7:**
+>   - `docs/review/02-rulings.md` is not in the diff.
+>   - Gate rows P0.5, P0.8, P0.9 and P0.12 and the 6.4 Procedure gained only text on which machine counts. No number or threshold changed.
+>   - In 5.6 (`:1968-1994`), only the "Decided by" cells of B3 and B4 changed, each adding a pointer to P0.12.
+>   - No hunk falls in 5.7 (`:1995-2015`) or in 11.8 (`:3659-3675`). The Q14 change at `:3693` is in 11.9, and the lead accepted it in 7.12.
+>   - R107 in the plan's own table gained a note only. Its ruling, "fix now", is unchanged.
+>
+> Checklist, changes to the prompt:
+>
+> - **Agrees with `AGENTS.md`, `CLAUDE.md`, the plan and section 3:** stop rules 2 and 3 (`prompt.md:56-57`) match plan 10.3 items 2 and 3. Sections 3.6, 3.9, the section 4 table, 6.5, 7 step 4 and 11.6 match plan 3.1, 6.1 and 6.2 step 4. Fixed rule 3 holds, and pushes go only to `origin`. Section 3.3 is unchanged.
+> - **Frontmatter fields, and no file-editing tool for checkers:** not applicable, because nothing under `.claude/agents/` changed.
+>
+> I committed and pushed nothing. I ran only read-only git commands in `/code/submeter-pc-monitor/submeter-pc-monitor-extract/.claude/worktrees/agent-a151472b90758b017`. The only files I wrote are copies of the four branch files, for reading, in `/tmp/claude-1000/-code-submeter-pc-monitor-submeter-pc-monitor-extract/e30c85d1-93b4-43e1-8c9b-a29f17355ddf/scratchpad/`.
