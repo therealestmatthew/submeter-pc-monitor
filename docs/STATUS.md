@@ -6,15 +6,15 @@ The state of the build, kept by the lead of `prompts/02-orchestration-prompt.md`
 
 | Field | Value |
 | --- | --- |
-| Updated | 2026-11-28 05:55, lead session 4: prompt section 0 steps 1 to 4 run; the Agent tool offers the seven roles (L4-1, section 7.5), so stop rule 13 no longer applies; P0-W1 selected (prompt 5.2) |
+| Updated | 2026-11-28 06:05, lead session 4: P0-W1 dispatched at B `799feea`, 2 builders |
 | Phase | P0, decision probes, CI and the baseline repairs (`docs/PLAN.md` 3.4) |
-| Wave | P0-W1, the pilot: selected; B is the commit that adds this line, and the dispatch follows it |
-| Base commit B | P0-W1: the commit that records the start of lead session 4 (this commit); its sha is written in section 4 by the commit `Dispatch P0-W1` (prompt 5.2 step 7: nothing is committed between fixing B and dispatching) |
+| Wave | P0-W1, the pilot: dispatched; step: review (prompt 5.4), as each builder returns |
+| Base commit B | P0-W1: `799feea19e9c226d4389104ae573fca389ef5b12` |
 | Width | 2 builders (pilot); cap 4 (plan 5.4) |
 | Gate P0 | not started |
 | Build machine | Linux (Q1, the owner, 2026-11-25). A Windows-only task is done only when CI-W passes. The owner runs the nine owner tasks by hand on the Windows 11 PC as a standard user |
 | Lead session | 4 (section 13), on Linux; started 2026-11-28 05:48 |
-| **Next action** | Lead session 4 runs P0-W1 from prompt 5.2 step 6: the seven checks at B, then the dispatch of P0-W1-T1 and P0-W1-T2 (2 builders), then `Dispatch P0-W1`. If this session ends before that commit exists, a new lead session starts again at prompt 5.2 with the current `main` as B. Still owed after P0-W1's record step and before P0-W2's base commit: the lead commits the two `AGENTS.md` wordings of section 7.7 and ends its session (prompt 5.7). If the baseline fails on CI-W, the fix wave P0-W1a runs first (prompt 8.5). B7 is asked again before P0-W4. |
+| **Next action** | P0-W1 is dispatched (sections 3.2 and 4). When a builder returns: read its report, check prompt 11.4 step 10, start a code reviewer for its branch (prompt 5.4). A new lead session that finds this line follows prompt section 9: for a task of section 3.2 with no verdict in section 3.1, send its branch to review if its last commit is `Report <task id>`, otherwise dispatch it again at the same B and round. After both tasks pass: merge in task order (prompt 6.2), wait for CI on both runners (5.6; a baseline failure on CI-W goes to prompt 8.5 and the fix wave P0-W1a), then the record step (5.7). Still owed after P0-W1's record step and before P0-W2's base commit: the lead commits the two `AGENTS.md` wordings of section 7.7 and ends its session (prompt 5.7). B7 is asked again before P0-W4. |
 
 ## 2. Entry conditions of the pilot P0-W1
 
@@ -37,8 +37,8 @@ States: `not started`, `held` (blocked by a decision, section 6), `dispatched`, 
 
 | Task | Title | Size | OS | Depends on | Blocked by | State | Builder | Reviewers | Rounds | Merge commit |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| P0-W1-T1 | CI on both runners, and the test markers | S | either; proves itself on CI-W and CI-L | none | — | not started | | | | |
-| P0-W1-T2 | Step-1 helper scripts for the owner's machine | M | either | none | — | not started | | | | |
+| P0-W1-T1 | CI on both runners, and the test markers | S | either; proves itself on CI-W and CI-L | none | — | dispatched | a2e4578a3da7272e7 | | 1 | |
+| P0-W1-T2 | Step-1 helper scripts for the owner's machine | M | either | none | — | dispatched | a06e70300853747a2 | | 1 | |
 | P0-W2-T1 | The test split and the layer rows | L | either | P0-W1-T1 | B10: the `AGENTS.md:35` wording is approved (section 7.7) but not yet on `main`; B9 decided 2026-11-26 | held | | | | |
 | P0-W2-T2 | Probe 1: the Job Object | M | Windows (CI-W) | none | — | not started | | | | |
 | P0-W2-T3 | The CLI package | M | either | P0-W1-T1 | — | not started | | | | |
@@ -68,6 +68,8 @@ One row per builder dispatched (prompt 5.3 step 3), written at dispatch; the wor
 
 | Task | Round | B | Model | Builder agent id | Dispatched | Branch | Worktree path |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| P0-W1-T1 | 1 | `799feea` | opus | a2e4578a3da7272e7 | 2026-11-28 06:05 | `task/P0-W1-T1` | |
+| P0-W1-T2 | 1 | `799feea` | opus | a06e70300853747a2 | 2026-11-28 06:05 | `task/P0-W1-T2` | |
 
 ### 3.3 Branches on origin
 
@@ -77,12 +79,14 @@ Every branch an agent or the lead is expected to push, added when the agent is d
 | --- | --- | --- | --- |
 | ~~`main`~~ | ~~the lead~~ | ~~2026-11-23~~ | ~~on `origin` at `76ebe71` (stage 2)~~ |
 | `main` | the lead | 2026-11-25 | always expected; at `72ea6f8` when lead session 1 began (replaces the row above, which gave stage 2's commit) |
+| `task/P0-W1-T1` | P0-W1-T1, builder a2e4578a3da7272e7 | 2026-11-28 06:05 | expected |
+| `task/P0-W1-T2` | P0-W1-T2, builder a06e70300853747a2 | 2026-11-28 06:05 | expected |
 
 ## 4. Waves of P0
 
 | Wave | Planned width | Run width | B (base) | Checks at B | Dispatch commit | I (last merge) | R (record) | Record review | CI on R |
 | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- |
-| P0-W1 | 2 | | | | | | | | |
+| P0-W1 | 2 | 2 | `799feea19e9c226d4389104ae573fca389ef5b12` | Linux, 2026-11-28, 19 s for all seven: sync=0 ruff=0 format=0 mypy=0 mypy-win32=0 mypy-linux=0 pytest=0; `61 passed, 1 xfailed in 2.99s` | (this commit) | | | | |
 | P0-W2 | 4 | | | | | | | | |
 | P0-W3 | 3 | | | | | | | | |
 | P0-W4 | 2 | | | | | | | | |
@@ -295,6 +299,8 @@ Recorded for each task and merge, so that the cap can be reviewed at gate P1 (pl
 
 | Task | Dispatched | uv sync (s) | Test-only push | Branch pushed | Verdict | Merged | Merge checks (s) | CI minutes |
 | --- | --- | ---: | --- | --- | --- | --- | ---: | ---: |
+| P0-W1-T1 | 2026-11-28 06:05 | | | | | | | |
+| P0-W1-T2 | 2026-11-28 06:05 | | | | | | | |
 
 ## 12. Skips new since the previous gate
 
