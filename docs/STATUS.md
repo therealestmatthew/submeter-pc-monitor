@@ -91,6 +91,7 @@ Every branch an agent or the lead is expected to push, added when the agent is d
 | `task/P0-W2-T2` | P0-W2-T2, builder a7992e3d5fa8dc7fa | 2026-11-28 09:21 | expected; open |
 | `task/P0-W2-T3` | P0-W2-T3, builder a7aecbc934e86a6c5 | 2026-11-28 09:21 | expected; open |
 | `task/P0-W2-T4` | P0-W2-T4, builder abc972094bf014fa3 | 2026-11-28 09:21 | expected; open |
+| `plan/pd-003-two-windows-machines` | the plan writer for PD-003, agent a98f4b6abeaaa8bee | 2026-11-28 09:21 | expected; open |
 
 ## 4. Waves of P0
 
