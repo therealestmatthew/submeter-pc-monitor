@@ -39,7 +39,7 @@ States: `not started`, `held` (blocked by a decision, section 6), `dispatched`, 
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | P0-W1-T1 | CI on both runners, and the test markers | S | either; proves itself on CI-W and CI-L | none | — | merged 2026-11-28 07:31 (review 1: CHANGES, 2026-11-28 06:12; review 2: PASS, 2026-11-28 07:30) | a2e4578a3da7272e7 | a9ed66ba48f1e849a (round 1), aa82c4bf999d77348 (round 2) | 2 | `202584d` |
 | P0-W1-T2 | Step-1 helper scripts for the owner's machine | M | either | none | — | merged 2026-11-28 08:16 (review 1: BLOCKED on size alone, 2026-11-28 07:38; review 2: PASS, 2026-11-28 08:16, after the size exception of PD-001) | a06e70300853747a2 | a4c80656d57c366e5 (round 1), a90f33ab3552dd27c (round 2) | 2 | `e17cd5b` |
-| P0-W2-T1 | The test split and the layer rows | L | either | P0-W1-T1 | — (B9 decided 2026-11-26; B10's line-35 wording is on `main` at `e41caa5`, 2026-11-28) | dispatched 2026-11-28 09:21 | abe7f596960e1ebe2 | | 1 | |
+| P0-W2-T1 | The test split and the layer rows | L | either | P0-W1-T1 | — (B9 decided 2026-11-26; B10's line-35 wording is on `main` at `e41caa5`, 2026-11-28) | passed (dispatched 2026-11-28 09:21; review 1: PASS, 2026-11-28 09:54) | abe7f596960e1ebe2 | a137d634e7b0f13c1 (round 1) | 1 | |
 | P0-W2-T2 | Probe 1: the Job Object | M | Windows (CI-W) | none | — | dispatched 2026-11-28 09:21 | a7992e3d5fa8dc7fa | | 1 | |
 | P0-W2-T3 | The CLI package | M | either | P0-W1-T1 | — | dispatched 2026-11-28 09:21 | a7aecbc934e86a6c5 | | 1 | |
 | P0-W2-T4 | Linux CI measurements for cgroup reads and full PSS | S | Linux (CI-L) | P0-W1-T1 | — | passed (dispatched 2026-11-28 09:21; review 1: PASS, 2026-11-28 09:54) | abc972094bf014fa3 | a9fa411307b8eaa34 (round 1) | 1 | |
