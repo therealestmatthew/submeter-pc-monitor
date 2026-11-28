@@ -6,15 +6,15 @@ The state of the build, kept by the lead of `prompts/02-orchestration-prompt.md`
 
 | Field | Value |
 | --- | --- |
-| Updated | 2026-11-28 08:57, lead session 4: wave P0-W1 is recorded and pushed. Both tasks merged; integration commit `e17cd5b`; CI success on both runners; the pilot is clean. The record review returned CHANGES in each of three rounds, all on the lead's bookkeeping in this file; the corrections are in, and the owner chose on 2026-11-28 to push the record without a fourth round (`docs/tasks/P0-W1-record-review.md`). OQ-01 is answered (section 7.10); PD-003 is open |
+| Updated | 2026-11-28 08:59, lead session 4, ended: wave P0-W1 is integrated (`e17cd5b`), recorded and pushed; the pilot is clean; the two approved `AGENTS.md` wordings are on `main` at `e41caa5` (the seven checks exit 0 there on Linux, `75 passed, 1 xfailed in 4.26s`); the two merged builders' worktrees are removed. Open: PD-003 (where Windows evidence comes from), B7 |
 | Phase | P0, decision probes, CI and the baseline repairs (`docs/PLAN.md` 3.4) |
-| Wave | P0-W1, the pilot: integrated, recorded and pushed; the record review note is `docs/tasks/P0-W1-record-review.md`. Next wave: P0-W2, planned width 4 |
+| Wave | P0-W1 is done. Next: P0-W2, planned width 4, not started |
 | Base commit B | P0-W1: `799feea19e9c226d4389104ae573fca389ef5b12`. P0-W2: not fixed; it is fixed by the next lead session after the `AGENTS.md` wordings are on `main` and the CI run of that commit has passed on both runners (prompt 5.2 step 6) |
 | Width | The pilot ran 2 builders and was clean (section 4), so later waves run at their planned width, up to the cap of 4 (plan 5.4) |
 | Gate P0 | not started |
 | Build machine | Linux (Q1, the owner, 2026-11-25). A Windows-only task is done only when CI-W passes. The owner runs the nine owner tasks by hand as a standard user: in full on a personal Windows 11 PC, whose evidence is pushed, and again on the work PC, from which nothing is committed or pushed and whose results the owner gives in a word (section 7.10, 2026-11-28; PD-003) |
-| Lead session | 4 (section 13), on Linux; started 2026-11-28 05:48 |
-| **Next action** | P0-W1 is recorded. In order: (1) lead session 4 pushes the record and its review note, removes the worktrees of the two merged tasks (prompt 5.7 step 6), commits the two `AGENTS.md` wordings of section 7.7 word for word, and ends its session (prompt 5.7). (2) The owner starts lead session 5 as before: the terminal in the repository root, `claude`, no `/cd`, and the message of prompt section 13. (3) Lead session 5 runs prompt section 0, then P0-W2 from prompt 5.2 at width 4: P0-W2-T1 (B9 and B10 are decided; it may be dispatched once the line-35 wording is on `main`), P0-W2-T2, P0-W2-T3, P0-W2-T4. Before fixing B it answers the lead's card questions CQ-04 to CQ-07 and checks that the CI run of B passed on both runners. Lead session 5 also has PD-003 (section 9; the owner's answers in section 7.10) corrected: the plan writer rewrites where Windows evidence comes from, the plan reviewer reads it, and the owner approves the wording before it is merged. The owner may try the step-1 procedure (`docs/review/ground-windows/step1-procedure.md` at `e17cd5b`) on the personal Windows 11 PC at any time, but commits no evidence until PD-003 is corrected. B7 is asked again before P0-W4. |
+| Lead session | 4 (section 13), on Linux; ended 2026-11-28 08:59 |
+| **Next action** | The owner starts lead session 5: the terminal already in the repository root (`cd /code/submeter-pc-monitor/submeter-pc-monitor-extract`), then `claude`, no `/cd` inside it and no `--effort ultracode`, and sends the message of prompt section 13. That session: (1) runs prompt section 0 and confirms its Agent tool offers the seven roles; (2) confirms the CI run of the current `main` passed on both runners (prompt 5.2 step 6); (3) answers the lead's card questions CQ-04 to CQ-07 (section 7.3); (4) runs P0-W2 from prompt 5.2 at width 4: P0-W2-T1, P0-W2-T2, P0-W2-T3, P0-W2-T4, none of them held; (5) alongside the wave, has PD-003 corrected (section 9; the owner's answers in section 7.10): the plan writer rewrites where Windows evidence comes from, the plan reviewer reads it, and the owner approves the wording before it is merged. Every decision for the owner is put as one question with the question tool, in plain words (section 7.11). The owner may try the step-1 procedure (`docs/review/ground-windows/step1-procedure.md`) on the personal Windows 11 PC at any time, but commits no evidence until PD-003 is corrected. Four reviewers' worktrees of this session remain under `.claude/worktrees/` (agents a9ed66ba48f1e849a, aa82c4bf999d77348, a4c80656d57c366e5, a90f33ab3552dd27c), unchanged and left to the runner's sweep. B7 is asked again before P0-W4. |
 
 ## 2. Entry conditions of the pilot P0-W1
 
@@ -39,7 +39,7 @@ States: `not started`, `held` (blocked by a decision, section 6), `dispatched`, 
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | P0-W1-T1 | CI on both runners, and the test markers | S | either; proves itself on CI-W and CI-L | none | — | merged 2026-11-28 07:31 (review 1: CHANGES, 2026-11-28 06:12; review 2: PASS, 2026-11-28 07:30) | a2e4578a3da7272e7 | a9ed66ba48f1e849a (round 1), aa82c4bf999d77348 (round 2) | 2 | `202584d` |
 | P0-W1-T2 | Step-1 helper scripts for the owner's machine | M | either | none | — | merged 2026-11-28 08:16 (review 1: BLOCKED on size alone, 2026-11-28 07:38; review 2: PASS, 2026-11-28 08:16, after the size exception of PD-001) | a06e70300853747a2 | a4c80656d57c366e5 (round 1), a90f33ab3552dd27c (round 2) | 2 | `e17cd5b` |
-| P0-W2-T1 | The test split and the layer rows | L | either | P0-W1-T1 | B10: the `AGENTS.md:35` wording is approved (section 7.7) but not yet on `main`; B9 decided 2026-11-26 | held | | | | |
+| P0-W2-T1 | The test split and the layer rows | L | either | P0-W1-T1 | — (B9 decided 2026-11-26; B10's line-35 wording is on `main` at `e41caa5`, 2026-11-28) | not started | | | | |
 | P0-W2-T2 | Probe 1: the Job Object | M | Windows (CI-W) | none | — | not started | | | | |
 | P0-W2-T3 | The CLI package | M | either | P0-W1-T1 | — | not started | | | | |
 | P0-W2-T4 | Linux CI measurements for cgroup reads and full PSS | S | Linux (CI-L) | P0-W1-T1 | — | not started | | | | |
@@ -68,9 +68,9 @@ One row per builder dispatched (prompt 5.3 step 3), written at dispatch; the wor
 
 | Task | Round | B | Model | Builder agent id | Dispatched | Branch | Worktree path |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| P0-W1-T1 | 1 | `799feea` | opus | a2e4578a3da7272e7 | 2026-11-28 06:02 (the builder's own start, 06:02:57; the lead read the clock at 06:05, after both builders were started) | `task/P0-W1-T1` | `/code/submeter-pc-monitor/submeter-pc-monitor-extract/.claude/worktrees/agent-a2e4578a3da7272e7` |
+| P0-W1-T1 | 1 | `799feea` | opus | a2e4578a3da7272e7 | 2026-11-28 06:02 (the builder's own start, 06:02:57; the lead read the clock at 06:05, after both builders were started) | `task/P0-W1-T1` | `/code/submeter-pc-monitor/submeter-pc-monitor-extract/.claude/worktrees/agent-a2e4578a3da7272e7` (removed 2026-11-28 with `git worktree remove`, after the merge) |
 | P0-W1-T1 | 2 | `799feea` | opus | a2e4578a3da7272e7 (the same builder, continued) | 2026-11-28 06:12 (the builder's own round 2 start, 06:12:54) | `task/P0-W1-T1` | as round 1 |
-| P0-W1-T2 | 1 | `799feea` | opus | a06e70300853747a2 | 2026-11-28 06:03 (the builder's own start, 06:03:00; the lead read the clock at 06:05, after both builders were started) | `task/P0-W1-T2` |`/code/submeter-pc-monitor/submeter-pc-monitor-extract/.claude/worktrees/agent-a06e70300853747a2` |
+| P0-W1-T2 | 1 | `799feea` | opus | a06e70300853747a2 | 2026-11-28 06:03 (the builder's own start, 06:03:00; the lead read the clock at 06:05, after both builders were started) | `task/P0-W1-T2` |`/code/submeter-pc-monitor/submeter-pc-monitor-extract/.claude/worktrees/agent-a06e70300853747a2` (removed 2026-11-28 with `git worktree remove`, after the merge) |
 
 ### 3.3 Branches on origin
 
@@ -127,7 +127,7 @@ Plan 5.6 decisions that a P0 task or the P0 gate needs, and the rows gate item P
 | P0.8 f | The breakaway record of probe 1 step f | skipped with B16's reason if node or bash is absent | open; recorded at P0-O2 | | | | |
 | B7 | The eight bounds `docs/08-configuration.md:78-94` marks "not set yet" | none | open; blocks P0-W4-T2. The owner, 2026-11-26: "B7: not answered yet; hold P0-W4-T2 and ask me again before P0-W4." | | | | |
 | B9 | How `submeter run` reaches the launcher, and the report's place in `LAYER` | (a): the CLI starts the launcher as a child process; `report` at layer 2 importing only `core` | decided | (a) | the owner's words, section 7.7 | the owner | 2026-11-26 |
-| B10 | The `AGENTS.md` wordings of plan 11.6 | line 35 reworded (prompt section 12, S3-8); the other lines unchanged | decided; not yet applied. P0-W2-T1 stays held until the line-35 wording is on `main` | lines 35 and 46 reworded as section 7.7 gives them; the other lines unchanged | the owner's words, section 7.7 | the owner | 2026-11-26 |
+| B10 | The `AGENTS.md` wordings of plan 11.6 | line 35 reworded (prompt section 12, S3-8); the other lines unchanged | decided and applied: both wordings are on `main` at `e41caa5` (2026-11-28), so P0-W2-T1 is no longer held | lines 35 and 46 reworded as section 7.7 gives them; the other lines unchanged | the owner's words, section 7.7 | the owner | 2026-11-26 |
 | B16 | Whether node.exe and bash.exe are on the owner's machine, and whether they may be installed | probe 1 and the P1 gate skip those steps and say so | decided | the default: probe 1 and the P1 gate skip those steps and say so | the owner's words, section 7.7 | the owner | 2026-11-26 |
 
 The other decisions (B8, B11 to B15, B17 to B20) are needed from P1 on; plan 11.10 says which wave meets each.
@@ -379,7 +379,7 @@ One row per lead session, added at its start and committed with its first commit
 | 1 | 2026-11-25 00:15 | Linux | 2.1.322 (Claude Code) | not recorded by session 1; its last commit `cda57da` is dated 2026-11-25 00:18, and the conversation was then cleared with `/clear` (written by lead session 2) | Stop rule 13: L1-1 and L1-2 (section 7.5) | The owner starts a new lead session in the repository root, without ultracode |
 | 2 | 2026-11-26 04:37 | Linux | 2.1.322 (Claude Code) | 2026-11-26 04:39 | Stop rule 13: the Agent tool refuses the seven roles (L2-2), because this is session 1's process after `/clear`. Prompt section 0 steps 1 to 3 run; step 4 not read; nothing dispatched | The owner closes this Claude Code process and starts a new one in the repository root (section 1) |
 | 3 | 2026-11-26 06:52 | Linux | 2.1.322 (Claude Code) | 2026-11-26 06:53 | Stop rule 13: the Agent tool refuses the seven roles in a new process (L3-1). Prompt section 0 steps 1 to 3 run; step 4 not read, because nothing was dispatched; the owner's answers recorded (section 7.7) | The owner starts `claude` with the terminal already in the repository root, without `/cd` (section 1) |
-| 4 | 2026-11-28 05:48 | Linux | 2.1.322 (Claude Code) | | | |
+| 4 | 2026-11-28 05:48 | Linux | 2.1.322 (Claude Code) | 2026-11-28 08:59 | The approved `AGENTS.md` wordings were committed (`e41caa5`), and prompt 5.7 ends the session after such a change so that builders start with the new rules. Wave P0-W1 ran from select to record in this session | The owner starts lead session 5 (section 1) |
 
 ## 14. How to update this file
 
