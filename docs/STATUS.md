@@ -6,7 +6,7 @@ The state of the build, kept by the lead of `prompts/02-orchestration-prompt.md`
 
 | Field | Value |
 | --- | --- |
-| Updated | 2026-11-28 08:33, lead session 4: wave P0-W1 recorded. Both tasks merged; integration commit `e17cd5b`; CI success on both runners; the pilot is clean |
+| Updated | 2026-11-28 08:33, lead session 4: wave P0-W1 recorded. Both tasks merged; integration commit `e17cd5b`; CI success on both runners; the pilot is clean. The record review's round 1 asked for the review times of P0-W1-T2, now restored; OQ-01 (section 7.9) is open |
 | Phase | P0, decision probes, CI and the baseline repairs (`docs/PLAN.md` 3.4) |
 | Wave | P0-W1, the pilot: integrated and recorded; the record review is `docs/tasks/P0-W1-record-review.md`. Next wave: P0-W2, planned width 4 |
 | Base commit B | P0-W1: `799feea19e9c226d4389104ae573fca389ef5b12`. P0-W2: not fixed; it is fixed by the next lead session after the `AGENTS.md` wordings are on `main` and the CI run of that commit has passed on both runners (prompt 5.2 step 6) |
@@ -38,7 +38,7 @@ States: `not started`, `held` (blocked by a decision, section 6), `dispatched`, 
 | Task | Title | Size | OS | Depends on | Blocked by | State | Builder | Reviewers | Rounds | Merge commit |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | P0-W1-T1 | CI on both runners, and the test markers | S | either; proves itself on CI-W and CI-L | none | — | merged 2026-11-28 07:31 (review 1: CHANGES, 2026-11-28 06:12; review 2: PASS, 2026-11-28 07:30) | a2e4578a3da7272e7 | a9ed66ba48f1e849a (round 1), aa82c4bf999d77348 (round 2) | 2 | `202584d` |
-| P0-W1-T2 | Step-1 helper scripts for the owner's machine | M | either | none | — | merged 2026-11-28 08:16 (review 1: BLOCKED on size alone; review 2: PASS, after the size exception of PD-001) | a06e70300853747a2 | a4c80656d57c366e5 (round 1), a90f33ab3552dd27c (round 2) | 2 | `e17cd5b` |
+| P0-W1-T2 | Step-1 helper scripts for the owner's machine | M | either | none | — | merged 2026-11-28 08:16 (review 1: BLOCKED on size alone, 2026-11-28 07:40; review 2: PASS, 2026-11-28 08:16, after the size exception of PD-001) | a06e70300853747a2 | a4c80656d57c366e5 (round 1), a90f33ab3552dd27c (round 2) | 2 | `e17cd5b` |
 | P0-W2-T1 | The test split and the layer rows | L | either | P0-W1-T1 | B10: the `AGENTS.md:35` wording is approved (section 7.7) but not yet on `main`; B9 decided 2026-11-26 | held | | | | |
 | P0-W2-T2 | Probe 1: the Job Object | M | Windows (CI-W) | none | — | not started | | | | |
 | P0-W2-T3 | The CLI package | M | either | P0-W1-T1 | — | not started | | | | |
@@ -295,6 +295,16 @@ From the builders' reports (the last commit of each task branch). Neither report
 | RQ-06 | P0-W1-T2 | `replace_names.py` replaces more than the card asks (`USERNAME`, `COMPUTERNAME`, the home folder with forward slashes and doubled backslashes, names in the paths it prints) | Accepted: each addition replaces more, never less | No; reported |
 | RQ-07 | P0-W1-T2 | The report commit has no blank line after its first line, so git shows the whole report as its subject | Left: a pushed commit is not rewritten. The subject starts with `Report P0-W1-T2`, which is what prompt section 9 looks for | No |
 
+### 7.9 The owner's note of 2026-11-28 on the Windows machine, and the question it opens
+
+The owner, 2026-11-28, after being told that P0-O1 may now be run: "Got it, I will find a personal use windows PC for testing before porting to my work machine."
+
+The owner also answered PD-002 on 2026-11-28 (section 9): asked whether the Windows user name or host name is literally `user` or `host`, "No."
+
+| Id | Question | Default | Mark |
+| --- | --- | --- | --- |
+| OQ-01 | The plan treats "the owner's machine" as one machine, the Windows 11 work computer; step 1's results feed B4, the restricted share (P0.5) and the Defender check (P0.3), which depend on that machine and its policy. Is the run on the personal PC (a) a rehearsal, whose output is not committed as gate evidence, with the gate still waiting for the work machine; or (b) the target for now, whose evidence counts for gate P0, with the work machine a later port (a plan change, read by the plan reviewer, and P0-O2 would run there too)? Put to the owner on 2026-11-28; not yet answered | (a), the lead's recommendation: it changes nothing in the plan | Before P0-O1's evidence is committed. Blocks no builder task of P0-W2 |
+
 ## 8. Change requests
 
 None. Format: `CR-nnn | requesting task | path | change | reason | decided by | decision | scheduled into`.
@@ -319,7 +329,7 @@ Recorded for each task and merge, so that the cap can be reviewed at gate P1 (pl
 | Task | Dispatched | uv sync (s) | Test-only push | Branch pushed | Verdict | Merged | Merge checks (s) | CI minutes |
 | --- | --- | ---: | --- | --- | --- | --- | ---: | ---: |
 | P0-W1-T1 | 2026-11-28 06:05 | 1.2 | 11:04:59Z | round 1 report `97877a9`; round 2 last change push 11:16:15Z, report `5b8bb43` | CHANGES 2026-11-28 06:12; PASS 2026-11-28 07:30 | 2026-11-28 07:31 | 23 (Linux): all seven exit 0, `64 passed, 1 xfailed in 6.25s` | run 46145099315 on `202584d`: success. Branch run 46139082966: Windows 32 s and Linux 10 s from sync to the last step |
-| P0-W1-T2 | 2026-11-28 06:05 | 0.9 | about 06:08:57 (the builder's clock) | round 1 report `6139e62`, last change push about 06:16; no round 2 commit | BLOCKED on size (round 1); PASS (round 2) | 2026-11-28 08:16 | 20 (Linux): all seven exit 0, `75 passed, 1 xfailed in 4.20s` | run 46148834972 on `e17cd5b`: success; checks-linux 16 s, checks-windows 42 s |
+| P0-W1-T2 | 2026-11-28 06:05 | 0.9 | about 06:08:57 (the builder's clock) | round 1 report `6139e62`, last change push about 06:16; no round 2 commit | BLOCKED on size 2026-11-28 07:40 (round 1); PASS 2026-11-28 08:16 (round 2) | 2026-11-28 08:16 | 20 (Linux): all seven exit 0, `75 passed, 1 xfailed in 4.20s` | run 46148834972 on `e17cd5b`: success; checks-linux 16 s, checks-windows 42 s |
 
 ## 12. Skips new since the previous gate
 
