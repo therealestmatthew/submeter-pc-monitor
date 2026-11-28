@@ -6,15 +6,15 @@ The state of the build, kept by the lead of `prompts/02-orchestration-prompt.md`
 
 | Field | Value |
 | --- | --- |
-| Updated | 2026-11-28 09:19, lead session 5, started 09:17: prompt section 0 run (`origin` is the repository's address and answers; the checkout was clean at `7a9e167`; the Agent tool offers the seven roles; CI run 46152325016 on `7a9e167` passed in checks-windows and checks-linux); card questions CQ-04 to CQ-07 answered with their defaults (section 7.3). Before that, lead session 4 ended 08:59: wave P0-W1 is integrated (`e17cd5b`), recorded and pushed; the pilot is clean; the two approved `AGENTS.md` wordings are on `main` at `e41caa5` (the seven checks exit 0 there on Linux, `75 passed, 1 xfailed in 4.26s`); the two merged builders' worktrees are removed. Open: PD-003 (where Windows evidence comes from), B7 |
+| Updated | 2026-11-28 09:21, lead session 5, started 09:17: wave P0-W2 dispatched at `37fe97b`, four builders; prompt section 0 run (`origin` is the repository's address and answers; the checkout was clean at `7a9e167`; the Agent tool offers the seven roles; CI run 46152325016 on `7a9e167` passed in checks-windows and checks-linux); card questions CQ-04 to CQ-07 answered with their defaults (section 7.3). Before that, lead session 4 ended 08:59: wave P0-W1 is integrated (`e17cd5b`), recorded and pushed; the pilot is clean; the two approved `AGENTS.md` wordings are on `main` at `e41caa5` (the seven checks exit 0 there on Linux, `75 passed, 1 xfailed in 4.26s`); the two merged builders' worktrees are removed. Open: PD-003 (where Windows evidence comes from), B7 |
 | Phase | P0, decision probes, CI and the baseline repairs (`docs/PLAN.md` 3.4) |
-| Wave | P0-W1 is done. Next: P0-W2, planned width 4, not started |
-| Base commit B | P0-W1: `799feea19e9c226d4389104ae573fca389ef5b12`. P0-W2: not fixed; it is fixed by the next lead session after the `AGENTS.md` wordings are on `main` and the CI run of that commit has passed on both runners (prompt 5.2 step 6) |
+| Wave | P0-W1 is done. P0-W2 is dispatched at width 4 (2026-11-28 09:21); no report back yet |
+| Base commit B | P0-W1: `799feea19e9c226d4389104ae573fca389ef5b12`. P0-W2: `37fe97b5028cbc13adfaba79bd1daf6b26df9b26` |
 | Width | The pilot ran 2 builders and was clean (section 4), so later waves run at their planned width, up to the cap of 4 (plan 5.4) |
 | Gate P0 | not started |
 | Build machine | Linux (Q1, the owner, 2026-11-25). A Windows-only task is done only when CI-W passes. The owner runs the nine owner tasks by hand as a standard user: in full on a personal Windows 11 PC, whose evidence is pushed, and again on the work PC, from which nothing is committed or pushed and whose results the owner gives in a word (section 7.10, 2026-11-28; PD-003) |
 | Lead session | 5 (section 13), on Linux; started 2026-11-28 09:17 |
-| **Next action** | Lead session 5 is running. Next: fix P0-W2's base commit B at the commit that records this (prompt 5.2 step 6: its CI run passes on both runners, the seven checks run at it), then dispatch P0-W2 at width 4: P0-W2-T1, P0-W2-T2, P0-W2-T3, P0-W2-T4, none of them held (prompt 5.3). Alongside the wave, PD-003 is corrected (section 9; the owner's answers in section 7.10): the plan writer rewrites where Windows evidence comes from, the plan reviewer reads it, and the owner approves the wording before it is merged. A session that resumes here follows prompt section 9. Every decision for the owner is put as one question with the question tool, in plain words (section 7.11). The owner may try the step-1 procedure (`docs/review/ground-windows/step1-procedure.md`) on the personal Windows 11 PC at any time, but commits no evidence until PD-003 is corrected. Four reviewers' worktrees of this session remain under `.claude/worktrees/` (agents a9ed66ba48f1e849a, aa82c4bf999d77348, a4c80656d57c366e5, a90f33ab3552dd27c), unchanged and left to the runner's sweep. B7 is asked again before P0-W4. |
+| **Next action** | Lead session 5 is running; P0-W2 is dispatched (sections 3.1 to 3.3). Next: as each builder returns, read its report and start its code reviewer (prompt 5.4); merge in ascending task number on PASS (prompt 5.5, 6.2). A session that resumes here follows prompt section 9. Alongside the wave, PD-003 is corrected (section 9; the owner's answers in section 7.10): the plan writer rewrites where Windows evidence comes from, the plan reviewer reads it, and the owner approves the wording before it is merged. A session that resumes here follows prompt section 9. Every decision for the owner is put as one question with the question tool, in plain words (section 7.11). The owner may try the step-1 procedure (`docs/review/ground-windows/step1-procedure.md`) on the personal Windows 11 PC at any time, but commits no evidence until PD-003 is corrected. Four reviewers' worktrees of this session remain under `.claude/worktrees/` (agents a9ed66ba48f1e849a, aa82c4bf999d77348, a4c80656d57c366e5, a90f33ab3552dd27c), unchanged and left to the runner's sweep. B7 is asked again before P0-W4. |
 
 ## 2. Entry conditions of the pilot P0-W1
 
@@ -39,10 +39,10 @@ States: `not started`, `held` (blocked by a decision, section 6), `dispatched`, 
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | P0-W1-T1 | CI on both runners, and the test markers | S | either; proves itself on CI-W and CI-L | none | — | merged 2026-11-28 07:31 (review 1: CHANGES, 2026-11-28 06:12; review 2: PASS, 2026-11-28 07:30) | a2e4578a3da7272e7 | a9ed66ba48f1e849a (round 1), aa82c4bf999d77348 (round 2) | 2 | `202584d` |
 | P0-W1-T2 | Step-1 helper scripts for the owner's machine | M | either | none | — | merged 2026-11-28 08:16 (review 1: BLOCKED on size alone, 2026-11-28 07:38; review 2: PASS, 2026-11-28 08:16, after the size exception of PD-001) | a06e70300853747a2 | a4c80656d57c366e5 (round 1), a90f33ab3552dd27c (round 2) | 2 | `e17cd5b` |
-| P0-W2-T1 | The test split and the layer rows | L | either | P0-W1-T1 | — (B9 decided 2026-11-26; B10's line-35 wording is on `main` at `e41caa5`, 2026-11-28) | not started | | | | |
-| P0-W2-T2 | Probe 1: the Job Object | M | Windows (CI-W) | none | — | not started | | | | |
-| P0-W2-T3 | The CLI package | M | either | P0-W1-T1 | — | not started | | | | |
-| P0-W2-T4 | Linux CI measurements for cgroup reads and full PSS | S | Linux (CI-L) | P0-W1-T1 | — | not started | | | | |
+| P0-W2-T1 | The test split and the layer rows | L | either | P0-W1-T1 | — (B9 decided 2026-11-26; B10's line-35 wording is on `main` at `e41caa5`, 2026-11-28) | dispatched 2026-11-28 09:21 | abe7f596960e1ebe2 | | 1 | |
+| P0-W2-T2 | Probe 1: the Job Object | M | Windows (CI-W) | none | — | dispatched 2026-11-28 09:21 | a7992e3d5fa8dc7fa | | 1 | |
+| P0-W2-T3 | The CLI package | M | either | P0-W1-T1 | — | dispatched 2026-11-28 09:21 | a7aecbc934e86a6c5 | | 1 | |
+| P0-W2-T4 | Linux CI measurements for cgroup reads and full PSS | S | Linux (CI-L) | P0-W1-T1 | — | dispatched 2026-11-28 09:21 | abc972094bf014fa3 | | 1 | |
 | P0-W3-T1 | The optional record fields, and the minute tier removed from the code | L | either | P0-W2-T1 | — | not started | | | | |
 | P0-W3-T2 | Named settings and rules files exit with code 2 | S | either | P0-W2-T3 | — | not started | | | | |
 | P0-W3-T3 | Static tests for the three fixed rules | S | either | none | — | not started | | | | |
@@ -71,6 +71,10 @@ One row per builder dispatched (prompt 5.3 step 3), written at dispatch; the wor
 | P0-W1-T1 | 1 | `799feea` | opus | a2e4578a3da7272e7 | 2026-11-28 06:02 (the builder's own start, 06:02:57; the lead read the clock at 06:05, after both builders were started) | `task/P0-W1-T1` | `/code/submeter-pc-monitor/submeter-pc-monitor-extract/.claude/worktrees/agent-a2e4578a3da7272e7` (removed 2026-11-28 with `git worktree remove`, after the merge) |
 | P0-W1-T1 | 2 | `799feea` | opus | a2e4578a3da7272e7 (the same builder, continued) | 2026-11-28 06:12 (the builder's own round 2 start, 06:12:54) | `task/P0-W1-T1` | as round 1 |
 | P0-W1-T2 | 1 | `799feea` | opus | a06e70300853747a2 | 2026-11-28 06:03 (the builder's own start, 06:03:00; the lead read the clock at 06:05, after both builders were started) | `task/P0-W1-T2` |`/code/submeter-pc-monitor/submeter-pc-monitor-extract/.claude/worktrees/agent-a06e70300853747a2` (removed 2026-11-28 with `git worktree remove`, after the merge) |
+| P0-W2-T1 | 1 | `37fe97b` | opus | abe7f596960e1ebe2 | 2026-11-28 09:21 (the lead read the clock after all four builders were started) | `task/P0-W2-T1` | |
+| P0-W2-T2 | 1 | `37fe97b` | opus | a7992e3d5fa8dc7fa | 2026-11-28 09:21 (the lead read the clock after all four builders were started) | `task/P0-W2-T2` | |
+| P0-W2-T3 | 1 | `37fe97b` | opus | a7aecbc934e86a6c5 | 2026-11-28 09:21 (the lead read the clock after all four builders were started) | `task/P0-W2-T3` | |
+| P0-W2-T4 | 1 | `37fe97b` | opus | abc972094bf014fa3 | 2026-11-28 09:21 (the lead read the clock after all four builders were started) | `task/P0-W2-T4` | |
 
 ### 3.3 Branches on origin
 
@@ -83,13 +87,17 @@ Every branch an agent or the lead is expected to push, added when the agent is d
 | `task/P0-W1-T1` | P0-W1-T1, builder a2e4578a3da7272e7 | 2026-11-28 06:05 | merged at `202584d`; branch tip `5b8bb43` |
 | `task/P0-W1-T2` | P0-W1-T2, builder a06e70300853747a2 | 2026-11-28 06:05 | merged at `e17cd5b`; branch tip `6139e62` |
 | `plan/p0-w1-t2-size` | the lead as plan writer (PD-001) | 2026-11-28 07:40 | merged at `5635cf4`; branch tip `95b52eb` |
+| `task/P0-W2-T1` | P0-W2-T1, builder abe7f596960e1ebe2 | 2026-11-28 09:21 | expected; open |
+| `task/P0-W2-T2` | P0-W2-T2, builder a7992e3d5fa8dc7fa | 2026-11-28 09:21 | expected; open |
+| `task/P0-W2-T3` | P0-W2-T3, builder a7aecbc934e86a6c5 | 2026-11-28 09:21 | expected; open |
+| `task/P0-W2-T4` | P0-W2-T4, builder abc972094bf014fa3 | 2026-11-28 09:21 | expected; open |
 
 ## 4. Waves of P0
 
 | Wave | Planned width | Run width | B (base) | Checks at B | Dispatch commit | I (last merge) | R (record) | Record review | CI on R |
 | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- |
 | P0-W1 | 2 | 2 | `799feea19e9c226d4389104ae573fca389ef5b12` | Linux, 2026-11-28, 19 s for all seven: sync=0 ruff=0 format=0 mypy=0 mypy-win32=0 mypy-linux=0 pytest=0; `61 passed, 1 xfailed in 2.99s` | `9f937ac` | `e17cd5b` (merge of P0-W1-T2; P0-W1-T1 merged at `202584d`). CI run 46148834972 on it: success, checks-linux 16 s, checks-windows 42 s | `d3849be` (`Record P0-W1`) with its corrections `da4c1b1`, `bc6afd0`, `8423e7c` and `53db195` | `docs/tasks/P0-W1-record-review.md`: CHANGES in each of three rounds, all on this file's bookkeeping and none on the merges; pushed on the owner's decision of 2026-11-28 without a PASS | read when P0-W2's base commit is fixed (prompt 5.2 step 6) |
-| P0-W2 | 4 | | | | | | | | |
+| P0-W2 | 4 | 4 | `37fe97b5028cbc13adfaba79bd1daf6b26df9b26` (CI run 46154045727 on it: success in checks-windows and checks-linux) | Linux, 2026-11-28, 20 s for all seven: sync=0 ruff=0 format=0 mypy=0 mypy-win32=0 mypy-linux=0 pytest=0; `75 passed, 1 xfailed in 4.09s` | | | | | |
 | P0-W3 | 3 | | | | | | | | |
 | P0-W4 | 2 | | | | | | | | |
 | P0-W5 | 2 | | | | | | | | |
