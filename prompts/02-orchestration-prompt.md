@@ -53,8 +53,8 @@ Your own context is the scarce resource. Read summaries: task reports, review ve
 Stop and ask the owner when:
 
 1. a phase gate is reached (section 7);
-2. probe 2 fires the Rust trigger of `docs/11-language.md:21-24` (decision B2): stop before P2;
-3. probe 1's step a or b fails: this user cannot create a Job Object, or a child inside a new one;
+2. probe 2 fires the Rust trigger of `docs/11-language.md:21-24` (decision B2), on a result from either Windows machine (plan 6.2 step 4): stop before P2;
+3. probe 1's step a or b fails, on a result from either Windows machine (plan 6.2 step 4): this user cannot create a Job Object, or a child inside a new one;
 4. a fixed rule is at risk (section 2), `tests/test_fixed_rules.py` fails on `main`, or any step on the work computer asks to elevate;
 5. security software or policy on the work computer blocks a step (an attack surface reduction event naming python.exe, an AppLocker or Device Guard refusal, a quarantined file); never work round it;
 6. a push to `origin` is refused;
