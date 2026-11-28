@@ -53,8 +53,8 @@ Your own context is the scarce resource. Read summaries: task reports, review ve
 Stop and ask the owner when:
 
 1. a phase gate is reached (section 7);
-2. probe 2 fires the Rust trigger of `docs/11-language.md:21-24` (decision B2): stop before P2;
-3. probe 1's step a or b fails: this user cannot create a Job Object, or a child inside a new one;
+2. probe 2 fires the Rust trigger of `docs/11-language.md:21-24` (decision B2), on a result from either Windows machine (plan 6.2 step 4): stop before P2;
+3. probe 1's step a or b fails, on a result from either Windows machine (plan 6.2 step 4): this user cannot create a Job Object, or a child inside a new one;
 4. a fixed rule is at risk (section 2), `tests/test_fixed_rules.py` fails on `main`, or any step on the work computer asks to elevate;
 5. security software or policy on the work computer blocks a step (an attack surface reduction event naming python.exe, an AppLocker or Device Guard refusal, a quarantined file); never work round it;
 6. a push to `origin` is refused;
@@ -66,7 +66,7 @@ Stop and ask the owner when:
 12. this session runs on a machine other than the build machine the owner named (Q1; section 5.1 item 3);
 13. the permission rules or hooks this build relies on are not in force in this session (section 11.3 for Claude Code).
 
-Hold a task and ask, while other work continues, when: a decision of plan section 5.6 that blocks it is not recorded; it needs an approval only the owner gives (plan 10.2, "Approvals only the owner can give"); the brief and the code disagree, or the brief leaves open something no decision or choice covers (`AGENTS.md`, last section); it fails its escalated review (section 8.1); an owner task it depends on is outstanding; or something recorded on the work computer is waiting for the owner to read it.
+Hold a task and ask, while other work continues, when: a decision of plan section 5.6 that blocks it is not recorded; it needs an approval only the owner gives (plan 10.2, "Approvals only the owner can give"); the brief and the code disagree, or the brief leaves open something no decision or choice covers (`AGENTS.md`, last section); it fails its escalated review (section 8.1); an owner task it depends on is outstanding; or something recorded on the owner's personal Windows PC is waiting for the owner to read it (nothing recorded on the work PC is ever committed, pushed or merged; its results are the owner's one-word statements, plan 3.1, Owner tasks).
 
 Handle and report: a merge conflict (section 6.4), a red check after a merge that one fix task makes green, a wave run narrower than planned, a builder whose working copy is not at its base commit.
 
@@ -184,7 +184,7 @@ Processes stopped: list, or "none started"
 ### 3.6 Test runner
 
 - **Reads:** `docs/PLAN.md` 6.2 steps 2 and 3, the phase's gate section, and the gate commit G the lead gives.
-- **May change:** only the evidence folder of the gate (`docs/gates/P<n>/` without `owner/` and `verdict.md`; for P0, `docs/review/ground-windows/ci/`), on the branch `evidence/P<n>` cut from G, which it pushes. When the owner allows it and the session runs on the owner's Windows computer as the signed-in standard user, it may also run an owner task's commands and commit that task's folder on `owner/<task id>` (plan 6.1); the steps that need the owner in person stay with the owner.
+- **May change:** only the evidence folder of the gate (`docs/gates/P<n>/` without `owner/` and `verdict.md`; for P0, `docs/review/ground-windows/ci/`), on the branch `evidence/P<n>` cut from G, which it pushes. When the owner allows it and the session runs on the owner's personal Windows PC as the signed-in standard user, it may also run an owner task's commands and commit that task's folder on `owner/<task id>` (plan 6.1); the steps that need the owner in person stay with the owner. It never runs on the work PC, from which nothing is committed or pushed.
 - **Never:** changes code, tests or any file outside that folder; judges an item; pushes `main`.
 - **Returns:** the evidence branch and its last commit; one line per saved file with its exit code; anything that could not run and why.
 - **Done when:** every file plan 6.2 steps 2 and 3 (and the phase's own additions) name exists on the branch, starts with `$ <command>` and ends with `exit=<code>`, names are replaced (`scripts/probes/replace_names.py`), and the branch is pushed.
@@ -207,7 +207,7 @@ Processes stopped: list, or "none started"
 
 ### 3.9 Owner
 
-Runs the owner tasks on the Windows computer as the signed-in standard user, reads every file recorded there before it is pushed, rules where the plan says the owner rules, approves `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json` and dependency changes, and approves every gate.
+Runs the owner tasks as the signed-in standard user on the personal Windows 11 PC, the machine of record, and reads every file recorded there before it is pushed from there; runs P0-O1 and P0-O2, and from P1 on only each gate's owner check run (plan 6.2 step 4), again on the work PC, from which nothing is committed or pushed, and tells the lead each item's result in one word, which the lead records as the owner's statement with the date in the gate section of `docs/STATUS.md`, in the table "Work PC results by word" (plan 3.1, Owner tasks; 6.2 step 4); rules where the plan says the owner rules, approves `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json` and dependency changes, and approves every gate.
 
 ## 4. Where the state lives
 
@@ -222,7 +222,7 @@ A new session can resume from these alone.
 | Dispatches, branches, unplanned tasks | `docs/STATUS.md` section 3.2 (one row per dispatch: task, round, B, model, agent id, time, worktree path), 3.3 (every branch an agent or the lead is expected to push, added when that agent is dispatched or the lead pushes it) and 10 (unplanned tasks, with their Owns lines) | the lead |
 | Other review notes | `docs/tasks/<wave id>-record-review.md` (record reviews), `docs/tasks/plan-review-<nnn>.md` (plan changes), `docs/tasks/investigation-<nnn>.md` (failure investigations) | the lead, from the reply |
 | A builder's work and report | branch `task/<task id>` on `origin`; the report is its last commit | the builder |
-| Owner evidence | branch `owner/<task id>`, then the task's folder (plan 3.1, Owner tasks) | the owner, or the test runner on the owner's computer |
+| Owner evidence | branch `owner/<task id>`, then the task's folder (plan 3.1, Owner tasks); the work PC's one-word results in the table "Work PC results by word" of `docs/STATUS.md`'s gate section (section 5 for P0) | the owner, or the test runner on the owner's personal Windows PC, from that PC only; the lead records the work PC's words |
 | Gate evidence and verdict | `docs/gates/P<n>/` (P0: `docs/review/ground-windows/` and `docs/gates/P0/verdict.md`); branches `gate/P<n>` and `evidence/P<n>`; tag `gate-P<n>` | test runner, owner, lead |
 
 Every commit on `main` is one of these, and nothing else:
@@ -380,7 +380,7 @@ A merged diff that touches a path outside the task's Owns line is handled the sa
 
 ### 6.5 Owner-task branches
 
-Merge `owner/<task id>` the same way once a code reviewer has read it and, from P2, the anonymisation scan has passed (plan 6.2 step 5). `git diff --name-only <pre> HEAD` must list only that task's folder. The owner reads every file recorded on the work computer before it is pushed; never merge one the owner has not read.
+Merge `owner/<task id>` the same way once a code reviewer has read it and, from P2, the anonymisation scan has passed (plan 6.2 step 5). `git diff --name-only <pre> HEAD` must list only that task's folder. Every `owner/` branch is pushed from the owner's personal Windows PC; the owner reads every file recorded there before it is pushed; never merge one the owner has not read. Nothing from the work PC is ever merged: its results are the owner's one-word statements, which the lead records with the date in the table "Work PC results by word" of `docs/STATUS.md`'s gate section (plan 6.2 step 4).
 
 ## 7. The gate procedure
 
@@ -389,7 +389,7 @@ Every phase ends at a gate. No task of the next phase is dispatched until the ow
 1. **Entry** (plan 6.2): every builder task of the phase merged and recorded; every owner task done or the last one due at the gate commit; every blocking decision recorded; every change request against the phase merged or moved with the owner's agreement.
 2. **Gate commit G** (lead): `git push origin <G>:refs/heads/gate/P<n>`, with the sha and n written out; record G in `docs/STATUS.md` section 5, and the branches `gate/P<n>` and `evidence/P<n>` in section 3.3.
 3. **Checks and harness, then CI** (test runner, plan 6.2 steps 2 and 3, and for P0 the variant in plan 6.4): in a new working copy at G; evidence pushed on `evidence/P<n>`.
-4. **Owner check run and the last owner task** (owner, plan 6.2 step 4), on the work computer at G.
+4. **Owner check run and the last owner task** (owner, plan 6.2 step 4) at G: on the personal Windows 11 PC, whose evidence is pushed on `owner/<task id>`, then on the work PC (for P0, P0-O2 in full; from P1, only the owner check run), whose results the owner tells you in one word each and you record as the owner's statement with the date in the table "Work PC results by word" of the phase's gate section in `docs/STATUS.md`. Nothing from the work PC is committed or pushed.
 5. **Merge the evidence** (lead, plan 6.2 step 5): `git diff --name-only <G> HEAD` lists only the gate's evidence folders; write the phase's entry in `docs/STATUS.md` from the evidence (S3); run the seven checks; commit and push. That commit is E.
 6. **Review** (gate reviewer, plan 6.2 step 6) at E. For P0, the plan reviewer also checks the decision rows (P0.12).
 7. **Record and ask** (lead, plan 6.2 step 7): write `docs/gates/P<n>/verdict.md` with G, E, the date, the reviewer's reply word for word and the rulings asked for. Commit, push, and put the gate to the owner with the message of section 10.3.
@@ -581,14 +581,14 @@ How the lead knows trust was accepted. Claude Code gives a session no message th
 
 ### 11.6 Windows
 
-These apply if the build sessions run on the owner's Windows 11 computer (question Q1). A lead that runs elsewhere when Q1 names that computer stops (5.1 item 3); the owner starts the lead in a clone on Windows that meets E5.
+These apply if the build sessions run on the owner's personal Windows 11 PC (question Q1); no build session runs on the work PC, from which nothing is committed or pushed. A lead that runs elsewhere when Q1 names that computer stops (5.1 item 3); the owner starts the lead in a clone on Windows that meets E5.
 
 - **No sandbox.** "On native Windows, Claude Code runs commands unsandboxed." Only permission rules and the hooks limit what a command can touch. Keep the allow list narrow; never use `bypassPermissions`.
 - **Shells.** Git for Windows is required: every subagent uses the Bash tool (Git Bash), and the hooks run in Git Bash (`shell: bash`; with `onFailure: block` a hook that cannot run blocks the command). With Git Bash installed, "the tool [PowerShell] is on by default for claude.ai and Console accounts" and "Claude treats PowerShell as the primary shell"; no subagent definition lists PowerShell, so that the full worktree checks and the hooks apply. Git for Windows is software for the owner to approve if it is not already there.
 - **Path length.** Every path inside a worktree gains `.claude\worktrees\<name>\`. The deepest path in a virtual environment today is 107 characters below the worktree root, and the deepest tracked path is 63. Keep the repository at a root of 40 characters or fewer (for example `C:\src\submeter`, 15) so that root, worktree folder and virtual environment stay under 260. Set `git config core.longpaths true` in that clone (repository-local; no administrator rights). Do not change the Windows `LongPathsEnabled` setting: it needs administrator rights.
 - **Locks.** A running process holds its virtual environment's `python.exe` and extension modules and every SQLite file it has open, with its `-wal` and `-shm`. `uv sync` and `git worktree remove` then fail. Builders stop every process they started (3.4 step 7); tests use temporary folders; never run two `uv sync` in one worktree at once; if a removal fails on a lock, find the process, do not force it.
 - **Line endings.** `.gitattributes` holds `* text=auto eol=lf`, so text files are checked out with LF. The code reviewer rejects a diff that changes every line of a file without changing its content. Windows PowerShell 5.1 writes UTF-16 with a bare `>`; evidence goes through `Out-File -Encoding utf8` (plan 6.2 step 4).
-- **Antivirus.** Defender scans each new virtual environment and every small file a test writes. Expect `uv sync` and the first test run in each worktree to be slower than on Linux; the builder's report records the `uv sync` time and the lead records the merge-check time, so the cap can be reviewed at gate P1. Never add a Defender exclusion: it needs administrator rights and changes the work computer's security settings.
+- **Antivirus.** Defender scans each new virtual environment and every small file a test writes. Expect `uv sync` and the first test run in each worktree to be slower than on Linux; the builder's report records the `uv sync` time and the lead records the merge-check time, so the cap can be reviewed at gate P1. Never add a Defender exclusion: it needs administrator rights and changes the computer's security settings.
 - **Approvals.** On Windows a "Yes, and don't ask again" given in a worktree "stays with that worktree", so a standing approval must be in `.claude/settings.json` before the wave, not given during it.
 
 ### 11.7 Resuming in Claude Code
