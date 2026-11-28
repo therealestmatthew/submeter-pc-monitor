@@ -54,3 +54,66 @@ The change: branch `plan/pd-003-two-windows-machines`, written by the plan write
 > - **Checker definitions keep no file-editing tool:** not applicable, for the same reason.
 >
 > I committed and pushed nothing. I only ran read-only git commands in /code/submeter-pc-monitor/submeter-pc-monitor-extract/.claude/worktrees/agent-a1f5e59e5a3e3de57.
+
+## Round 2
+
+- Reviewer agent id: afde2222ef6dd79af
+- Date: 2026-11-28
+- Branch tip read: `8f0df3fc3a6ff19fbd0aee95a35de602ec7a7db9`
+- Verdict: CHANGES
+- Reply (word for word):
+
+> CHANGES
+>
+> 1. **`docs/tasks/P0-O2.md:117` contradicts `docs/PLAN.md:2182` (P0.12), `:2193` and the card's own line 113.** Round 2 made probe 2's trigger a stop on either machine, not a ruling at the gate. P0.12 now says: "The B2 row records the work PC's trigger word too, but a difference there is not ruled at the gate: a trigger that fires on either machine stops the build". Card line 113 was changed to match: "Probe 2's trigger is not ruled that way". Line 117 was not changed. It still says CQ-15, the rule that sends a difference to the owner at the gate, "covers B3 and probe 2's trigger too". This is a new contradiction that round 2 left behind. Evidence: `git diff f4e9612 8f0df3f -- docs/tasks/P0-O2.md` changes only line 113, and `git show origin/plan/pd-003-two-windows-machines:docs/tasks/P0-O2.md | sed -n 117p` shows the old text.
+>
+> 2. **`docs/PLAN.md:478` (P0-O1 Uses) and `docs/tasks/P0-O1.md:39` still describe only the personal PC run.** Both say the task uses "the scripts of P0-W1-T2 ... at the P0-W1 integration commit". Round 1's defect 1 named this line along with the Work line. Round 2 fixed Work (line 479), Depends on and OS (line 481), but not Uses. The work PC run uses the procedure at a later commit, with P0-W3-T4's summary screen. Line 479 says it "is made at a commit the lead names after the unplanned task P0-W3-T4 ... is merged". So for that run the Uses line names the wrong commit and leaves out the summary screen. The fix is one clause in each file.
+>
+> **The plan writer's question.** The OS line's pointer to "the later commit the Work line names" is not a defect. The commit cannot be known when the plan is written. The Work line (`PLAN.md:479`) says who names it (the lead) and when (after P0-W3-T4 is merged), and 6.2 step 4 (`:2119`) and 6.4 (`:2193`) say the same. It reads clearly. One gap that is not a contradiction: the card says the lead records that commit beside the words (`P0-O1.md:16`, Acceptance 7 at `:99`) and cites plan 3.4 and 6.2 step 4 for it, but neither passage says so. It would be cleaner if 6.2 step 4 said it, but I am not counting it as a defect.
+>
+> **Something for the lead, outside this branch.** The first bullet of `docs/STATUS.md` 7.12, "What this settles", still says that when the machines differ on probe 2's trigger, the owner rules at the gate. The plan now follows the owner's own fourth answer instead: "Yes, either machine stops it". The branch is right and that bullet is out of date. Please correct it when you merge.
+>
+> The prompt's section 3.9 is the Owner role. The plan reviewer's reply form is in section 3.3, which gives PASS / CHANGES / NEEDS OWNER (not BLOCKED), so I used that.
+>
+> Checklist, plan change and cards (whole diff `origin/main...origin/plan/pd-003-two-windows-machines`, merge base `2c89335`, tip `8f0df3f`):
+> - **Files changed:** only the four allowed (`git diff --stat`: `docs/PLAN.md`, `docs/tasks/P0-O1.md`, `docs/tasks/P0-O2.md`, `prompts/02-orchestration-prompt.md`).
+> - **Round 1 defect 1 (the work PC's commit and dependency):** answered in the plan, apart from defect 2 above.
+>   - 3.1 (`:230`) names P0-W3-T4 and says the work PC run of P0-O1 waits for it.
+>   - 3.4 Work, Depends on and OS (`:479`, `:481`) are updated.
+>   - 5.5 (`:1965`) records P0-W3-T4 as a known unplanned task.
+>   - 6.2 step 4 (`:2119`) makes P0-O1 the exception to "same commit".
+>   - 6.4 Procedure (`:2193`) and 10.2 (`:3367`) are updated.
+>   - The card's Base commit (`:16`) now matches, and CQ-13 (`:117`) is marked as settled by the plan.
+> - **Round 1 defect 2 (stop rules 2 and 3 on either machine):** answered in the plan.
+>   - 6.2 step 4 (`:2119`) has "Items 2 to 5 of 10.3 apply ... stops the build on a result from either machine".
+>   - P0.8 and P0.9 (`:2179`, `:2180`) each have "on either machine".
+>   - P0.12 (`:2182`) and 6.4 Procedure (`:2193`) are updated.
+>   - 10.3 items 2 and 3 (`:3436`, `:3437`) are updated.
+>   - The prompt's stop rules 2 and 3 (lines 56 and 57) are updated.
+> - **Round 1 defect 3 (Git for Windows):** answered. `:3508` now reads "Git for Windows on the owner's personal Windows PC".
+> - **Round 1 defect 4 (owner time):** answered. The figures add up.
+>   - 3.4 Time lines (`:481`, `:490`) say "on each of the two machines".
+>   - In 10.1, P0 is 5 h 30 min (`:3291`). The total is 7 h 5 min plus 2 h 45 min, which is 9 h 50 min (`:3297`).
+>   - K27 says "about 9 h 50 min" (`:2821`).
+>   - The 6.10 note (`:2326`), 10.1 note (`:3299`) and K27 all state that the later gates' check runs on the work PC are not counted.
+>   - The 10.2 G0 row says "about 2 h on each machine" (`:3370`).
+> - **Cards match plan section 3:** Owns, Tests first ("none"), Depends on, Time, OS and Gate evidence match for P0-O1 and P0-O2. The exception is Uses (defect 2). Neither Owns line is in the diff.
+> - **Card for an unplanned task:** none in this change. P0-W3-T4's card is out of scope, as you said.
+> - **No path with two owners in one wave:** no Owns line changed. P0-W3-T4 will be the fourth task in P0-W3, which is still within the cap of 4. The Owns lines of P0-W3-T1 to T3 (`PLAN.md:371-395`) include nothing under `docs/review/ground-windows/` or `scripts/probes/`.
+> - **Every dependency in an earlier wave:** P0-O1 is outside the waves. Its work PC run depends on P0-W3-T4 (P0-W3), and what it feeds (B4 in P2, and gate P0) comes later. P0-O2 is unchanged.
+> - **STATUS 7.10 and 7.12:**
+>   - The personal PC is the machine of record: matches (`:27`, `:230`, `:2025`).
+>   - Nothing from the work PC is committed or pushed: matches (`:230`, `:479`, `:2119`, `:3452`, `:3506`; prompt sections 1, 3.6, 3.9, the section 4 table, 6.5, 7 step 4 and 11.6). No added passage commits from the work PC.
+>   - One word per item: matches (`:230`, `:2119`, and the cards' summary tables).
+>   - Only P0-O1, P0-O2 and later check runs are made on the work PC: matches (`:230`; the P2-O1 and P5-O1 OS lines say the personal PC only, at `:869` and `:1448`).
+>   - A difference on a choice made by rule goes to the owner at the gate: matches for B3 and B4 (P0.12, 5.6 at `:1976-1977`, 11.2 at `:3540-3541`). B1 and B2 are already the owner's decisions (5.6 at `:1974-1975`).
+>   - Stop rules 2 and 3 on either machine: matches.
+>   - Stop rules 4 and 5 for the work PC: unchanged (`:3438-3439`, prompt lines 58 and 59). They are repeated at `:2119`, `P0-O1.md:85` and `P0-O2.md:86`.
+> - **New contradictions from round 2:** the owner time totals are consistent. The work PC commit for P0-O1 is consistent across 3.1, 3.4, 6.2, 6.4, 6.10 and 10.2. The dependency on P0-W3-T4 is consistent. P0.12 is consistent in the plan, but not in `P0-O2.md:117` (defect 1).
+> - **Rulings, gate numbers, 5.6 and 5.7:** `docs/review/02-rulings.md` is not in the diff. Gate rows P0.5, P0.8, P0.9 and P0.12 gained text about which machine counts, and no number or threshold changed. In 5.6, only the "Decided by" cells of B3 and B4 changed, each adding a pointer. No hunk falls in 5.7 (`:1995-2011`). In the plan's own R table, R107 (`:3025`) gained a note and its ruling "fix now" is unchanged. Q14 now names the personal PC, as you accepted in 7.12.
+>
+> Checklist, changes to the prompt:
+> - **Agrees with `AGENTS.md`, `CLAUDE.md`, the plan and section 3:** stop rules 2 and 3 match plan 10.3. Section 3.6, 3.9, the section 4 table, 6.5, 7 step 4 and 11.6 match plan 3.1, 6.1 and 6.2 step 4. Fixed rule 3 holds, and pushes go only to origin. The section 3.3 role is unchanged.
+> - **Frontmatter fields, and no file-editing tool for checkers:** not applicable, since nothing under `.claude/agents/` changed.
+>
+> I committed and pushed nothing. I ran only read-only git commands in `/code/submeter-pc-monitor/submeter-pc-monitor-extract/.claude/worktrees/agent-afde2222ef6dd79af`, and the only files I wrote were working copies in the scratchpad.

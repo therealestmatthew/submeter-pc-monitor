@@ -93,6 +93,7 @@ Every branch an agent or the lead is expected to push, added when the agent is d
 | `task/P0-W2-T3` | P0-W2-T3, builder a7aecbc934e86a6c5 | 2026-11-28 09:21 | expected; open |
 | `task/P0-W2-T4` | P0-W2-T4, builder abc972094bf014fa3 | 2026-11-28 09:21 | expected; open |
 | `plan/pd-003-two-windows-machines` | the plan writer for PD-003, agent a98f4b6abeaaa8bee | 2026-11-28 09:21 | expected; open |
+| `plan/p0-w2-t2-size` | the plan writer for PD-004, agent a285b254159173fcf | 2026-11-28 15:10 | expected; open |
 
 ## 4. Waves of P0
 
@@ -355,7 +356,7 @@ Asked in lead session 5 with the question tool, after the plan writer returned t
 
 What this settles for the correction (the lead's reading):
 
-- When the two machines differ on B4, B3 or probe 2's trigger, the decision row cites the personal PC's file, the work PC's word is recorded beside it, and the owner rules at the gate.
+- ~~When the two machines differ on B4, B3 or probe 2's trigger, the decision row cites the personal PC's file, the work PC's word is recorded beside it, and the owner rules at the gate.~~ Corrected by the lead on 2026-11-28 15:20 (plan review 002 round 2 pointed it out): when the two machines differ on B4 or B3, the decision row cites the personal PC's file, the work PC's word is recorded beside it, and the owner rules at the gate. Probe 2's trigger is not ruled that way: by the owner's fourth answer a trigger that fires on either machine stops the build (the last bullet of this list); the B2 row only records the work PC's word.
 - On the work PC the owner runs P0-O1 and P0-O2 (the checks and the three probes) and, from P1 on, only the owner check run of plan 6.2 step 4 at each gate commit. The fixture recordings (P2-O1, P5-O1), the two 24-hour soaks (P2-O2, P5-O2), the daemon install with sign-out (P3-O1) and the restart (P4-O1) run on the personal PC only. The draft said every owner task ran on both; the plan writer changes it.
 - Claude Code is on the work PC, so probe 1 is run from its shell there too, by the owner's hand. No session of this build runs on the work PC, and nothing is committed or pushed from it (section 7.10). The owner's remark about adopting and enhancing the completed version there concerns the time after version 1; the lead reads it as changing nothing in this build, and says so to the owner in its next report.
 - Stop rules 2 and 3 of the prompt (probe 2's trigger fires; probe 1's step a or b fails) apply to a result from either machine.
