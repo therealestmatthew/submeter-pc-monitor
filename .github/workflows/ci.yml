@@ -11,6 +11,10 @@ on:
 permissions:
   contents: read
 
+env:
+  # uv installs Python 3.13 itself on both runners and never uses the image's own interpreter.
+  UV_PYTHON_PREFERENCE: only-managed
+
 jobs:
   windows:
     name: checks-windows
