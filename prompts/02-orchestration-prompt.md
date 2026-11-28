@@ -408,7 +408,7 @@ The phase's cards: when the owner approves a gate, the plan writer writes the ne
 - **At most two review rounds** for a task: round 1, then round 2 after the builder's changes.
 - **After a second `CHANGES`:** escalate once to a stronger model (section 11.4 names it). Dispatch a new builder on the same branch with "Round: E" and both review notes. A new code reviewer reads the result.
 - **If the escalated attempt does not pass,** hold the task and every task that depends on it, record both review notes and the escalated one in `docs/STATUS.md`, and ask the owner. No further attempt without the owner's word.
-- **A task that grows past size L** (about 600 changed lines) is split at review: the plan writer writes the parts as new cards, and the original card is closed with a note. The one exception (plan 3.1, Size): a task found past L at its review may be kept whole when its plan entry and its card record a size exception under a planning defect in `docs/STATUS.md` that the plan reviewer has read.
+- **A task that grows past size L** (about 600 changed lines) is split at review: the plan writer writes the parts as new cards, and the original card is closed with a note. Two cases are kept whole (plan 3.1, Size): a task whose plan entry sizes it past L and says why (P0-W2-T1); and a task found past L at its review whose plan entry and card record a size exception under a planning defect in `docs/STATUS.md` that the plan reviewer has read.
 
 ### 8.2 A builder that cannot finish
 
