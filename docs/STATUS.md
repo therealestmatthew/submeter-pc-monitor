@@ -6,9 +6,9 @@ The state of the build, kept by the lead of `prompts/02-orchestration-prompt.md`
 
 | Field | Value |
 | --- | --- |
-| Updated | 2026-11-28 07:30, lead session 4: P0-W1-T1 passed review in round 2; P0-W1-T2 is in review 1 (reviewer a4c80656d57c366e5, started 2026-11-28 06:19). The round-2 reviewer reported that a hook blocked some of its compound commands, which shows the checkers' frontmatter hooks are in force (L4-1) |
+| Updated | 2026-11-28 07:40, lead session 4: P0-W1-T1 merged at `202584d` (CI run 46145099315: success on both runners); P0-W1-T2 BLOCKED at review 1 on size alone (PD-001). The commit `Review P0-W1-T2 round 1` (`8999f9c`) holds only the card, because the lead's edit of this file failed; this commit holds the rest |
 | Phase | P0, decision probes, CI and the baseline repairs (`docs/PLAN.md` 3.4) |
-| Wave | P0-W1, the pilot: dispatched; step: review (prompt 5.4), as each builder returns |
+| Wave | P0-W1, the pilot: P0-W1-T1 merged; P0-W1-T2 blocked at review on size (PD-001), correction in hand |
 | Base commit B | P0-W1: `799feea19e9c226d4389104ae573fca389ef5b12` |
 | Width | 2 builders (pilot); cap 4 (plan 5.4) |
 | Gate P0 | not started |
@@ -37,8 +37,8 @@ States: `not started`, `held` (blocked by a decision, section 6), `dispatched`, 
 
 | Task | Title | Size | OS | Depends on | Blocked by | State | Builder | Reviewers | Rounds | Merge commit |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| P0-W1-T1 | CI on both runners, and the test markers | S | either; proves itself on CI-W and CI-L | none | — | passed (review 1: CHANGES, 2026-11-28 06:12; review 2: PASS, 2026-11-28 07:30); ready to merge | a2e4578a3da7272e7 | a9ed66ba48f1e849a (round 1), aa82c4bf999d77348 (round 2) | 2 | |
-| P0-W1-T2 | Step-1 helper scripts for the owner's machine | M | either | none | — | dispatched | a06e70300853747a2 | | 1 | |
+| P0-W1-T1 | CI on both runners, and the test markers | S | either; proves itself on CI-W and CI-L | none | — | merged 2026-11-28 07:31 (review 1: CHANGES, 2026-11-28 06:12; review 2: PASS, 2026-11-28 07:30) | a2e4578a3da7272e7 | a9ed66ba48f1e849a (round 1), aa82c4bf999d77348 (round 2) | 2 | `202584d` |
+| P0-W1-T2 | Step-1 helper scripts for the owner's machine | M | either | none | — | blocked at review 1 (2026-11-28 07:40: BLOCKED on size alone, 989 changed lines against the card's M; every other check passes); PD-001 (section 9) proposes a size exception on the card | a06e70300853747a2 | a4c80656d57c366e5 (round 1) | |
 | P0-W2-T1 | The test split and the layer rows | L | either | P0-W1-T1 | B10: the `AGENTS.md:35` wording is approved (section 7.7) but not yet on `main`; B9 decided 2026-11-26 | held | | | | |
 | P0-W2-T2 | Probe 1: the Job Object | M | Windows (CI-W) | none | — | not started | | | | |
 | P0-W2-T3 | The CLI package | M | either | P0-W1-T1 | — | not started | | | | |
@@ -68,9 +68,9 @@ One row per builder dispatched (prompt 5.3 step 3), written at dispatch; the wor
 
 | Task | Round | B | Model | Builder agent id | Dispatched | Branch | Worktree path |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| P0-W1-T1 | 1 | `799feea` | opus | a2e4578a3da7272e7 | 2026-11-28 06:05 | `task/P0-W1-T1` |`/code/submeter-pc-monitor/submeter-pc-monitor-extract/.claude/worktrees/agent-a2e4578a3da7272e7` |
+| P0-W1-T1 | 1 | `799feea` | opus | a2e4578a3da7272e7 | 2026-11-28 06:05 | `task/P0-W1-T1` | `/code/submeter-pc-monitor/submeter-pc-monitor-extract/.claude/worktrees/agent-a2e4578a3da7272e7` |
 | P0-W1-T1 | 2 | `799feea` | opus | a2e4578a3da7272e7 (the same builder, continued) | 2026-11-28 06:13 | `task/P0-W1-T1` | as round 1 |
-| P0-W1-T2 | 1 | `799feea` | opus | a06e70300853747a2 | 2026-11-28 06:05 | `task/P0-W1-T2` | |
+| P0-W1-T2 | 1 | `799feea` | opus | a06e70300853747a2 | 2026-11-28 06:05 | `task/P0-W1-T2` |`/code/submeter-pc-monitor/submeter-pc-monitor-extract/.claude/worktrees/agent-a06e70300853747a2` |
 
 ### 3.3 Branches on origin
 
@@ -80,8 +80,9 @@ Every branch an agent or the lead is expected to push, added when the agent is d
 | --- | --- | --- | --- |
 | ~~`main`~~ | ~~the lead~~ | ~~2026-11-23~~ | ~~on `origin` at `76ebe71` (stage 2)~~ |
 | `main` | the lead | 2026-11-25 | always expected; at `72ea6f8` when lead session 1 began (replaces the row above, which gave stage 2's commit) |
-| `task/P0-W1-T1` | P0-W1-T1, builder a2e4578a3da7272e7 | 2026-11-28 05:59 | open; at `5b8bb43` (`Report P0-W1-T1`, round 2), passed review |
-| `task/P0-W1-T2` | P0-W1-T2, builder a06e70300853747a2 | 2026-11-28 06:05 | expected |
+| `task/P0-W1-T1` | P0-W1-T1, builder a2e4578a3da7272e7 | 2026-11-28 06:05 | merged at `202584d`; branch tip `5b8bb43` |
+| `task/P0-W1-T2` | P0-W1-T2, builder a06e70300853747a2 | 2026-11-28 06:05 | open; at `6139e62` (`Report P0-W1-T2`, round 1) |
+| `plan/p0-w1-t2-size` | the lead as plan writer (PD-001) | 2026-11-28 07:40 | expected |
 
 ## 4. Waves of P0
 
@@ -286,7 +287,10 @@ None. Format: `CR-nnn | requesting task | path | change | reason | decided by | 
 
 ## 9. Planning defects
 
-None. Format: `PD-nnn | date | what | tasks and paths | correction | plan reviewer's note`.
+Format: `PD-nnn | date | what | tasks and paths | correction | plan reviewer's note`.
+
+- PD-001 | 2026-11-28 | The card of P0-W1-T2 is sized M (about 100 to 300 changed lines; plan 3.4 says M too), and the finished task is 989 changed lines in its five owned files: 344 in the procedure `docs/review/ground-windows/step1-procedure.md`, 407 in the three scripts, 238 in the tests. The code reviewer returned BLOCKED on check 5 (prompt 3.5: more than about 600 changed lines means a split, "unless the card says otherwise") and passed every other check. | P0-W1-T2; its five Owns paths | Proposed by the lead: a size exception on the card, on the branch `plan/p0-w1-t2-size`, because the work is complete and owned by one task, and a split would change no line of it (the scripts and their tests alone are 645 lines, so even two parts would leave one past L). The plan reviewer reads it; a new code reviewer then reads the task branch as round 2. | pending
+- PD-002 | 2026-11-28 | Found by the reviewer of P0-W1-T2, not counted against the branch: the name check of plan 6.2 step 4 (`git grep -n -i -F` for the user and host names) also matches the placeholders `<user>` and `<host>` when the owner's user or host name is itself the word `user` or `host`, so the check could then never print nothing. | plan 6.2 step 4; every owner task | Not corrected. It matters only if the owner's names are those words; the lead asks the owner at the next stop and has the plan corrected only if they are. | none yet
 
 ## 10. Unplanned tasks
 
@@ -300,7 +304,7 @@ Recorded for each task and merge, so that the cap can be reviewed at gate P1 (pl
 
 | Task | Dispatched | uv sync (s) | Test-only push | Branch pushed | Verdict | Merged | Merge checks (s) | CI minutes |
 | --- | --- | ---: | --- | --- | --- | --- | ---: | ---: |
-| P0-W1-T1 | 2026-11-28 06:05 | | | | | | | |
+| P0-W1-T1 | 2026-11-28 06:05 | 1.2 | 11:04:59Z | round 1 report `97877a9`; round 2 last change push 11:16:15Z, report `5b8bb43` | CHANGES 2026-11-28 06:12; PASS 2026-11-28 07:30 | 2026-11-28 07:31 | 23 (Linux): all seven exit 0, `64 passed, 1 xfailed in 6.25s` | run 46145099315 on `202584d`: success. Branch run 46139082966: Windows 32 s and Linux 10 s from sync to the last step |
 | P0-W1-T2 | 2026-11-28 06:05 | | | | | | | |
 
 ## 12. Skips new since the previous gate
