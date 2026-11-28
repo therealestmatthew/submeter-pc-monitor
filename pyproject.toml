@@ -48,3 +48,10 @@ plugins = ["pydantic.mypy"]
 testpaths = ["tests"]
 pythonpath = ["src"]
 asyncio_default_fixture_loop_scope = "function"
+addopts = '--strict-markers -m "not owner_machine and not session and not hardware and not soak"'
+markers = [
+    "owner_machine: needs the unprivileged signed-in user or the owner's managed computer",
+    "session: needs an interactive logon session",
+    "hardware: needs hardware the hosted runners lack (a GPU, a battery, suspend, throttling)",
+    "soak: runs longer than 60 s, or loads the machine for minutes",
+]
