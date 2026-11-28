@@ -6,15 +6,15 @@ The state of the build, kept by the lead of `prompts/02-orchestration-prompt.md`
 
 | Field | Value |
 | --- | --- |
-| Updated | 2026-11-28 08:16, lead session 4: P0-W1-T2 passed code review in round 2; next is its merge, then CI on both runners at the integration commit |
+| Updated | 2026-11-28 08:33, lead session 4: wave P0-W1 recorded. Both tasks merged; integration commit `e17cd5b`; CI success on both runners; the pilot is clean |
 | Phase | P0, decision probes, CI and the baseline repairs (`docs/PLAN.md` 3.4) |
-| Wave | P0-W1, the pilot: P0-W1-T1 merged; P0-W1-T2 passed review, to be merged |
-| Base commit B | P0-W1: `799feea19e9c226d4389104ae573fca389ef5b12` |
-| Width | 2 builders (pilot); cap 4 (plan 5.4) |
+| Wave | P0-W1, the pilot: integrated and recorded; the record review is `docs/tasks/P0-W1-record-review.md`. Next wave: P0-W2, planned width 4 |
+| Base commit B | P0-W1: `799feea19e9c226d4389104ae573fca389ef5b12`. P0-W2: not fixed; it is fixed by the next lead session after the `AGENTS.md` wordings are on `main` and the CI run of that commit has passed on both runners (prompt 5.2 step 6) |
+| Width | The pilot ran 2 builders and was clean (section 4), so later waves run at their planned width, up to the cap of 4 (plan 5.4) |
 | Gate P0 | not started |
 | Build machine | Linux (Q1, the owner, 2026-11-25). A Windows-only task is done only when CI-W passes. The owner runs the nine owner tasks by hand on the Windows 11 PC as a standard user |
 | Lead session | 4 (section 13), on Linux; started 2026-11-28 05:48 |
-| **Next action** | P0-W1 is dispatched (sections 3.2 and 4). When a builder returns: read its report, check prompt 11.4 step 10, start a code reviewer for its branch (prompt 5.4). A new lead session that finds this line follows prompt section 9: for a task of section 3.2 with no verdict in section 3.1, send its branch to review if its last commit is `Report <task id>`, otherwise dispatch it again at the same B and round. After both tasks pass: merge in task order (prompt 6.2), wait for CI on both runners (5.6; a baseline failure on CI-W goes to prompt 8.5 and the fix wave P0-W1a), then the record step (5.7). Still owed after P0-W1's record step and before P0-W2's base commit: the lead commits the two `AGENTS.md` wordings of section 7.7 and ends its session (prompt 5.7). B7 is asked again before P0-W4. |
+| **Next action** | P0-W1 is recorded. In order: (1) lead session 4 pushes the record and its review note, removes the worktrees of the two merged tasks (prompt 5.7 step 6), commits the two `AGENTS.md` wordings of section 7.7 word for word, and ends its session (prompt 5.7). (2) The owner starts lead session 5 as before: the terminal in the repository root, `claude`, no `/cd`, and the message of prompt section 13. (3) Lead session 5 runs prompt section 0, then P0-W2 from prompt 5.2 at width 4: P0-W2-T1 (B9 and B10 are decided; it may be dispatched once the line-35 wording is on `main`), P0-W2-T2, P0-W2-T3, P0-W2-T4. Before fixing B it answers the lead's card questions CQ-04 to CQ-07 and checks that the CI run of B passed on both runners. The owner may run P0-O1 (step 1 on the Windows machine, about 45 minutes) at any time from now: `docs/review/ground-windows/step1-procedure.md` at the integration commit `e17cd5b`. B7 is asked again before P0-W4. |
 
 ## 2. Entry conditions of the pilot P0-W1
 
@@ -38,7 +38,7 @@ States: `not started`, `held` (blocked by a decision, section 6), `dispatched`, 
 | Task | Title | Size | OS | Depends on | Blocked by | State | Builder | Reviewers | Rounds | Merge commit |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | P0-W1-T1 | CI on both runners, and the test markers | S | either; proves itself on CI-W and CI-L | none | — | merged 2026-11-28 07:31 (review 1: CHANGES, 2026-11-28 06:12; review 2: PASS, 2026-11-28 07:30) | a2e4578a3da7272e7 | a9ed66ba48f1e849a (round 1), aa82c4bf999d77348 (round 2) | 2 | `202584d` |
-| P0-W1-T2 | Step-1 helper scripts for the owner's machine | M | either | none | — | passed (review 1: BLOCKED on size alone, 2026-11-28; review 2: PASS, 2026-11-28 08:16, after the size exception of PD-001); ready to merge | a06e70300853747a2 | a4c80656d57c366e5 (round 1), a90f33ab3552dd27c (round 2) | 2
+| P0-W1-T2 | Step-1 helper scripts for the owner's machine | M | either | none | — | merged 2026-11-28 08:16 (review 1: BLOCKED on size alone; review 2: PASS, after the size exception of PD-001) | a06e70300853747a2 | a4c80656d57c366e5 (round 1), a90f33ab3552dd27c (round 2) | 2 | `e17cd5b` |
 | P0-W2-T1 | The test split and the layer rows | L | either | P0-W1-T1 | B10: the `AGENTS.md:35` wording is approved (section 7.7) but not yet on `main`; B9 decided 2026-11-26 | held | | | | |
 | P0-W2-T2 | Probe 1: the Job Object | M | Windows (CI-W) | none | — | not started | | | | |
 | P0-W2-T3 | The CLI package | M | either | P0-W1-T1 | — | not started | | | | |
@@ -81,14 +81,14 @@ Every branch an agent or the lead is expected to push, added when the agent is d
 | ~~`main`~~ | ~~the lead~~ | ~~2026-11-23~~ | ~~on `origin` at `76ebe71` (stage 2)~~ |
 | `main` | the lead | 2026-11-25 | always expected; at `72ea6f8` when lead session 1 began (replaces the row above, which gave stage 2's commit) |
 | `task/P0-W1-T1` | P0-W1-T1, builder a2e4578a3da7272e7 | 2026-11-28 06:05 | merged at `202584d`; branch tip `5b8bb43` |
-| `task/P0-W1-T2` | P0-W1-T2, builder a06e70300853747a2 | 2026-11-28 06:05 | open; at `6139e62` (`Report P0-W1-T2`, round 1) |
+| `task/P0-W1-T2` | P0-W1-T2, builder a06e70300853747a2 | 2026-11-28 06:05 | merged at `e17cd5b`; branch tip `6139e62` |
 | `plan/p0-w1-t2-size` | the lead as plan writer (PD-001) | 2026-11-28 07:40 | merged at `5635cf4`; branch tip `95b52eb` |
 
 ## 4. Waves of P0
 
 | Wave | Planned width | Run width | B (base) | Checks at B | Dispatch commit | I (last merge) | R (record) | Record review | CI on R |
 | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- |
-| P0-W1 | 2 | 2 | `799feea19e9c226d4389104ae573fca389ef5b12` | Linux, 2026-11-28, 19 s for all seven: sync=0 ruff=0 format=0 mypy=0 mypy-win32=0 mypy-linux=0 pytest=0; `61 passed, 1 xfailed in 2.99s` | (this commit) | | | | |
+| P0-W1 | 2 | 2 | `799feea19e9c226d4389104ae573fca389ef5b12` | Linux, 2026-11-28, 19 s for all seven: sync=0 ruff=0 format=0 mypy=0 mypy-win32=0 mypy-linux=0 pytest=0; `61 passed, 1 xfailed in 2.99s` | `9f937ac` | `e17cd5b` (merge of P0-W1-T2; P0-W1-T1 merged at `202584d`). CI run 46148834972 on it: success, checks-linux 16 s, checks-windows 42 s | the commit `Record P0-W1` | `docs/tasks/P0-W1-record-review.md` | read when P0-W2's base commit is fixed (prompt 5.2 step 6) |
 | P0-W2 | 4 | | | | | | | | |
 | P0-W3 | 3 | | | | | | | | |
 | P0-W4 | 2 | | | | | | | | |
@@ -97,7 +97,7 @@ Every branch an agent or the lead is expected to push, added when the agent is d
 
 "Checks at B": the exit code of each of the seven `AGENTS.md` checks run at B in the lead's checkout, and pytest's summary line (prompt 5.2 step 6). An inserted wave (P0-W1a, P0-W1b; prompt 5.2 step 3, 8.5) gets a row below the wave it follows.
 
-Pilot result (plan 5.4): not yet run. Widening needs both pilot tasks merged without a conflict, every check that passed at B ("Checks at B") still passing after each merge and on both runners, and each review settled within two rounds. Failures of the baseline's first run on CI-W do not count against the pilot (prompt 8.5).
+Pilot result (plan 5.4), 2026-11-28: clean. Both tasks merged without a conflict. Every check that passed at B passed after each merge (Linux: all seven exit 0 after `202584d`, `64 passed, 1 xfailed`; after `e17cd5b`, `75 passed, 1 xfailed`) and on both runners (CI runs 46145099315 and 46148834972: success in checks-windows and checks-linux). Each review was settled within two rounds: P0-W1-T1 CHANGES then PASS; P0-W1-T2 BLOCKED on size alone then PASS after the size exception of PD-001. No escalation. The baseline's first run on CI-W brought no failure, so no fix wave P0-W1a is needed (prompt 8.5). Later waves run at their planned width, up to the cap of 4. One planning defect came out of the pilot (PD-001, section 9); it was a wrong size on a card, not a conflict or a red check.
 
 ## 5. Gate P0
 
@@ -281,6 +281,20 @@ What this settles:
 - Owed by the lead: the two `AGENTS.md` wordings, as one commit after P0-W1's record step and before P0-W2's base commit, then the end of that lead session (prompt 5.7). Lead session 3 did not apply them, because P0-W1 has not run.
 - The same message said that this session was "started in the repository root"; L3-1 (section 7.5) records what the lead found instead.
 
+### 7.8 Points from the P0-W1 task reports
+
+From the builders' reports (the last commit of each task branch). Neither report holds a change request, and both say "docs/14: none", so `docs/14-baseline-modules.md` is unchanged by this wave.
+
+| Id | From | Point | The lead's answer | For the owner? |
+| --- | --- | --- | --- | --- |
+| RQ-01 | P0-W1-T1 | No artefact `gate-windows` or `gate-linux` is created while `SUBMETER_GATE_DIR` is empty, as it is throughout P0: the upload step warns and succeeds | Left as it is. The card says the folder is empty in P0, and the harness contract (plan 6.2) says what it holds from P1. No placeholder file | No; reported |
+| RQ-02 | P0-W1-T1 | CI-W runs as `runneradmin`, an administrator account | Known and planned for: R118 leaves every test that needs an unprivileged user to the owner's machine (mark `owner_machine`). CI-W therefore proves nothing about fixed rule 2; the owner tasks do | Reported, so that the owner knows what CI-W does not show |
+| RQ-03 | P0-W1-T1 | The two jobs used different Python patch releases | Settled in round 2: both jobs now download CPython 3.13.13 through uv (`UV_PYTHON_PREFERENCE: only-managed`) | No |
+| RQ-04 | P0-W1-T1 | 292 changed lines against the card's S (about 100) | Under L, so no split; the reviewer passed check 5. The size estimates of cards that write a workflow or a procedure look low (see PD-001) | No; reported |
+| RQ-05 | P0-W1-T2 | The procedure makes Submeter's folders again in a temporary folder for the `icacls` step, because `platform_check.py` deletes its own; it sets the console and Python to UTF-8 before the seven checks; it writes a `$ <command>` header that plan 6.2 step 4's `Save` function does not; it writes the suspend and clock checks as small Python files that no test covers | Accepted with the review's PASS. The untested helpers run only on the owner's machine in P0-O1, where the owner reads every output before it is pushed | Yes, at the next stop: the owner runs this procedure in P0-O1 |
+| RQ-06 | P0-W1-T2 | `replace_names.py` replaces more than the card asks (`USERNAME`, `COMPUTERNAME`, the home folder with forward slashes and doubled backslashes, names in the paths it prints) | Accepted: each addition replaces more, never less | No; reported |
+| RQ-07 | P0-W1-T2 | The report commit has no blank line after its first line, so git shows the whole report as its subject | Left: a pushed commit is not rewritten. The subject starts with `Report P0-W1-T2`, which is what prompt section 9 looks for | No |
+
 ## 8. Change requests
 
 None. Format: `CR-nnn | requesting task | path | change | reason | decided by | decision | scheduled into`.
@@ -305,11 +319,16 @@ Recorded for each task and merge, so that the cap can be reviewed at gate P1 (pl
 | Task | Dispatched | uv sync (s) | Test-only push | Branch pushed | Verdict | Merged | Merge checks (s) | CI minutes |
 | --- | --- | ---: | --- | --- | --- | --- | ---: | ---: |
 | P0-W1-T1 | 2026-11-28 06:05 | 1.2 | 11:04:59Z | round 1 report `97877a9`; round 2 last change push 11:16:15Z, report `5b8bb43` | CHANGES 2026-11-28 06:12; PASS 2026-11-28 07:30 | 2026-11-28 07:31 | 23 (Linux): all seven exit 0, `64 passed, 1 xfailed in 6.25s` | run 46145099315 on `202584d`: success. Branch run 46139082966: Windows 32 s and Linux 10 s from sync to the last step |
-| P0-W1-T2 | 2026-11-28 06:05 | | | | | | | |
+| P0-W1-T2 | 2026-11-28 06:05 | 0.9 | about 06:08:57 (the builder's clock) | round 1 report `6139e62`, last change push about 06:16; no round 2 commit | BLOCKED on size (round 1); PASS (round 2) | 2026-11-28 08:16 | 20 (Linux): all seven exit 0, `75 passed, 1 xfailed in 4.20s` | run 46148834972 on `e17cd5b`: success; checks-linux 16 s, checks-windows 42 s |
 
 ## 12. Skips new since the previous gate
 
-None (gate criterion S2).
+Seen in the first runs on CI-W (P0-W1, 2026-11-28). Both tests are in the baseline and skip on Windows only; each reason names another operating system (S2):
+
+- `tests\test_analysis.py:39`: "time.tzset exists only on POSIX".
+- `tests\test_files.py:101`: "permission bits mean nothing on Windows".
+
+On CI-L and on the lead's Linux machine there is no skip. One strict expected failure remains on both (R61), which P0-W5-T1 removes.
 
 ## 13. Lead sessions
 
