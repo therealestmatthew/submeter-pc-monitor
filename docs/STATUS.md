@@ -42,7 +42,7 @@ States: `not started`, `held` (blocked by a decision, section 6), `dispatched`, 
 | P0-W2-T1 | The test split and the layer rows | L | either | P0-W1-T1 | — (B9 decided 2026-11-26; B10's line-35 wording is on `main` at `e41caa5`, 2026-11-28) | merged 2026-11-28 10:16 (dispatched 2026-11-28 09:21; review 1: PASS, 2026-11-28 09:54; merge checks on Linux 24 s, all seven exit 0, `75 passed, 1 xfailed in 4.81s`) | abe7f596960e1ebe2 | a137d634e7b0f13c1 (round 1) | 1 | `e7bca14` |
 | P0-W2-T2 | Probe 1: the Job Object | M | Windows (CI-W) | none | — | merged 2026-11-28 15:24 (dispatched 2026-11-28 09:21; review 1: BLOCKED on size alone, 2026-11-28 15:07; size exception of PD-004 merged 15:21; review 2 dispatched 2026-11-28 15:22 with no builder commit between; review 2: PASS, 2026-11-28 15:23; merge checks on Linux 22 s, all seven exit 0, `81 passed, 1 skipped, 1 xfailed in 4.52s`) | a7992e3d5fa8dc7fa | af113a30355f962e4 (round 1), a5186dcd843c180c0 (round 2) | 2 | `5b34f5c` |
 | P0-W2-T3 | The CLI package | M | either | P0-W1-T1 | — | merged 2026-11-28 15:25 (dispatched 2026-11-28 09:21; review 1: CHANGES, 2026-11-28 09:56; round 2 dispatched 2026-11-28 10:15; review 2: PASS, 2026-11-28 11:09; merge checks on Linux 23 s, all seven exit 0, `85 passed, 1 skipped, 1 xfailed in 4.62s`) | a7aecbc934e86a6c5 | a2aecd70676c478f0 (round 1), a791556be705c4fcf (round 2) | 2 | `1f16387` |
-| P0-W2-T4 | Linux CI measurements for cgroup reads and full PSS | S | Linux (CI-L) | P0-W1-T1 | — | passed (dispatched 2026-11-28 09:21; review 1: PASS, 2026-11-28 09:54) | abc972094bf014fa3 | a9fa411307b8eaa34 (round 1) | 1 | |
+| P0-W2-T4 | Linux CI measurements for cgroup reads and full PSS | S | Linux (CI-L) | P0-W1-T1 | — | merged 2026-11-28 15:26 (dispatched 2026-11-28 09:21; review 1: PASS, 2026-11-28 09:54; merge checks on Linux 23 s, all seven exit 0, `91 passed, 1 skipped, 1 xfailed in 4.64s`) | abc972094bf014fa3 | a9fa411307b8eaa34 (round 1) | 1 | `782e8f4` |
 | P0-W3-T1 | The optional record fields, and the minute tier removed from the code | L | either | P0-W2-T1 | — | not started | | | | |
 | P0-W3-T2 | Named settings and rules files exit with code 2 | S | either | P0-W2-T3 | — | not started | | | | |
 | P0-W3-T3 | Static tests for the three fixed rules | S | either | none | — | not started | | | | |
@@ -91,7 +91,7 @@ Every branch an agent or the lead is expected to push, added when the agent is d
 | `task/P0-W2-T1` | P0-W2-T1, builder abe7f596960e1ebe2 | 2026-11-28 09:21 | merged at `e7bca14`; branch tip `74a0315` |
 | `task/P0-W2-T2` | P0-W2-T2, builder a7992e3d5fa8dc7fa | 2026-11-28 09:21 | merged at `5b34f5c`; branch tip `6e2a250` |
 | `task/P0-W2-T3` | P0-W2-T3, builder a7aecbc934e86a6c5 | 2026-11-28 09:21 | merged at `1f16387`; branch tip `200c102` |
-| `task/P0-W2-T4` | P0-W2-T4, builder abc972094bf014fa3 | 2026-11-28 09:21 | expected; open |
+| `task/P0-W2-T4` | P0-W2-T4, builder abc972094bf014fa3 | 2026-11-28 09:21 | merged at `782e8f4`; branch tip `5419ecf` |
 | `plan/pd-003-two-windows-machines` | the plan writer for PD-003, agent a98f4b6abeaaa8bee | 2026-11-28 09:21 | expected; open |
 | `plan/p0-w2-t2-size` | the plan writer for PD-004, agent a285b254159173fcf | 2026-11-28 15:10 | merged at `7c995f6`; branch tip `14d7ec1` |
 
