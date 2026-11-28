@@ -6,7 +6,7 @@ The state of the build, kept by the lead of `prompts/02-orchestration-prompt.md`
 
 | Field | Value |
 | --- | --- |
-| Updated | 2026-11-28 06:13, lead session 4: review 1 of P0-W1-T1 is CHANGES; round 2 dispatched to the same builder; P0-W1-T2's builder has not reported |
+| Updated | 2026-11-28 07:30, lead session 4: P0-W1-T1 passed review in round 2; P0-W1-T2 is in review 1 (reviewer a4c80656d57c366e5, started 2026-11-28 06:19). The round-2 reviewer reported that a hook blocked some of its compound commands, which shows the checkers' frontmatter hooks are in force (L4-1) |
 | Phase | P0, decision probes, CI and the baseline repairs (`docs/PLAN.md` 3.4) |
 | Wave | P0-W1, the pilot: dispatched; step: review (prompt 5.4), as each builder returns |
 | Base commit B | P0-W1: `799feea19e9c226d4389104ae573fca389ef5b12` |
@@ -37,7 +37,7 @@ States: `not started`, `held` (blocked by a decision, section 6), `dispatched`, 
 
 | Task | Title | Size | OS | Depends on | Blocked by | State | Builder | Reviewers | Rounds | Merge commit |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| P0-W1-T1 | CI on both runners, and the test markers | S | either; proves itself on CI-W and CI-L | none | — | round 2 (review 1: CHANGES, 2026-11-28 06:12, one defect: on CI-W Python is the runner image's, not installed by uv) | a2e4578a3da7272e7 | a9ed66ba48f1e849a (round 1) | 2 | |
+| P0-W1-T1 | CI on both runners, and the test markers | S | either; proves itself on CI-W and CI-L | none | — | passed (review 1: CHANGES, 2026-11-28 06:12; review 2: PASS, 2026-11-28 07:30); ready to merge | a2e4578a3da7272e7 | a9ed66ba48f1e849a (round 1), aa82c4bf999d77348 (round 2) | 2 | |
 | P0-W1-T2 | Step-1 helper scripts for the owner's machine | M | either | none | — | dispatched | a06e70300853747a2 | | 1 | |
 | P0-W2-T1 | The test split and the layer rows | L | either | P0-W1-T1 | B10: the `AGENTS.md:35` wording is approved (section 7.7) but not yet on `main`; B9 decided 2026-11-26 | held | | | | |
 | P0-W2-T2 | Probe 1: the Job Object | M | Windows (CI-W) | none | — | not started | | | | |
@@ -80,7 +80,7 @@ Every branch an agent or the lead is expected to push, added when the agent is d
 | --- | --- | --- | --- |
 | ~~`main`~~ | ~~the lead~~ | ~~2026-11-23~~ | ~~on `origin` at `76ebe71` (stage 2)~~ |
 | `main` | the lead | 2026-11-25 | always expected; at `72ea6f8` when lead session 1 began (replaces the row above, which gave stage 2's commit) |
-| `task/P0-W1-T1` | P0-W1-T1, builder a2e4578a3da7272e7 | 2026-11-28 06:05 | open; at `97877a9` (`Report P0-W1-T1`, round 1) |
+| `task/P0-W1-T1` | P0-W1-T1, builder a2e4578a3da7272e7 | 2026-11-28 05:59 | open; at `5b8bb43` (`Report P0-W1-T1`, round 2), passed review |
 | `task/P0-W1-T2` | P0-W1-T2, builder a06e70300853747a2 | 2026-11-28 06:05 | expected |
 
 ## 4. Waves of P0
