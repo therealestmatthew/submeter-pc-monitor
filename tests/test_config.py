@@ -1,4 +1,4 @@
-"""Tests for the settings surface: what a settings file may contain and how it is loaded."""
+"""Tests for the settings: what a settings file may contain and how it is loaded."""
 
 from __future__ import annotations
 
@@ -13,6 +13,40 @@ from submeter.attribution.rules import Rule
 from submeter.cli import app
 from submeter.collector import sampler
 from submeter.core.config import AlertRule, ConfigError, Settings, load_settings
+
+
+def test_config_layers_and_sources(tmp_path: Path) -> None:
+    file = tmp_path / "submeter.toml"
+    file.write_text(
+        '[sampling]\nactive_interval = "2s"\n[storage]\ndisk_budget = "1GB"\n'
+        '[[alerts.rules]]\nname = "busy"\nmetric = "cpu_cores"\nabove = 12\nfor = "5m"\n'
+    )
+    loaded = load_settings(
+        file,
+        env={"SUBMETER_SAMPLING__IDLE_AFTER": "30s", "SUBMETER_HOME": "/x"},
+    )
+    sampling = loaded.settings.sampling
+    assert (sampling.active_interval, sampling.idle_after) == (
+        2.0,
+        30.0,
+    )
+    assert loaded.settings.alerts.rules[0].duration == 300
+    assert loaded.sources["sampling.active_interval"] == "file"
+    assert loaded.sources["sampling.idle_after"] == "env"
+    assert dict((key, source) for key, _, source in loaded.effective())["api.port"] == "default"
+
+
+def test_config_refuses_bad_values(tmp_path: Path) -> None:
+    file = tmp_path / "bad.toml"
+    file.write_text('[sampling]\nactive_interval = "20s"\ncolour = "blue"\n')
+    with pytest.raises(ConfigError) as caught:
+        load_settings(file)
+    text = " | ".join(caught.value.problems)
+    assert "sampling.active_interval: 20s is outside the allowed range, 250ms to 10s" in text
+    assert "sampling.colour" in text
+    with pytest.raises(ConfigError) as caught:
+        load_settings(env={}, overrides={"sampling": {"gpu_interval": "45s"}})
+    assert "outside the allowed range, 1s to 30s" in caught.value.problems[0]
 
 
 # ---- R149: no profiles -----------------------------------------------------------------------

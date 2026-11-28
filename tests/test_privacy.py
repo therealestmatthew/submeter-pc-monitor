@@ -28,6 +28,32 @@ def stored(tmp_path: Path, cmdline: tuple[str, ...], exe: str, **settings: Any) 
     return raw.path.read_bytes()
 
 
+def test_redaction_hides_secrets_and_keeps_the_rest() -> None:
+    args = [
+        "claude",
+        "--api-key",
+        "sk-abcdefghijklmnopqrstu",
+        "--max-tokens",
+        "4096",
+        "TOKEN=abc",
+        "postgres://u:pw@host/db",
+        "notes.md",
+    ]
+    cleaned = redact_cmdline(args)
+    assert cleaned == (
+        "claude",
+        "--api-key",
+        REDACTED,
+        "--max-tokens",
+        "4096",
+        f"TOKEN={REDACTED}",
+        f"postgres://u:{REDACTED}@host/db",
+        "notes.md",
+    )
+    assert redact_cmdline(args, mode="exe_only", exe="claude") == ("claude",)
+    assert redact_cmdline(["x", "A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6"]) == ("x", REDACTED)
+
+
 def test_exe_only_stores_the_executable_and_scrub_splits_a_title(tmp_path: Path) -> None:
     """R97: a title a process wrote over its argv[0] is never stored whole."""
     title = ("postgres: alice appdb 10.0.0.5(5432) idle",)
