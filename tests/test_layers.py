@@ -17,6 +17,8 @@ LAYER = {
     "collector": 2,
     "attribution": 2,
     "analysis": 2,
+    "alerts": 2,
+    "report": 2,
     "cli": 3,
     "programs": 3,
 }

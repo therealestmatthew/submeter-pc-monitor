@@ -2,35 +2,99 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from pathlib import Path
 
 import pytest
+from builders import MB, names, proc, sample, snap
 
 from submeter.attribution.rules import (
+    RESTRICTED,
     SELF,
     UNATTRIBUTED,
-    Attribution,
     Attributor,
     Rule,
     RuleSet,
     aggregate,
 )
-from submeter.core.models import GroupTotals, ProcessKey, ProcessSample, SampleBatch
-
-MB = 1024**2
-
-
-def sample(pid: int, exe: str, parent: int | None = None, **extra: object) -> ProcessSample:
-    """A process started at 100 + pid, so a lower pid is always the older process."""
-    key = ProcessKey(pid=pid, started=100.0 + pid)
-    fields: dict[str, object] = {"key": key, "parent_pid": parent, "exe": exe, "cmdline": (exe,)}
-    fields |= {"cwd": None, "cpu_s": 0.0, "io_read_bytes": 0, "io_write_bytes": 0, "threads": 1}
-    fields |= {"memory_bytes": MB, "first_seen": False, "restricted": False}
-    return ProcessSample.model_validate(fields | extra)
+from submeter.collector.sampler import Sampler
+from submeter.core.models import GroupTotals, ProcessKey, SampleBatch
 
 
-def names(assignment: Mapping[ProcessKey, Attribution]) -> dict[int, str]:
-    return {key.pid: value.workload for key, value in assignment.items()}
+def test_attribution_order_inheritance_and_conservation() -> None:
+    rules = RuleSet(
+        rule=(
+            Rule(workload="tools", exe=("tool",), priority=1),
+            Rule(workload="browser", exe=("chrome.exe",), priority=5, include_children=True),
+        )
+    )
+    sampler = Sampler()
+    before = [
+        proc(10, 0, exe=r"C:\Apps\chrome.exe"),
+        proc(11, 0, parent=10, started=101, exe="helper"),
+        proc(12, 0, parent=10, started=99, exe="older"),
+        proc(13, 0, exe="mystery", restricted=True, cmdline=None),
+        proc(14, 0),
+        proc(15, 0, exe="agent"),
+    ]
+    sampler.ingest(snap(1000, before))
+    after = [p.model_copy(update={"cpu_s": 0.1 * (i + 1)}) for i, p in enumerate(before)]
+    batch = sampler.ingest(snap(1001, after))
+    assert batch is not None
+    tagged = {ProcessKey(pid=15, started=100.0): "agent:refactor"}
+    assignment = Attributor(rules, inherit_from_parent=False).assign(batch.processes, tagged)
+    names = {key.pid: value.workload for key, value in assignment.items()}
+    assert names == {
+        10: "browser",
+        11: "browser",
+        12: UNATTRIBUTED,
+        13: RESTRICTED,
+        14: "tools",
+        15: "agent:refactor",
+    }
+    group = GroupTotals(cpu_s=0.9, io_read_bytes=None, io_write_bytes=None, processes=1)
+    totals = aggregate(batch, assignment, kernel_workloads={"agent:refactor": group})
+    polled = [total for total in totals if total.workload != "agent:refactor"]
+    assert sum(total.cpu_s for total in polled) == pytest.approx(
+        sum(sample.cpu_s for sample in batch.processes if sample.key.pid != 15)
+    )
+    tagged_total = next(total for total in totals if total.workload == "agent:refactor")
+    assert (tagged_total.cpu_s, tagged_total.source.value) == (0.9, "kernel")  # polled sum 0.6
+
+
+def test_rules_file_loads_and_rejects_empty_rules(tmp_path: Path) -> None:
+    file = tmp_path / "rules.toml"
+    file.write_text(
+        '[[rule]]\nworkload = "ide"\npriority = 50\nexe = ["Code.exe"]\n'
+        "[[rule]]\nworkload = \"builds\"\ncwd = 'C:\\src\\**'\n"
+    )
+    assert [rule.workload for rule in RuleSet.load(file).ordered()] == ["ide", "builds"]
+    assert (
+        RuleSet.load(file).needs_cwd
+        and not RuleSet(rule=(Rule(workload="a", exe=("a",)),)).needs_cwd
+    )
+    with pytest.raises(ValueError, match="at least one of"):
+        Rule(workload="nothing")
+
+
+def test_a_rule_can_match_on_the_parent_program() -> None:
+    rules = RuleSet(rule=(Rule(workload="from-shell", parent=("Explorer.EXE",)),))
+    started = [
+        proc(20, 0, exe=r"C:\Windows\explorer.exe"),
+        proc(21, 0, parent=20, started=101, exe="notepad.exe"),
+        proc(22, 0, parent=20, started=99, exe="older.exe"),  # pid 20 was reused: not its parent
+        proc(23, 0, exe="orphan.exe"),
+    ]
+    sampler = Sampler()
+    sampler.ingest(snap(1000, started))
+    batch = sampler.ingest(snap(1001, started))
+    assert batch is not None
+    assignment = Attributor(rules, inherit_from_parent=False).assign(batch.processes)
+    assert {key.pid: value.workload for key, value in assignment.items()} == {
+        20: UNATTRIBUTED,
+        21: "from-shell",
+        22: UNATTRIBUTED,
+        23: UNATTRIBUTED,
+    }
 
 
 def test_include_children_overrides_the_global_setting_both_ways() -> None:

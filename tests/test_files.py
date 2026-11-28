@@ -6,19 +6,75 @@ import os
 import stat
 import sys
 import threading
+import types
 from datetime import date
 from pathlib import Path
 
 import psutil
 import pytest
+from builders import DAY0, HOUR
 
 from submeter.core.models import Tier
 from submeter.store.files import FileMap, InstanceLock
 from submeter.store.query import choose_tier
 from submeter.store.raw import RawFile
 
-DAY0 = 1_795_132_800.0  # 2026-11-20 00:00:00 UTC
-HOUR = 3600.0
+
+def test_file_map_names_expiry_and_lock(tmp_path: Path) -> None:
+    windows = FileMap.discover({"APPDATA": "C:/R", "LOCALAPPDATA": "C:/L"}, "win32")
+    assert windows.settings_file == Path("C:/R/Submeter/submeter.toml")
+    files = FileMap.discover({"SUBMETER_HOME": str(tmp_path)})
+    files.ensure()
+    day = date(2026, 11, 20)
+    assert (
+        files.raw_file(day).name == "2026-11-20.db" and files.minute_file(day).name == "2026-W47.db"
+    )
+    for name in ("2026-11-17.db", "2026-11-18.db", "2026-11-20.db"):
+        (files.raw_dir / name).write_bytes(b"x")
+    now = DAY0 + 9 * 3600  # 09:00 UTC on the 20th
+    expired = files.expired_raw(now, 48 * 3600, rolled_up_until=now)
+    assert [path.name for path in expired] == ["2026-11-17.db"]
+    assert files.disk_use()["raw"] == 3
+    lock = InstanceLock(files.lock_file("collector"))
+    with lock:
+        assert not InstanceLock(files.lock_file("collector")).acquire(wait_s=0)
+        assert lock.holder() == os.getpid() and files.lock_file("collector").stat().st_size == 0
+    assert lock.holder() is None  # the pid file goes when the lock is released
+    again = InstanceLock(files.lock_file("collector"))
+    assert again.acquire()
+    again.release()
+
+
+def test_the_windows_lock_makes_the_calls_windows_expects(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A stand-in for msvcrt: this checks the calls, not how Windows answers them."""
+    calls: list[tuple[int, int, int]] = []
+    held: set[int] = set()
+
+    def locking(fd: int, mode: int, nbytes: int) -> None:
+        inode = os.fstat(fd).st_ino
+        calls.append((mode, nbytes, os.lseek(fd, 0, os.SEEK_CUR)))
+        if mode == 2:  # LK_NBLCK: fail at once if any other handle holds the byte
+            if inode in held:
+                raise PermissionError(13, "Permission denied")
+            held.add(inode)
+        else:
+            held.discard(inode)
+
+    fake = types.ModuleType("msvcrt")
+    fake.LK_NBLCK, fake.LK_UNLCK, fake.locking = 2, 0, locking  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "msvcrt", fake)
+    monkeypatch.setattr(sys, "platform", "win32")
+    path = tmp_path / "collector.lock"
+    first, second = InstanceLock(path), InstanceLock(path)
+    assert first.acquire() and not second.acquire(wait_s=0)
+    assert first.holder() == os.getpid() and path.read_bytes() == b""
+    first.release()
+    assert second.acquire()
+    second.release()
+    # every call is on one byte at offset 0: try, try and fail, probe and fail, unlock, try, unlock
+    assert calls == [(2, 1, 0), (2, 1, 0), (2, 1, 0), (0, 1, 0), (2, 1, 0), (0, 1, 0)]
 
 
 def test_tier_choice_takes_raw_coverage_from_disk() -> None:
