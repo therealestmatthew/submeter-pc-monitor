@@ -42,7 +42,7 @@ States: `not started`, `held` (blocked by a decision, section 6), `dispatched`, 
 | P0-W2-T1 | The test split and the layer rows | L | either | P0-W1-T1 | — (B9 decided 2026-11-26; B10's line-35 wording is on `main` at `e41caa5`, 2026-11-28) | dispatched 2026-11-28 09:21 | abe7f596960e1ebe2 | | 1 | |
 | P0-W2-T2 | Probe 1: the Job Object | M | Windows (CI-W) | none | — | dispatched 2026-11-28 09:21 | a7992e3d5fa8dc7fa | | 1 | |
 | P0-W2-T3 | The CLI package | M | either | P0-W1-T1 | — | dispatched 2026-11-28 09:21 | a7aecbc934e86a6c5 | | 1 | |
-| P0-W2-T4 | Linux CI measurements for cgroup reads and full PSS | S | Linux (CI-L) | P0-W1-T1 | — | dispatched 2026-11-28 09:21 | abc972094bf014fa3 | | 1 | |
+| P0-W2-T4 | Linux CI measurements for cgroup reads and full PSS | S | Linux (CI-L) | P0-W1-T1 | — | passed (dispatched 2026-11-28 09:21; review 1: PASS, 2026-11-28 09:54) | abc972094bf014fa3 | a9fa411307b8eaa34 (round 1) | 1 | |
 | P0-W3-T1 | The optional record fields, and the minute tier removed from the code | L | either | P0-W2-T1 | — | not started | | | | |
 | P0-W3-T2 | Named settings and rules files exit with code 2 | S | either | P0-W2-T3 | — | not started | | | | |
 | P0-W3-T3 | Static tests for the three fixed rules | S | either | none | — | not started | | | | |
