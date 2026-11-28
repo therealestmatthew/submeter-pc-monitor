@@ -18,6 +18,9 @@ import typer
 from typer.testing import CliRunner
 
 ROOT = Path(__file__).resolve().parents[1]
+# Rich colours the help where it believes a terminal is attached, as it does under GitHub
+# Actions (GITHUB_ACTIONS set), so the escape sequences are removed before reading the names.
+ANSI_ESCAPE = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]")
 
 
 def _command_modules() -> list[str]:
@@ -28,7 +31,8 @@ def _command_modules() -> list[str]:
 
 
 def _listed(output: str, *names: str) -> set[str]:
-    return {name for name in names if re.search(rf"(?m)^\W*{name}\s", output)}
+    plain = ANSI_ESCAPE.sub("", output)
+    return {name for name in names if re.search(rf"(?m)^\W*{name}\s", plain)}
 
 
 def test_every_command_module_registers_a_command() -> None:
