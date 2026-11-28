@@ -38,7 +38,7 @@ States: `not started`, `held` (blocked by a decision, section 6), `dispatched`, 
 | Task | Title | Size | OS | Depends on | Blocked by | State | Builder | Reviewers | Rounds | Merge commit |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | P0-W1-T1 | CI on both runners, and the test markers | S | either; proves itself on CI-W and CI-L | none | — | merged 2026-11-28 07:31 (review 1: CHANGES, 2026-11-28 06:12; review 2: PASS, 2026-11-28 07:30) | a2e4578a3da7272e7 | a9ed66ba48f1e849a (round 1), aa82c4bf999d77348 (round 2) | 2 | `202584d` |
-| P0-W1-T2 | Step-1 helper scripts for the owner's machine | M | either | none | — | merged 2026-11-28 08:16 (review 1: BLOCKED on size alone, 2026-11-28 07:40; review 2: PASS, 2026-11-28 08:16, after the size exception of PD-001) | a06e70300853747a2 | a4c80656d57c366e5 (round 1), a90f33ab3552dd27c (round 2) | 2 | `e17cd5b` |
+| P0-W1-T2 | Step-1 helper scripts for the owner's machine | M | either | none | — | merged 2026-11-28 08:16 (review 1: BLOCKED on size alone, 2026-11-28 07:38; review 2: PASS, 2026-11-28 08:16, after the size exception of PD-001) | a06e70300853747a2 | a4c80656d57c366e5 (round 1), a90f33ab3552dd27c (round 2) | 2 | `e17cd5b` |
 | P0-W2-T1 | The test split and the layer rows | L | either | P0-W1-T1 | B10: the `AGENTS.md:35` wording is approved (section 7.7) but not yet on `main`; B9 decided 2026-11-26 | held | | | | |
 | P0-W2-T2 | Probe 1: the Job Object | M | Windows (CI-W) | none | — | not started | | | | |
 | P0-W2-T3 | The CLI package | M | either | P0-W1-T1 | — | not started | | | | |
@@ -68,9 +68,9 @@ One row per builder dispatched (prompt 5.3 step 3), written at dispatch; the wor
 
 | Task | Round | B | Model | Builder agent id | Dispatched | Branch | Worktree path |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| P0-W1-T1 | 1 | `799feea` | opus | a2e4578a3da7272e7 | 2026-11-28 06:05 | `task/P0-W1-T1` | `/code/submeter-pc-monitor/submeter-pc-monitor-extract/.claude/worktrees/agent-a2e4578a3da7272e7` |
+| P0-W1-T1 | 1 | `799feea` | opus | a2e4578a3da7272e7 | 2026-11-28 06:02 (the builder's own start, 06:02:57; the lead read the clock at 06:05, after both builders were started) | `task/P0-W1-T1` | `/code/submeter-pc-monitor/submeter-pc-monitor-extract/.claude/worktrees/agent-a2e4578a3da7272e7` |
 | P0-W1-T1 | 2 | `799feea` | opus | a2e4578a3da7272e7 (the same builder, continued) | 2026-11-28 06:13 | `task/P0-W1-T1` | as round 1 |
-| P0-W1-T2 | 1 | `799feea` | opus | a06e70300853747a2 | 2026-11-28 06:05 | `task/P0-W1-T2` |`/code/submeter-pc-monitor/submeter-pc-monitor-extract/.claude/worktrees/agent-a06e70300853747a2` |
+| P0-W1-T2 | 1 | `799feea` | opus | a06e70300853747a2 | 2026-11-28 06:03 (the builder's own start, 06:03:00; the lead read the clock at 06:05, after both builders were started) | `task/P0-W1-T2` |`/code/submeter-pc-monitor/submeter-pc-monitor-extract/.claude/worktrees/agent-a06e70300853747a2` |
 
 ### 3.3 Branches on origin
 
@@ -328,8 +328,8 @@ Recorded for each task and merge, so that the cap can be reviewed at gate P1 (pl
 
 | Task | Dispatched | uv sync (s) | Test-only push | Branch pushed | Verdict | Merged | Merge checks (s) | CI minutes |
 | --- | --- | ---: | --- | --- | --- | --- | ---: | ---: |
-| P0-W1-T1 | 2026-11-28 06:05 | 1.2 | 11:04:59Z | round 1 report `97877a9`; round 2 last change push 11:16:15Z, report `5b8bb43` | CHANGES 2026-11-28 06:12; PASS 2026-11-28 07:30 | 2026-11-28 07:31 | 23 (Linux): all seven exit 0, `64 passed, 1 xfailed in 6.25s` | run 46145099315 on `202584d`: success. Branch run 46139082966: Windows 32 s and Linux 10 s from sync to the last step |
-| P0-W1-T2 | 2026-11-28 06:05 | 0.9 | about 06:08:57 (the builder's clock) | round 1 report `6139e62`, last change push about 06:16; no round 2 commit | BLOCKED on size 2026-11-28 07:40 (round 1); PASS 2026-11-28 08:16 (round 2) | 2026-11-28 08:16 | 20 (Linux): all seven exit 0, `75 passed, 1 xfailed in 4.20s` | run 46148834972 on `e17cd5b`: success; checks-linux 16 s, checks-windows 42 s |
+| P0-W1-T1 | 2026-11-28 06:02 | 1.2 | 2026-11-28 06:04 | round 1 report `97877a9`; round 2 last change push 2026-11-28 06:16, report `5b8bb43` | CHANGES 2026-11-28 06:12; PASS 2026-11-28 07:30 | 2026-11-28 07:31 | 23 (Linux): all seven exit 0, `64 passed, 1 xfailed in 6.25s` | run 46145099315 on `202584d`: success. Branch run 46139082966: Windows 32 s and Linux 10 s from sync to the last step |
+| P0-W1-T2 | 2026-11-28 06:03 | 0.9 | 2026-11-28 06:08 | round 1 report `6139e62`, last change push about 2026-11-28 06:16; no round 2 commit | BLOCKED on size 2026-11-28 07:38 (round 1); PASS 2026-11-28 08:16 (round 2) | 2026-11-28 08:16 | 20 (Linux): all seven exit 0, `75 passed, 1 xfailed in 4.20s` | run 46148834972 on `e17cd5b`: success; checks-linux 16 s, checks-windows 42 s |
 
 ## 12. Skips new since the previous gate
 
