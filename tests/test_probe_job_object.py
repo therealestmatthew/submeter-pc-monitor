@@ -159,24 +159,3 @@ def test_steps_a_to_e_run_on_windows(capsys: pytest.CaptureFixture[str]) -> None
     for result in results:
         assert isinstance(result, job.StepResult)
         assert result.outcome in (job.PASS, job.FAIL, job.RECORDED), job.describe(result)
-
-
-@pytest.mark.skipif(sys.platform != "win32", reason="Job Objects exist only on Windows")
-def test_temporary_whole_probe_on_ci_w(capsys: pytest.CaptureFixture[str]) -> None:
-    # Temporary, reverted in the next commit: one CI-W run of the whole report, steps f to h too.
-    import subprocess
-
-    done = subprocess.run(
-        [sys.executable, str(SCRIPT), "ci-w"],
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        timeout=900,
-        check=False,
-    )
-    with capsys.disabled():
-        print()
-        print(done.stdout)
-        print(done.stderr)
-        print(f"exit={done.returncode}")
-    assert done.returncode == 0
