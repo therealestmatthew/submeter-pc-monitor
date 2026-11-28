@@ -32,7 +32,7 @@ uv run mypy --platform linux src tests
 uv run pytest
 ```
 
-To run one test: `uv run pytest tests/test_baseline.py -k NAME`.
+To run one test: `uv run pytest tests/test_<component>.py -k NAME`, where `<component>` names the component's test file (`docs/17-build-prompt.md:43`).
 
 ## Rules that are easy to break
 
@@ -43,7 +43,7 @@ To run one test: `uv run pytest tests/test_baseline.py -k NAME`.
 - A command line is redacted before it is stored, logged or written into a test fixture.
 - A recorded fixture is anonymised before it is written: user name, host name and home folder replaced; executable names outside an allow-list replaced with stable placeholders; command lines in exe_only form; working folders dropped. A test fails if any fixture contains the current user or host name.
 - A setting outside its range is refused with the range in the message. It is never clamped.
-- Each data file has one writer: the collector writes raw files, the server writes minute and history files, and the launcher writes one file per run.
+- Each data file has one writer: the collector writes raw files, the server writes the history file and its backups, and the launcher writes one file per run.
 - A metric the system cannot deliver is reported as unavailable, never as zero and never as an estimate.
 - A change in behaviour starts with a failing test.
 - No new dependency without my approval. There are three at runtime: pydantic, psutil and typer.
